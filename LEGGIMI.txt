@@ -1,0 +1,20 @@
+PORTAFOGLIO – WEB APP IPHONE
+
+Questa versione non richiede firma Apple o App Store.
+
+PER USARLA SU IPHONE
+1. Pubblica questa cartella su un hosting HTTPS (es. Vercel / GitHub Pages).
+2. Apri l’indirizzo in Safari.
+3. Tocca Condividi > Aggiungi alla schermata Home.
+4. Attiva “Apri come app” e tocca Aggiungi.
+
+AUTOMAZIONE WALLET
+In Comandi Rapidi crea Automazione > Transazione > scegli la carta.
+Aggiungi l’azione Apri URL con un indirizzo come:
+https://TUO-SITO/?amount=12.50&merchant=CONAD&date=2026-08-15&source=wallet
+
+La web app legge i parametri, registra la spesa e prova ad assegnare automaticamente la categoria.
+Se l’automazione Wallet non espone l’importo per la tua carta, usa “Chiedi input” per l’importo e inserisci la variabile nell’URL.
+
+DATI
+I dati restano nel localStorage del browser/web app sul dispositivo. Usa Esporta backup dalle Impostazioni per conservarne una copia.

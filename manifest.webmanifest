@@ -1,0 +1,18 @@
+{
+  "name": "Portafoglio",
+  "short_name": "Portafoglio",
+  "description": "Portafoglio personale con stipendio, spese, categorie e statistiche.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090b10",
+  "theme_color": "#0b0d12",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

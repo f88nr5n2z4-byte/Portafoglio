@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0b0d12" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Portafoglio" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/icon-180.png" />
+<title>Portafoglio</title>
+<link rel="stylesheet" href="styles.css" />
+
+<style>
+.installHint{display:none}.walletBanner{background:linear-gradient(135deg,#17221c,#121821);border:1px solid #2d4938;border-radius:18px;padding:16px;margin-bottom:18px}.walletBanner b{display:block;margin-bottom:5px}.walletBanner p{color:var(--muted);font-size:13px;margin:0;line-height:1.45}.walletBadge{display:inline-flex;align-items:center;gap:7px;color:#bff4cf;background:#173222;border:1px solid #28553a;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800;margin-top:10px}.shortcutCard{margin-top:18px}.shortcutCode{background:#0d1118;border:1px solid #2c3442;border-radius:14px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#c6d0df;overflow:auto;white-space:nowrap}.mobileNav{display:none}
+@media(max-width:760px){
+ body{overflow:hidden;padding-top:env(safe-area-inset-top);background:#090b10}
+ .app{display:block;height:100dvh}
+ .sidebar{display:none}
+ .main{height:100dvh;padding:18px 15px calc(94px + env(safe-area-inset-bottom));overflow-y:auto}
+ .top{margin-bottom:16px}.title h1{font-size:25px}.title p{font-size:13px}.topActions{display:none}
+ .grid{display:block}.card{margin-bottom:14px;border-radius:20px;padding:17px}.balance,.salary,.section,.sidecard{min-height:auto}.big{font-size:42px;margin:7px 0 12px}
+ .movement{grid-template-columns:43px 1fr auto;padding:10px 4px}.movement .deleteMini{grid-column:2/4;justify-self:end}.mname{font-size:14px}.mmeta{font-size:11px}.amountText{font-size:14px}
+ .statsGrid{grid-template-columns:1fr 1fr;gap:10px}.metric{padding:14px}.metric b{font-size:21px}.chart{gap:7px;height:230px;overflow-x:auto}.col{min-width:45px}
+ .formCard{max-width:none}.formGrid{grid-template-columns:1fr}.field.full{grid-column:auto}.toolbar{flex-direction:column}.search,.filter{width:100%}
+ .mobileNav{position:fixed;z-index:50;display:grid;grid-template-columns:repeat(5,1fr);left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));background:rgba(18,22,30,.94);border:1px solid #2b3240;border-radius:22px;padding:7px;box-shadow:0 20px 55px rgba(0,0,0,.5);backdrop-filter:blur(18px)}
+ .mobileNav button{border:0;background:transparent;color:#8f99a9;border-radius:15px;padding:8px 3px;font-size:10px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:3px}.mobileNav button span{font-size:19px;line-height:1}.mobileNav button.active{color:var(--green);background:#18231c}
+ .toast{left:16px;right:16px;bottom:calc(92px + env(safe-area-inset-bottom));text-align:center}
+ .modalBack{align-items:end;padding:0}.modal{width:100%;max-height:88dvh;overflow:auto;border-radius:25px 25px 0 0;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+ .installHint{display:block;background:#151b24;border:1px solid #293241;border-radius:17px;padding:13px 14px;color:#c8d0dc;font-size:12px;margin-bottom:14px}
+}
+</style>
+
+</head>
+<body>
+<div class="splash" id="splash"><div class="splashLogo"><div class="logo">€</div><h1>Portafoglio</h1><p>Il tuo budget, sotto controllo.</p></div></div>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo">€</div><div>Porta<span>foglio</span></div></div>
+  <button class="navbtn active" data-view="home"><span class="navicon">⌂</span><span class="txt">Home</span></button>
+  <button class="navbtn" data-view="add"><span class="navicon">＋</span><span class="txt">Aggiungi</span></button>
+  <button class="navbtn" data-view="history"><span class="navicon">↕</span><span class="txt">Movimenti</span></button>
+  <button class="navbtn" data-view="stats"><span class="navicon">◔</span><span class="txt">Statistiche</span></button>
+  <button class="navbtn" data-view="settings"><span class="navicon">⚙</span><span class="txt">Impostazioni</span></button>
+  <div class="spacer"></div><div class="privacy">🔒 Dati salvati esclusivamente su questo PC.</div>
+</aside>
+<main class="main">
+<section id="home" class="view active">
+  <div class="top"><div class="title"><h1 id="greeting">Buonasera 👋</h1><p>Panoramica del tuo portafoglio</p></div><div class="topActions"><button class="secondary" onclick="openAdd('income')">＋ Entrata</button><button class="primary" onclick="openAdd('expense')">＋ Nuova spesa</button></div></div>
+  <div class="grid">
+    <div class="card balance"><div class="label">SALDO DISPONIBILE</div><div class="big" id="balance">€0,00</div><div class="chips"><div class="chip">Entrate <b class="income" id="incomeSum">€0</b></div><div class="chip">Uscite <b class="expense" id="expenseSum">€0</b></div><div class="chip">Risparmio <b id="savePct">0%</b></div></div><div class="balanceDecor"></div></div>
+    <div class="card salary"><div class="row"><div><div class="label">PROSSIMO STIPENDIO</div><h2 id="salaryDate">Non impostato</h2></div><div class="icon">💶</div></div><div class="row" style="margin-top:18px"><span class="label">Importo mensile</span><b id="salaryAmount">€0,00</b></div><div class="progress"><i id="cycleProgress" style="width:0%"></i></div><div class="row" style="margin-top:8px"><small class="label">Ciclo stipendio</small><small class="label" id="cyclePct">0%</small></div></div>
+    <div class="card section"><div class="row"><h3>Ultimi movimenti</h3><button class="secondary" onclick="showView('history')">Vedi tutti</button></div><div class="movements" id="recent"></div></div>
+    <div class="card sidecard"><div class="row"><h3>Spese per categoria</h3><span class="label">ciclo corrente</span></div><div class="categories" id="catsHome"></div></div>
+  </div>
+</section>
+<section id="add" class="view">
+  <div class="top"><div class="title"><h1>Aggiungi movimento</h1><p>Registra una spesa o un'entrata</p></div></div>
+  <div class="card formCard"><div class="formGrid"><div class="field"><label>Tipo</label><select id="type"><option value="expense">Spesa</option><option value="income">Entrata</option></select></div><div class="field"><label>Importo (€)</label><input id="amount" type="number" step="0.01" min="0" placeholder="0,00"></div><div class="field"><label>Categoria</label><select id="category"></select></div><div class="field"><label>Data</label><input id="date" type="date"></div><div class="field full"><label>Descrizione</label><input id="description" placeholder="Es. Spesa supermercato"></div></div><div class="actions"><button class="secondary" onclick="clearForm()">Pulisci</button><button class="primary" onclick="saveMovement()">Salva movimento</button></div></div>
+</section>
+<section id="history" class="view">
+  <div class="top"><div class="title"><h1>Movimenti</h1><p>Storico completo di entrate e uscite</p></div><button class="primary" onclick="openAdd('expense')">＋ Aggiungi</button></div>
+  <div class="toolbar"><input id="searchMovement" class="search" placeholder="Cerca descrizione o categoria..." oninput="renderMovements()"><select id="filterMovement" class="filter" onchange="renderMovements()"><option value="all">Tutti</option><option value="expense">Solo spese</option><option value="income">Solo entrate</option></select></div>
+  <div class="card"><div id="allMovements" class="movements"></div></div>
+</section>
+<section id="stats" class="view">
+  <div class="top"><div class="title"><h1>Statistiche</h1><p>Come stai spendendo i tuoi soldi</p></div></div>
+  <div class="statsGrid"><div class="metric"><span class="label">SALDO</span><b id="statBalance">€0</b></div><div class="metric"><span class="label">ENTRATE</span><b class="income" id="statIncome">€0</b></div><div class="metric"><span class="label">USCITE</span><b class="expense" id="statExpense">€0</b></div><div class="metric"><span class="label">RISPARMIO</span><b id="statSave">0%</b></div></div>
+  <div class="grid"><div class="card section"><h3>Spese ultimi 6 mesi</h3><div class="chart" id="chart"></div></div><div class="card sidecard"><h3>Distribuzione spese</h3><div class="donutWrap"><div class="donut" id="donut"><div class="donutCenter"><div><b id="donutTotal">€0</b><small>spese ciclo</small></div></div></div><div class="legend" id="legend"></div></div></div><div class="card" style="grid-column:1/-1"><div class="row"><h3>Budget categorie</h3><span class="label">ciclo corrente</span></div><div class="categories" id="budgetStats"></div></div></div>
+</section>
+<section id="settings" class="view">
+  <div class="top"><div class="title"><h1>Impostazioni</h1><p>Stipendio, giorno di accredito e budget</p></div></div>
+  <div class="split"><div class="card"><h3 style="margin-top:0">Stipendio</h3><div class="formGrid"><div class="field"><label>Stipendio mensile (€)</label><input id="setSalary" type="number" step="0.01"></div><div class="field"><label>Giorno accredito stipendio</label><input id="setDay" type="number" min="1" max="28"></div><div class="field full"><label>Accredito automatico</label><select id="setAutoSalary"><option value="yes">Sì, registra automaticamente lo stipendio</option><option value="no">No, lo inserisco manualmente</option></select></div></div></div><div class="card"><h3 style="margin-top:0">Backup dei dati</h3><div class="infoBox"><b>I tuoi dati sono locali</b><span class="label">Puoi esportare un backup JSON e reimportarlo in qualsiasi momento.</span></div><div class="settingsActions" style="margin-top:14px"><button class="secondary" onclick="exportData()">Esporta backup</button><button class="secondary" onclick="document.getElementById('importFile').click()">Importa backup</button><input id="importFile" class="fileInput" type="file" accept="application/json" onchange="importData(event)"></div></div></div>
+  <div class="card" style="margin-top:18px"><div class="row"><h3>Budget categorie</h3><span class="label">limite per ciclo</span></div><div id="budgetFields" class="categories"></div><div class="actions"><button class="secondary danger" onclick="resetData()">Azzera tutti i dati</button><button class="primary" onclick="saveSettings()">Salva impostazioni</button></div></div>
+</section>
+</main></div>
+<div id="modalBack" class="modalBack"><div class="modal"><div class="row"><h2>Modifica movimento</h2><button class="secondary" onclick="closeModal()">✕</button></div><div id="modalContent"></div></div></div><div id="toast" class="toast">Salvato</div>
+<script src="app.js"></script>
+</body></html>
