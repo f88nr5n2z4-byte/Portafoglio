@@ -1,1 +1,1 @@
-window.PORTAFOGLIO_CLOUD=true;
+window.CLOUD={url:'https://dlqrhteqodkdkvmrwktu.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscXJodGVxb2RrZGt2bXJ3a3R1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4MjMwMDEsImV4cCI6MjEwMjM5OTAwMX0.30GmZ8ExVQKCQrCCInI7Brm6kvxBAjZSOBnesQa5v5g',table:'Scrivi Movimenti'};
