@@ -39,6 +39,8 @@
 </main></div>
 <div id="modalBack" class="modalBack"><div class="modal"><div class="row"><h2>Modifica movimento</h2><button class="secondary" onclick="closeModal()">✕</button></div><div id="modalContent"></div></div></div><div id="toast" class="toast">Salvato</div>
 <script src="app.js?v=3"></script>
+ <script src="cloud.js"></script>
+<script src="cloud-sync.js"></script>
 <script>
 (function(){const names={home:'Portafoglio',add:'Nuovo movimento',history:'Movimenti',stats:'Statistiche',settings:'Impostazioni'};const original=window.showView;window.showView=function(id){original(id);const title=document.getElementById('mobileTitle'),add=document.getElementById('mobileAdd'),header=document.getElementById('mobileHeader');if(title)title.textContent=names[id]||'Portafoglio';if(!header)return;header.firstElementChild.outerHTML=id==='home'?'<span class="headerSpacer"></span>':'<button class="backBtn" onclick="clearForm();showView(\'home\')">‹ Indietro</button>';if(add)add.style.visibility=id==='home'?'visible':'hidden';};document.addEventListener('DOMContentLoaded',()=>window.showView('home'));})();
 </script>
