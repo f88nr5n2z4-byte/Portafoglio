@@ -1,10 +1,10 @@
-// Regole turnazione aggiornate: centrale = turno continuativo di sala che parte dentro la fascia mattina (dopo le 07:00 e prima delle 13:30) e termina nel pomeriggio.
+// Regole turnazione aggiornate: centrale = turno continuativo di sala che parte dentro la fascia mattina (dopo le 07:00 e prima delle 13:30) e termina dopo le 14:30.
 function isCentralShift(s){
   if(!s||ABSENCES.has(s))return false;
   const ps=spans(s);
   if(ps.length!==1)return false;
   const [start,end]=ps[0];
-  return start>hm('07:00')&&start<hm('13:30')&&end>hm('13:30');
+  return start>hm('07:00')&&start<hm('13:30')&&end>hm('14:30');
 }
 
 validateWeek=function(w){
