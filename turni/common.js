@@ -16,3 +16,32 @@ function hm(t){const[a,b]=String(t).split(':').map(Number);return a*60+b}functio
 function weekAfternoonGroup(w){const mon=0;if((w.schedule['Umberto']||[])[mon]&&present((w.schedule['Umberto']||[])[mon],'13:30'))return T1;if(((w.schedule['Fabio']||[])[mon]&&present((w.schedule['Fabio']||[])[mon],'13:30'))||((w.schedule['Emanuele']||[])[mon]&&present((w.schedule['Emanuele']||[])[mon],'13:30')))return T2;return null}
 function validateWeek(w){const issues=[];const aft=weekAfternoonGroup(w);w.dates.forEach((iso,i)=>{const day=new Date(iso+'T12:00:00').getDay(),active=Object.entries(w.schedule).filter(([,a])=>a[i]&&!ABSENCES.has(a[i]));if(day===0){if(active.length!==4)issues.push(`${fmtDate(iso)}: domenica ${active.length} persone invece di 4`);if(aft){const wrong=active.map(([n])=>n).filter(n=>!aft.includes(n));if(wrong.length)issues.push(`${fmtDate(iso)}: domenica lavorano persone del turno sbagliato (${wrong.join(', ')})`)}return}const at630=active.filter(([,a])=>starts(a[i],'06:30')).length,at7=active.filter(([,a])=>present(a[i],'07:00')).length,at11=active.filter(([,a])=>present(a[i],'11:00')).length,close=active.filter(([,a])=>present(a[i],'20:29')).length,cash=active.filter(([n,a])=>CASH.has(n)&&present(a[i],'13:30')).length,r1=active.filter(([n,a])=>RESP.has(n)&&starts(a[i],'06:30')).length,r2=active.filter(([n,a])=>RESP.has(n)&&present(a[i],'17:00')&&present(a[i],'20:29')).length,central=active.filter(([n,a])=>SALA.has(n)&&['10:00-17:00','11:00-18:00'].includes(a[i])).length;if(at630<2)issues.push(`${fmtDate(iso)}: solo ${at630} alle 06:30`);if(at7<4)issues.push(`${fmtDate(iso)}: solo ${at7} alle 07:00`);if(close!==4)issues.push(`${fmtDate(iso)}: ${close} in chiusura invece di 4`);if(!cash)issues.push(`${fmtDate(iso)}: manca cassa alle 13:30`);if(!r1)issues.push(`${fmtDate(iso)}: manca responsabile mattina`);if(!r2)issues.push(`${fmtDate(iso)}: manca responsabile pomeriggio/chiusura`);if([1,3,4].includes(day)){if(at11<5)issues.push(`${fmtDate(iso)}: meno di 5 alle 11`);if(central!==1)issues.push(`${fmtDate(iso)}: centrali sala = ${central} invece di 1`)}if(day===6){const rests=Object.entries(w.schedule).filter(([,a])=>a[i]==='RIPOSO').map(([n])=>n);if(rests.length)issues.push(`${fmtDate(iso)}: riposo sabato ${rests.join(', ')}`)}});if(aft){for(const n of aft){const arr=w.schedule[n]||[];const fullyAway=arr.every(s=>['FERIE','PERMESSO','MATERNITÀ','MALATTIA','—'].includes(s));if(!fullyAway&&!arr.includes('RIPOSO'))issues.push(`${n}: manca il riposo settimanale del turno pomeriggio`)}}if(w.schedule.Marco){const h=weekHours(w,'Marco');if(w.dates.length===7&&h!==16)issues.push(`Marco: ${h}h invece di 16h`)}return issues}
 function statusBadge(s){const map={'DA VALUTARE':['Da valutare','pending'],'ACCETTATA':['Accettata','accepted'],'RIFIUTATA':['Rifiutata','rejected']};const x=map[s]||map['DA VALUTARE'];return `<span class="reqstatus ${x[1]}">${x[0]}</span>`}
+
+// Modalità visualizzazione persistente: telefono / PC
+(function(){
+ const KEY='tm_display_mode';
+ function preferred(){const saved=localStorage.getItem(KEY);if(saved==='phone'||saved==='pc')return saved;return window.matchMedia('(min-width: 900px)').matches?'pc':'phone'}
+ function apply(mode){localStorage.setItem(KEY,mode);document.documentElement.dataset.displayMode=mode;document.body?.classList.toggle('mode-pc',mode==='pc');document.body?.classList.toggle('mode-phone',mode==='phone');const b=document.getElementById('displayModeBtn');if(b){b.innerHTML=mode==='pc'?'💻 <span>PC</span>':'📱 <span>Telefono</span>';b.setAttribute('aria-label',mode==='pc'?'Modalità PC attiva. Tocca per passare a Telefono':'Modalità Telefono attiva. Tocca per passare a PC')}}
+ const style=document.createElement('style');style.textContent=`
+ #displayModeBtn{position:fixed;right:10px;top:max(10px,env(safe-area-inset-top));z-index:9999;border:1px solid rgba(0,61,124,.18);background:#fff;color:#003d7c;box-shadow:0 5px 18px rgba(0,40,80,.14);border-radius:999px;padding:8px 11px;font-weight:950;font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer}
+ #displayModeBtn:active{transform:scale(.97)}
+ body.mode-phone{--display-max:760px}
+ body.mode-pc{--display-max:1440px}
+ body.mode-pc .main,body.mode-pc .review-main,body.mode-pc .nt,body.mode-pc .turnations,body.mode-pc .calreq,body.mode-pc .login-inner{max-width:1440px!important;margin-left:auto!important;margin-right:auto!important}
+ body.mode-pc .toprow,body.mode-pc .review-head-inner{max-width:1440px!important;margin-left:auto!important;margin-right:auto!important}
+ body.mode-pc .primary-calendar{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:10px!important}
+ body.mode-pc .admin-week-strip{grid-template-columns:repeat(7,minmax(120px,1fr))!important;gap:7px!important}
+ body.mode-pc .admin-turn-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+ body.mode-pc .shift-grid{grid-template-columns:minmax(180px,.7fr) minmax(250px,1fr) minmax(250px,1fr)!important}
+ body.mode-pc .miniweek{grid-template-columns:150px repeat(7,minmax(125px,1fr))!important;overflow:visible!important}
+ body.mode-pc .request-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+ body.mode-pc .day-grid{grid-template-columns:repeat(7,minmax(90px,1fr))!important}
+ body.mode-pc .schedule-focus,body.mode-pc .admin-schedule-focus,body.mode-pc .card,body.mode-pc .sheet-section{border-radius:16px!important}
+ body.mode-pc .editor-back{align-items:center!important}
+ body.mode-pc .editor{border-radius:18px!important;max-width:680px!important}
+ body.mode-phone .main,body.mode-phone .review-main,body.mode-phone .nt,body.mode-phone .turnations,body.mode-phone .calreq{max-width:760px!important;margin-left:auto!important;margin-right:auto!important}
+ @media(max-width:700px){#displayModeBtn span{display:none}#displayModeBtn{width:38px;height:38px;justify-content:center;padding:0}}
+ `;document.head.appendChild(style);
+ const start=()=>{const mode=preferred();apply(mode);if(!document.getElementById('displayModeBtn')){const b=document.createElement('button');b.id='displayModeBtn';b.type='button';document.body.appendChild(b);b.onclick=()=>apply((localStorage.getItem(KEY)||preferred())==='pc'?'phone':'pc');apply(mode)}};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
