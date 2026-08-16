@@ -1,4 +1,4 @@
-const CACHE='torre-maura-turni-v23';
+const CACHE='torre-maura-turni-v24';
 const ASSETS=['./','index.html','styles.css','common.js','api-routing.js','rules-fix.js','app.js','request-options-patch.js','dashboard-patch.js','home-menu.js','calendar-request.html','calendar-request.js','new-turns.html','new-turns.js','new-turns-fix.js','turnations.html','turnations.js','admin.html','admin.js','requests.html','requests.js','inbox.html','inbox.js','inbox-fix.js','review-change.html','review-change.js','review-change-fix.js','review-persist-fix.js','review-error-days.js','avvisi.html','avvisi.js','manifest.webmanifest','icon.svg','schedule.json'];
 self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
