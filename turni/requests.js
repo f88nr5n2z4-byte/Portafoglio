@@ -1,1 +1,23 @@
-const u=requireUser(false),app=document.getElementById('app');if(u){app.innerHTML=`<div class="app-shell"><div class="brandbar"></div><header class="topbar"><div class="toprow"><a class="back" href="index.html">‹ Turni</a><div class="brand-mini"><div class="mini-mark">E</div><div><strong>Richieste</strong><span>${esc(u.display)}</span></div></div><button class="logout" onclick="logout()">Esci</button></div></header><main class="main"><section class="hero requesthero"><div class="eyebrow">Comunicazioni</div><h2>Scrivi una richiesta</h2><p>Riposi, cambi turno, esigenze personali o qualsiasi comunicazione.</p></section><section class="request-card"><div class="field"><label>Messaggio</label><textarea id="message" class="bigtextarea" maxlength="1000" placeholder="Es. Salve, mi servirebbe giovedì prossimo di riposo"></textarea></div><button class="primary" id="send">Invia richiesta</button><div id="result"></div></section><div class="section-title"><h3>Le mie richieste</h3></div><div id="mine" class="request-list"></div></main></div>`;function draw(){const mine=requestStore().filter(r=>r.name===u.display);document.getElementById('mine').innerHTML=mine.length?mine.map(r=>`<article class="request-item"><div class="request-meta">${esc(r.displayDate)}</div><p>${esc(r.message)}</p></article>`).join(''):'<div class="empty">Non hai ancora inviato richieste da questo dispositivo.</div>'}draw();document.getElementById('send').onclick=()=>{const text=document.getElementById('message').value.trim();if(!text)return;const now=new Date(),req={id:crypto.randomUUID?.()||String(Date.now()),name:u.display,message:text,iso:now.toISOString(),displayDate:new Intl.DateTimeFormat('it-IT',{dateStyle:'short',timeStyle:'short'}).format(now)};saveRequestLocal(req);document.getElementById('message').value='';document.getElementById('result').innerHTML='<div class="success">Richiesta salvata.</div>';draw()}}
+const u=requireUser(false),app=document.getElementById('app');
+if(u){
+  app.innerHTML=`<div class="app-shell"><div class="brandbar"></div><header class="topbar"><div class="toprow"><a class="back" href="index.html">‹ Turni</a><div class="brand-mini"><div class="mini-mark">E</div><div><strong>Richieste</strong><span>${esc(u.display)}</span></div></div><button class="logout" onclick="logout()">Esci</button></div></header><main class="main"><section class="hero requesthero"><div class="eyebrow">Comunicazioni</div><h2>Scrivi una richiesta</h2><p>Riposi, cambi turno, esigenze personali o qualsiasi comunicazione.</p></section><section class="request-card"><div class="field"><label>Messaggio</label><textarea id="message" class="bigtextarea" maxlength="2000" placeholder="Es. Salve, mi servirebbe giovedì prossimo di riposo"></textarea></div><button class="primary" id="send">Invia richiesta</button><div id="result"></div></section><div class="section-title"><h3>Le mie richieste</h3><span>Sincronizzate</span></div><div id="mine" class="request-list"><div class="empty">Caricamento…</div></div></main></div>`;
+  async function draw(){
+    try{
+      const r=await api('list_my_requests');
+      const list=r.requests||[];
+      document.getElementById('mine').innerHTML=list.length?list.map(x=>`<article class="request-item"><div class="request-meta">${esc(formatDateTime(x.created_at))}</div><p>${esc(x.message)}</p></article>`).join(''):'<div class="empty">Non hai ancora inviato richieste.</div>';
+    }catch(e){document.getElementById('mine').innerHTML=`<div class="error">${esc(e.message)}</div>`}
+  }
+  draw();
+  document.getElementById('send').onclick=async()=>{
+    const text=document.getElementById('message').value.trim();if(!text)return;
+    const btn=document.getElementById('send');btn.disabled=true;btn.textContent='Invio…';
+    try{
+      await api('create_request',{method:'POST',body:{message:text}});
+      document.getElementById('message').value='';
+      document.getElementById('result').innerHTML='<div class="success">Richiesta inviata a Eurospin.</div>';
+      await draw();
+    }catch(e){document.getElementById('result').innerHTML=`<div class="error">${esc(e.message)}</div>`}
+    finally{btn.disabled=false;btn.textContent='Invia richiesta'}
+  };
+}
