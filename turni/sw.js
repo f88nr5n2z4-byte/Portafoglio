@@ -1,7 +1,7 @@
-const CACHE='torre-maura-turni-v9';
+const CACHE='torre-maura-turni-v12';
 const ASSETS=['./','index.html','styles.css','common.js','app.js','admin.html','admin.js','requests.html','requests.js','inbox.html','inbox.js','avvisi.html','avvisi.js','manifest.webmanifest','icon.svg','schedule.json'];
 self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy));return response}).catch(()=>caches.match(event.request)))});
-self.addEventListener('push',event=>{let data={title:'Eurospin Torre Maura',body:'Nuovo aggiornamento',url:'./'};if(event.data){try{data={...data,...event.data.json()}}catch{}}event.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:'icon.svg',data:{url:data.url}}))});
-self.addEventListener('notificationclick',event=>{event.notification.close();const url=event.notification.data&&event.notification.data.url?event.notification.data.url:'./';event.waitUntil(clients.openWindow(url))});
+self.addEventListener('push',event=>{let data={title:'Eurospin Torre Maura',body:'Nuovo aggiornamento',url:'./'};if(event.data){try{data={...data,...event.data.json()}}catch{}}event.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:'icon.svg',badge:'icon.svg',data:{url:data.url}}))});
+self.addEventListener('notificationclick',event=>{event.notification.close();const url=event.notification.data&&event.notification.data.url?event.notification.data.url:'./';event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(const c of list){if('focus'in c)return c.navigate(url).then(()=>c.focus())}return clients.openWindow(url)}))});
