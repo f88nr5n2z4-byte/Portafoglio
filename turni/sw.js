@@ -1,5 +1,5 @@
-const CACHE='torre-maura-turni-v15';
-const ASSETS=['./','index.html','styles.css','common.js','app.js','request-options-patch.js','admin.html','admin.js','requests.html','requests.js','inbox.html','inbox.js','review-change.html','review-change.js','avvisi.html','avvisi.js','manifest.webmanifest','icon.svg','schedule.json'];
+const CACHE='torre-maura-turni-v16';
+const ASSETS=['./','index.html','styles.css','common.js','app.js','request-options-patch.js','dashboard-patch.js','calendar-request.html','calendar-request.js','new-turns.html','new-turns.js','turnations.html','turnations.js','admin.html','admin.js','requests.html','requests.js','inbox.html','inbox.js','review-change.html','review-change.js','avvisi.html','avvisi.js','manifest.webmanifest','icon.svg','schedule.json'];
 self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy));return response}).catch(()=>caches.match(event.request)))});
