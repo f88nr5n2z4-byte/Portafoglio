@@ -1,0 +1,4 @@
+// Non modificare mai automaticamente giornate di assenza/riposo/permesso.
+repair=function(w){for(let pass=0;pass<5;pass++){const base=validateWeek(w).length;if(!base)break;let best=null;for(let di=0;di<7;di++){for(const n of Object.keys(w.schedule)){if(locked.has(`${n}|${di}`))continue;const old=w.schedule[n][di];if(ABSENCES.has(old))continue;for(const s of candidates(n,old)){if(s===old||ABSENCES.has(s))continue;w.schedule[n][di]=s;const score=validateWeek(w).length;if(score<base&&(!best||score<best.score))best={n,di,s,old,score};w.schedule[n][di]=old}}}if(!best)break;w.schedule[best.n][best.di]=best.s}return w};
+// Rigenera la bozza con la regola corretta se il primo boot era già partito.
+setTimeout(()=>{try{if(official?.weeks?.length){locked.clear();const prev=official.weeks.at(-1);draft=buildBase(prev);const used=applyAccepted(draft);repair(draft);draw(used)}}catch(e){console.warn('new turns safe repair',e)}},0);
