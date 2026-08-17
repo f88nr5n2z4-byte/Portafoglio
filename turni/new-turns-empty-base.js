@@ -5,14 +5,14 @@
    const r=await originalApi('get_schedule');
    if(r?.data&&Array.isArray(r.data.weeks)){
     if(r.data.weeks.length)return r.data;
-    const seed=await fetch('schedule.json',{cache:'no-store'}).then(x=>x.json());
+    const seed=await fetch('generator-seed.json',{cache:'no-store'}).then(x=>x.json());
     const base=structuredClone(seed?.weeks?.at(-1));
-    if(!base) return {...r.data,weeks:[]};
+    if(!base)return {...r.data,weeks:[]};
     base.__technicalSeed=true;
     return {...r.data,weeks:[base],__emptyOriginal:true};
    }
   }catch(e){console.warn('empty schedule base',e)}
-  return fetch('schedule.json',{cache:'no-store'}).then(r=>r.json());
+  return {weeks:[]};
  };
  api=async function(action,opts={}){
   if(action==='save_schedule'&&opts?.body?.data&&Array.isArray(opts.body.data.weeks)){
