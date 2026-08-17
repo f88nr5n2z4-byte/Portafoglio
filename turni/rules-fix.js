@@ -28,14 +28,12 @@ validateWeek=function(w){
   const prev=previousWeekForRules(w);
   const prevAft=prev?weekAfternoonGroup(prev):null;
 
-  // Rotazione settimanale: il gruppo pomeriggio deve cambiare rispetto alla settimana precedente.
   if(prevAft&&aft&&prevAft===aft)issues.push('Rotazione: Turno 1 / Turno 2 non hanno scambiato mattina e pomeriggio rispetto alla settimana precedente');
 
   w.dates.forEach((iso,i)=>{
     const day=new Date(iso+'T12:00:00').getDay();
     const active=Object.entries(w.schedule).filter(([,a])=>a[i]&&!ABSENCES.has(a[i]));
 
-    // DOMENICA: esattamente 4, solo gruppo di competenza, tutti 08:00-13:00.
     if(day===0){
       if(active.length!==4)issues.push(`${fmtDate(iso)}: domenica ${active.length} persone invece di 4`);
       const wrongHours=active.filter(([,a])=>!exactSundayShift(a[i])).map(([n])=>n);
@@ -62,25 +60,20 @@ validateWeek=function(w){
     if(close!==4)issues.push(`${fmtDate(iso)}: ${close} persone in chiusura invece di 4`);
     if(!r1)issues.push(`${fmtDate(iso)}: manca responsabile mattina alle 06:30`);
     if(!r2)issues.push(`${fmtDate(iso)}: manca responsabile pomeriggio/chiusura`);
-
-    // Cassa: segnala la mancanza della copertura dedicata. La sala può essere usata solo come eccezione amministrativa.
     if(!cash7)issues.push(`${fmtDate(iso)}: manca cassa dedicata alle 07:00`);
     if(!cash1330)issues.push(`${fmtDate(iso)}: manca cassa dedicata alle 13:30`);
 
-    // Lun / Mer / Gio: >=5 alle 11 e un solo centrale valido, indipendente dal ruolo.
     if([1,3,4].includes(day)){
       if(at11<5)issues.push(`${fmtDate(iso)}: ${at11} persone alle 11:00 invece di almeno 5`);
       if(central!==1)issues.push(`${fmtDate(iso)}: centrali = ${central} invece di 1`);
     }
 
-    // Sabato nessun RIPOSO programmato.
     if(day===6){
       const rests=Object.entries(w.schedule).filter(([,a])=>a[i]==='RIPOSO').map(([n])=>n);
       if(rests.length)issues.push(`${fmtDate(iso)}: riposo sabato (${rests.join(', ')})`);
     }
   });
 
-  // Ogni lavoratore del gruppo pomeriggio deve avere il riposo settimanale, salvo assenza protetta per tutta la settimana.
   if(aft){
     for(const n of aft){
       const arr=w.schedule[n]||[];
@@ -89,7 +82,9 @@ validateWeek=function(w){
     }
   }
 
-  // Ore contrattuali: non forzare le ore quando ci sono ferie/malattia/maternità/permesso.
+  // Ore contrattuali: niente straordinari automatici.
+  // Senza assenze protette il target deve essere ESATTO: full-time 40h, Giada 30h, Marco 16h.
+  // Umberto/Fabio/Emanuele sono forfettari e restano flessibili.
   for(const n of Object.keys(w.schedule)){
     const arr=w.schedule[n]||[],h=weekHours(w,n);
     if(hasProtectedAbsence(arr))continue;
@@ -101,7 +96,9 @@ validateWeek=function(w){
       if(w.dates.length===7&&h!==30)issues.push(`Giada: ${h}h invece di 30h`);
       continue;
     }
-    if(!FORF.has(n)&&w.dates.length===7&&h<40)issues.push(`${n}: ${h}h invece delle 40h contrattuali`);
+    if(!FORF.has(n)&&w.dates.length===7&&h!==40){
+      issues.push(`${n}: ${h}h invece delle 40h contrattuali${h>40?' (straordinario da evitare salvo necessità reale)':''}`);
+    }
   }
 
   return [...new Set(issues)];
