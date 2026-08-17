@@ -1,22 +1,23 @@
 (()=>{
 'use strict';
-const KEY='tm_optimize_round_v76';
-let timer=null;
+let dirty=false;
+function ensureButton(){
+ if(document.getElementById('tmApplyOptimizations'))return;
+ const root=document.getElementById('app');if(!root)return;
+ const btn=document.createElement('button');
+ btn.id='tmApplyOptimizations';btn.type='button';btn.textContent='Applica correzioni e ricalcola';
+ btn.style.cssText='position:fixed;right:14px;bottom:18px;z-index:15000;border:0;border-radius:14px;padding:13px 16px;background:#0067b1;color:#fff;font-weight:950;box-shadow:0 8px 24px rgba(0,0,0,.25);display:none';
+ btn.onclick=()=>{btn.disabled=true;btn.textContent='Ricalcolo…';location.reload()};
+ document.body.appendChild(btn);
+}
 window.tmOptimizationChanged=function(source='optimizer'){
  if(window.__tmFatal)return;
- window.__tmOptimizationDirty=true;
- clearTimeout(timer);
- timer=setTimeout(()=>{
-  const n=Number(sessionStorage.getItem(KEY)||0);
-  if(n>=2){console.warn('Ottimizzazione fermata dopo 2 ricalcoli',source);return}
-  sessionStorage.setItem(KEY,String(n+1));
-  location.replace(location.pathname+'?v=76&opt='+(n+1)+'&t='+Date.now());
- },900);
+ dirty=true;window.__tmOptimizationDirty=true;ensureButton();
+ const b=document.getElementById('tmApplyOptimizations');if(b){b.style.display='block';b.title='Correzioni pronte da '+source}
 };
 window.tmOptimizationStable=function(){
- setTimeout(()=>{
-  if(!window.__tmOptimizationDirty)sessionStorage.removeItem(KEY);
- },2500);
+ ensureButton();
+ if(!dirty){const b=document.getElementById('tmApplyOptimizations');if(b)b.style.display='none'}
 };
-window.addEventListener('load',()=>window.tmOptimizationStable());
+window.addEventListener('load',()=>{ensureButton();window.tmOptimizationStable()});
 })();
