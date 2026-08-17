@@ -6,6 +6,16 @@
  }
  function persistDraft(){try{const pd=JSON.parse(localStorage.getItem('tm_planner_draft')||'{}');pd.week=draft;pd.issues=validateWeek(draft);pd.createdAt=new Date().toISOString();localStorage.setItem('tm_planner_draft',JSON.stringify(pd))}catch{}}
  function refreshReview(){const active=document.querySelector('#turnReviewBack [data-review-day].active');if(active)active.click()}
+ function refreshMainAndReview(di){
+  const keepDay=di;
+  const reviewOpen=!!document.getElementById('turnReviewBack');
+  if(reviewOpen)document.getElementById('turnReviewBack')?.remove();
+  draw([]);
+  if(reviewOpen)setTimeout(()=>{
+   const btn=document.getElementById('checkTurnsBtn');
+   if(btn){btn.click();setTimeout(()=>{const day=document.querySelector(`#turnReviewBack [data-review-day="${keepDay}"]`);if(day)day.click()},0)}
+  },0);
+ }
  function openEditor(n,di){
   const cur=draft.schedule[n][di]||'—',ps=spans(cur),fmt=x=>`${String(Math.floor(x/60)).padStart(2,'0')}:${String(x%60).padStart(2,'0')}`;
   document.body.insertAdjacentHTML('beforeend',`<div class="tr-edit-back" id="trEditBack"><div class="tr-edit-sheet"><div class="tr-edit-title"><div><b>${esc(n)}</b><small>${esc(fmtDate(draft.dates[di]))}</small></div><button id="trEditClose">×</button></div><div class="tr-edit-current">Turno attuale: <b>${esc(cur)}</b></div><div class="tr-edit-tabs"><button class="active" data-tetab="quick">Rapido</button><button data-tetab="status">Assenza/Stato</button><button data-tetab="custom">Personalizza</button></div><div id="teQuick" class="tr-edit-tab"><select id="teQuickShift">${SHIFT_OPTIONS.filter(s=>!ABSENCES.has(s)).map(s=>`<option ${s===cur?'selected':''}>${esc(s)}</option>`).join('')}</select></div><div id="teStatus" class="tr-edit-tab hidden"><div class="tr-edit-statuses">${['RIPOSO','FERIE','MALATTIA','MATERNITÀ','PERMESSO'].map(s=>`<button type="button" data-testatus="${s}">${s}</button>`).join('')}</div></div><div id="teCustom" class="tr-edit-tab hidden"><b>Prima fascia</b><div class="two"><label>Inizio<input id="teS1" type="time" step="900" value="${ps[0]?fmt(ps[0][0]):'07:00'}"></label><label>Fine<input id="teE1" type="time" step="900" value="${ps[0]?fmt(ps[0][1]):'14:00'}"></label></div><b>Seconda fascia <small>(opzionale)</small></b><div class="two"><label>Inizio<input id="teS2" type="time" step="900" value="${ps[1]?fmt(ps[1][0]):''}"></label><label>Fine<input id="teE2" type="time" step="900" value="${ps[1]?fmt(ps[1][1]):''}"></label></div><p class="tr-edit-help">Puoi inserire qualsiasi turno continuo o spezzato.</p></div><button class="tr-edit-save" id="trEditSave">Applica modifica</button></div></div>`);
@@ -23,7 +33,11 @@
     s=`${a}-${b}`;
     if(c||z){if(!c||!z||hm(z)<=hm(c)||hm(c)<hm(b))return alert('Controlla la seconda fascia.');s+=` / ${c}-${z}`}
    }
-   draft.schedule[n][di]=s;locked.add(`${n}|${di}`);persistDraft();document.getElementById('trEditBack')?.remove();refreshReview();
+   draft.schedule[n][di]=s;
+   locked.add(`${n}|${di}`);
+   persistDraft();
+   document.getElementById('trEditBack')?.remove();
+   refreshMainAndReview(di);
   };
  }
  function wire(){
