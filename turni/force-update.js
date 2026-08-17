@@ -1,16 +1,11 @@
 (()=>{
  if(!('serviceWorker' in navigator))return;
- const KEY='tm_force_sw_v70';
+ const KEY='tm_force_sw_v71';
  window.addEventListener('load',async()=>{
   try{
-   const reg=await navigator.serviceWorker.register('sw.js?v=70',{scope:'./'});
+   const reg=await navigator.serviceWorker.register('sw.js?v=71',{scope:'./'});
    await reg.update();
-   if(!localStorage.getItem(KEY)){
-    localStorage.setItem(KEY,'1');
-    const reload=()=>location.reload();
-    if(reg.waiting){reg.waiting.postMessage?.({type:'SKIP_WAITING'});setTimeout(reload,250)}
-    else navigator.serviceWorker.addEventListener('controllerchange',reload,{once:true});
-   }
+   if(!localStorage.getItem(KEY))localStorage.setItem(KEY,'1');
   }catch(e){console.warn('force sw update',e)}
  });
 })();
