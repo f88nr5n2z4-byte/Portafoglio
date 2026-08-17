@@ -4,9 +4,9 @@ const box=document.getElementById('app');
 const fail=e=>{console.error(e);if(box)box.innerHTML=`<div class="error" style="margin:20px"><b>Errore Nuovi Turni</b><br>${typeof esc==='function'?esc(e?.message||e):String(e?.message||e)}</div>`};
 (async()=>{
  try{
-  const r=await fetch('monthly-turns-v62.js?v=66',{cache:'no-store'});if(!r.ok)throw new Error(`Motore mensile non caricato (${r.status})`);let c=await r.text();
+  const r=await fetch('monthly-turns-v62.js?v=67',{cache:'no-store'});if(!r.ok)throw new Error(`Motore mensile non caricato (${r.status})`);let c=await r.text();
   const old="function build(y,m){const w=blank(y,m);applyAccepted(w);for(let i=0;i<w.dates.length;i++){const d=new Date(w.dates[i]+'T12:00:00');if(d.getDay()===0)assignSunday(w,i);else{assignResp(w,i);assignOps(w,i)}}return w}";
-  if(!c.includes(old))throw new Error('Motore mensile non compatibile con la riparazione automatica v66');
+  if(!c.includes(old))throw new Error('Motore mensile non compatibile con la riparazione automatica v67');
   const repair=`
 function repairDaySnapshot(w,i){const s={};for(const n of N)s[n]=w.schedule[n][i];return s}
 function repairRestoreDay(w,i,s){for(const n of N)w.schedule[n][i]=s[n]}
@@ -84,7 +84,7 @@ function repairLongerOptions(s){
 function repairMonthlyHours(w){
  const full=O.filter(n=>n!=='Giada'&&n!=='Marco');
  for(const n of full){if(repairProtectedMonth(w,n))continue;let h=repairMonthHours(w,n),guard=0;
-  while(h<170&&guard++<80){let best=null;for(let i=0;i<w.dates.length;i++){const d=new Date(w.dates[i]+'T12:00:00');if(d.getDay()===0||locked.has(n+'|'+i)||!works(w.schedule[n][i]))continue;const old=w.schedule[n][i];for(const s of repairLongerOptions(old)){const gain=hrs(s)-hrs(old);if(gain<=0)continue;const over=Math.max(0,h+gain-170),score=over*100+gain;if(!best||score<best.score)best={i,s,gain,score}}
+  while(h<172&&guard++<80){let best=null;for(let i=0;i<w.dates.length;i++){const d=new Date(w.dates[i]+'T12:00:00');if(d.getDay()===0||locked.has(n+'|'+i)||!works(w.schedule[n][i]))continue;const old=w.schedule[n][i];for(const s of repairLongerOptions(old)){const gain=hrs(s)-hrs(old);if(gain<=0)continue;const over=Math.max(0,h+gain-173),score=over*100+Math.abs(172-(h+gain));if(!best||score<best.score)best={i,s,gain,score}}
    }if(!best)break;w.schedule[n][best.i]=best.s;h=repairMonthHours(w,n)}
  }
  return w;
