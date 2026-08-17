@@ -1,0 +1,37 @@
+(()=>{
+ let reviewDay=0;
+ function firstStart(s){const ps=spans(s);return ps.length?ps[0][0]:null}
+ function dayProblems(w,i){const p=fmtDate(w.dates[i])+':';return validateWeek(w).filter(x=>String(x).startsWith(p))}
+ function classify(s){
+   if(!s||ABSENCES.has(s))return 'absence';
+   const st=firstStart(s);
+   return st!=null&&st<hm('13:30')?'morning':'afternoon';
+ }
+ function openReview(day=0){reviewDay=Math.max(0,Math.min(6,day));document.getElementById('turnReviewBack')?.remove();renderReview()}
+ function renderReview(){
+   const w=draft;if(!w)return;
+   const i=reviewDay,date=w.dates[i],issues=dayProblems(w,i),names=Object.keys(w.schedule);
+   const rows=names.map(n=>({n,s:w.schedule[n][i]||'—'}));
+   const morning=rows.filter(x=>classify(x.s)==='morning');
+   const afternoon=rows.filter(x=>classify(x.s)==='afternoon');
+   const absent=rows.filter(x=>classify(x.s)==='absence');
+   const item=x=>`<div class="tr-person"><b>${esc(x.n)}</b><span>${esc(x.s)}</span></div>`;
+   const issueHtml=issues.length?`<div class="tr-errors"><b>${issues.length} ${issues.length===1?'errore':'errori'} in questo giorno</b>${issues.map(x=>`<span>${esc(x.replace(fmtDate(date)+': ',''))}</span>`).join('')}</div>`:`<div class="tr-ok">✓ Nessun errore in questo giorno</div>`;
+   document.body.insertAdjacentHTML('beforeend',`<div class="tr-back" id="turnReviewBack"><div class="tr-sheet"><div class="tr-head"><div><small>Controllo completo turni</small><h2>${esc(fmtDate(date))}</h2></div><button id="closeTurnReview">×</button></div><div class="tr-tabs">${w.dates.map((d,di)=>`<button class="${di===i?'active':''} ${dayProblems(w,di).length?'bad':''}" data-review-day="${di}"><b>${esc(fmtDate(d).slice(0,3))}</b><span>${new Date(d+'T12:00:00').getDate()}</span>${dayProblems(w,di).length?'<i>!</i>':''}</button>`).join('')}</div>${issueHtml}<div class="tr-cols"><section><h3>☀️ Mattina</h3>${morning.length?morning.map(item).join(''):'<div class="tr-empty">Nessun turno mattina</div>'}</section><section><h3>🌙 Pomeriggio</h3>${afternoon.length?afternoon.map(item).join(''):'<div class="tr-empty">Nessun turno pomeriggio</div>'}</section></div>${absent.length?`<section class="tr-abs"><h3>Assenze / Riposi</h3><div>${absent.map(item).join('')}</div></section>`:''}<div class="tr-foot"><button id="prevReview" ${i===0?'disabled':''}>‹ Giorno prima</button><button id="nextReview" ${i===6?'disabled':''}>Giorno dopo ›</button></div></div></div>`);
+   document.getElementById('closeTurnReview').onclick=()=>document.getElementById('turnReviewBack')?.remove();
+   document.querySelectorAll('[data-review-day]').forEach(b=>b.onclick=()=>{reviewDay=+b.dataset.reviewDay;document.getElementById('turnReviewBack')?.remove();renderReview()});
+   document.getElementById('prevReview').onclick=()=>{if(reviewDay>0){reviewDay--;document.getElementById('turnReviewBack')?.remove();renderReview()}};
+   document.getElementById('nextReview').onclick=()=>{if(reviewDay<6){reviewDay++;document.getElementById('turnReviewBack')?.remove();renderReview()}};
+ }
+ function mountButton(){
+   const cards=[...document.querySelectorAll('.nt .card')];
+   const ruleCard=cards.find(c=>c.querySelector('h3')?.textContent.trim()==='Controllo regole');
+   if(!ruleCard||document.getElementById('checkTurnsBtn'))return;
+   const b=document.createElement('button');b.id='checkTurnsBtn';b.type='button';b.className='check-turns-btn';b.innerHTML='<span>👁️</span><div><b>Controlla turni</b><small>Vedi tutta la settimana, giorno per giorno</small></div><strong>›</strong>';b.onclick=()=>openReview(0);ruleCard.appendChild(b);
+ }
+ const originalDraw=draw;draw=function(...args){const r=originalDraw(...args);setTimeout(mountButton,0);return r};
+ const obs=new MutationObserver(()=>mountButton());obs.observe(document.documentElement,{subtree:true,childList:true});setTimeout(mountButton,0);
+ const style=document.createElement('style');style.textContent=`
+ .check-turns-btn{width:100%;margin-top:10px;border:1px solid #bfd5e5;background:#eef6fc;color:#003d7c;border-radius:14px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;text-align:left}.check-turns-btn>span{font-size:22px}.check-turns-btn div b,.check-turns-btn div small{display:block}.check-turns-btn div b{font-size:14px}.check-turns-btn div small{font-size:10px;color:#637987;margin-top:2px}.check-turns-btn>strong{font-size:22px}.tr-back{position:fixed;inset:0;z-index:20000;background:rgba(0,27,58,.55);padding:10px;display:flex;justify-content:center;align-items:flex-end}.tr-sheet{width:min(900px,100%);max-height:94vh;overflow:auto;background:#f4f7fa;border-radius:22px 22px 12px 12px;padding:12px}.tr-head{display:flex;align-items:center;justify-content:space-between;background:#0067b1;color:#fff;border-radius:15px;padding:12px 14px;border-bottom:4px solid #ffd100}.tr-head small,.tr-head h2{display:block;margin:0}.tr-head small{opacity:.8;font-size:10px}.tr-head h2{font-size:19px;margin-top:2px}.tr-head button{width:38px;height:38px;border:0;border-radius:11px;background:rgba(255,255,255,.17);color:#fff;font-size:26px}.tr-tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:10px 0}.tr-tabs button{position:relative;border:1px solid #ccdbe5;background:#fff;color:#003d7c;border-radius:11px;padding:7px 3px}.tr-tabs b,.tr-tabs span{display:block}.tr-tabs b{font-size:10px;text-transform:capitalize}.tr-tabs span{font-size:13px;font-weight:950}.tr-tabs button.active{background:#0067b1;color:#fff;border-color:#0067b1}.tr-tabs button.bad:not(.active){background:#fff3c4;border-color:#e3c54a}.tr-tabs i{position:absolute;right:-3px;top:-5px;width:16px;height:16px;background:#d82020;color:#fff;border-radius:50%;font-style:normal;font-size:10px;display:grid;place-items:center}.tr-errors,.tr-ok{border-radius:13px;padding:10px 12px;margin-bottom:9px}.tr-errors{background:#fff3c4;border:1px solid #e4ca55;color:#685300}.tr-errors b,.tr-errors span{display:block}.tr-errors span{font-size:11px;margin-top:4px}.tr-ok{background:#ecf9ef;border:1px solid #add9b7;color:#17602a;font-weight:900}.tr-cols{display:grid;grid-template-columns:1fr 1fr;gap:9px}.tr-cols section,.tr-abs{background:#fff;border:1px solid #dbe5ec;border-radius:16px;padding:10px}.tr-cols h3,.tr-abs h3{margin:0 0 8px;color:#003d7c;font-size:14px}.tr-person{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #edf1f4;padding:9px 3px}.tr-person:first-of-type{border-top:0}.tr-person b{color:#003d7c;font-size:12px}.tr-person span{font-size:11px;text-align:right;font-weight:800}.tr-empty{font-size:11px;color:#7b8a94;padding:8px 0}.tr-abs{margin-top:9px}.tr-abs>div{display:grid;grid-template-columns:repeat(2,1fr);column-gap:12px}.tr-abs .tr-person span{color:#806400}.tr-foot{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.tr-foot button{border:0;border-radius:12px;padding:12px;background:#0067b1;color:#fff;font-weight:950}.tr-foot button:disabled{opacity:.35}@media(max-width:600px){.tr-cols{grid-template-columns:1fr 1fr;gap:6px}.tr-cols section{padding:8px 6px}.tr-person{display:block}.tr-person span{display:block;text-align:left;margin-top:3px;font-size:10px}.tr-tabs{gap:3px}.tr-tabs button{padding:6px 1px}.tr-abs>div{grid-template-columns:1fr 1fr}}
+ `;document.head.appendChild(style);
+})();
