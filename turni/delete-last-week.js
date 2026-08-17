@@ -27,8 +27,12 @@
     if(pd?.week?.dates?.[0]===last?.dates?.[0])localStorage.removeItem('tm_planner_draft');
    }catch{}
    document.getElementById('homeMenuBack')?.remove();
+   if(typeof state!=='undefined'){
+    state.data=next;
+    state.week=Math.max(0,next.weeks.length-1);
+   }
    alert(`Settimana ${label} eliminata. Le settimane precedenti sono rimaste intatte.`);
-   location.reload();
+   if(typeof render==='function')render();else location.href='index.html';
   }catch(e){alert(e?.message||'Impossibile eliminare la settimana.')}finally{busy=false;if(btn)btn.disabled=false}
  }
  function mount(){
