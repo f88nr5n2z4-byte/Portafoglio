@@ -1,9 +1,9 @@
 (()=>{
  if(!('serviceWorker' in navigator))return;
- const KEY='tm_force_sw_v62';
+ const KEY='tm_force_sw_v63';
  window.addEventListener('load',async()=>{
   try{
-   const reg=await navigator.serviceWorker.register('sw.js?v=62',{scope:'./'});
+   const reg=await navigator.serviceWorker.register('sw.js?v=63',{scope:'./'});
    await reg.update();
    if(!localStorage.getItem(KEY)){
     localStorage.setItem(KEY,'1');
