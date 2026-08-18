@@ -16,10 +16,44 @@ api=async function(action,opts={}){const r=await prevApi(action,opts);if(action=
 function isSoftAuto(x){const id=String(x.id||''),m=String(x.message||'');return /^(optimizer-|balance-|streak-)/.test(id)||/Origine:\s*(riparazione automatica|bilanciamento automatico|correzione automatica)/i.test(m)}
 function targetMonth(n){if(n==='Giada')return 130;return 172.5}
 function acceptedLocks(list){const m=new Set(manual().map(x=>`${x.employee}|${fmtIso(x.date)}`));for(const x of(list||[])){if(x.status!=='ACCETTATA'||isSoftAuto(x))continue;const g=String(x.message||'').match(/Giorno:\s*([^\n]+).*?Turno richiesto:\s*([^\n]+)/s);if(g)m.add(`${x.employee}|${g[1].trim()}`)}return m}
-function counts(w,n){const z={morning:0,central:0,afternoon:0,hours:0};for(const s of(w.schedule[n]||[])){const c=cat(s);if(c!=='off')z[c]++;z.hours+=hours(s)}return z}
+function counts(w,n){const z={morning:0,central:0,afternoon:0,hours:0,worked:0};for(const s of(w.schedule[n]||[])){const c=cat(s);if(c!=='off'){z[c]++;z.worked++}z.hours+=hours(s)}return z}
 function balanceResponsible(w,locks,out){for(let i=0;i<w.dates.length;i++){const d=new Date(w.dates[i]+'T12:00:00');if(d.getDay()===0)continue;if(!R.every(n=>works(w.schedule[n][i])))continue;if(R.some(n=>locks.has(`${n}|${fmtIso(w.dates[i])}`)))continue;const rot=((d.getDate()+d.getMonth()*31)%3+3)%3,sh=['06:30-13:30','10:00-17:00','13:30-20:30'];for(let k=0;k<3;k++)out.push({employee:R[(k+rot)%3],date:w.dates[i],shift:sh[k]})}}
-function balanceSameDay(w,people,locks,out){const stat=Object.fromEntries(people.map(n=>[n,counts(w,n)]));for(let i=0;i<w.dates.length;i++){const date=w.dates[i],lab=fmtIso(date),free=people.filter(n=>works(w.schedule[n][i])&&!locks.has(`${n}|${lab}`));if(free.length<2)continue;const shifts=free.map(n=>w.schedule[n][i]).sort((a,b)=>['morning','central','afternoon'].indexOf(cat(a))-['morning','central','afternoon'].indexOf(cat(b))),unused=new Set(free);for(const sh of shifts){const c=cat(sh);let best=null,bscore=Infinity;for(const n of unused){const st=stat[n],weight=n==='Giada'?0.75:1,newH=st.hours-hours(w.schedule[n][i])+hours(sh),score=(st[c]/weight)*10+Math.abs(newH-targetMonth(n))*.03;if(score<bscore){bscore=score;best=n}}if(!best)continue;unused.delete(best);stat[best][c]++;stat[best].hours+=hours(sh)-hours(w.schedule[best][i]);out.push({employee:best,date,shift:sh})}}}
-async function autoBalance(){const w=state();if(!w?.dates?.length)return;let req=[];try{req=(await prevApi('list_requests')).requests||[]}catch{}const locks=acceptedLocks(req),out=[];balanceResponsible(w,locks,out);balanceSameDay(w,C,locks,out);balanceSameDay(w,S1,locks,out);const ded=[...new Map(out.map(x=>[`${x.employee}|${x.date}`,x])).values()].filter(x=>x.employee!=='Marco'&&w.schedule[x.employee]?.[w.dates.indexOf(x.date)]!==x.shift).sort((a,b)=>(a.date+a.employee).localeCompare(b.date+b.employee)),old=load().filter(x=>x.employee!=='Marco').sort((a,b)=>(a.date+a.employee).localeCompare(b.date+b.employee));if(JSON.stringify(old)!==JSON.stringify(ded)){save(ded);window.tmOptimizationChanged?.('bilanciamento')}}
+function fairnessScore(st,oldCat,newCat,n,newHours){
+ const next={...st};
+ if(oldCat!=='off')next[oldCat]=Math.max(0,next[oldCat]-1);
+ if(newCat!=='off')next[newCat]=(next[newCat]||0)+1;
+ const mpDiff=Math.abs(next.morning-next.afternoon);
+ const mpTotal=next.morning+next.afternoon;
+ const ratioPenalty=mpTotal?Math.abs(next.morning/mpTotal-.5)*20:0;
+ const centralPenalty=next.central/Math.max(1,next.worked)*1.2;
+ const hourPenalty=Math.abs(newHours-targetMonth(n))*.025;
+ return mpDiff*12+ratioPenalty+centralPenalty+hourPenalty;
+}
+function balanceSameDay(w,people,locks,out){
+ const stat=Object.fromEntries(people.map(n=>[n,counts(w,n)]));
+ for(let i=0;i<w.dates.length;i++){
+  const date=w.dates[i],lab=fmtIso(date),free=people.filter(n=>works(w.schedule[n][i])&&!locks.has(`${n}|${lab}`));if(free.length<2)continue;
+  const original=Object.fromEntries(free.map(n=>[n,w.schedule[n][i]]));
+  const shifts=free.map(n=>w.schedule[n][i]).sort((a,b)=>['morning','central','afternoon'].indexOf(cat(a))-['morning','central','afternoon'].indexOf(cat(b)));
+  const unused=new Set(free);
+  for(const sh of shifts){
+   const nc=cat(sh);let best=null,bscore=Infinity;
+   for(const n of unused){
+    const st=stat[n],old=original[n],oc=cat(old),newH=st.hours-hours(old)+hours(sh);
+    const score=fairnessScore(st,oc,nc,n,newH);
+    if(score<bscore){bscore=score;best=n}
+   }
+   if(!best)continue;
+   unused.delete(best);
+   const old=original[best],oc=cat(old),st=stat[best];
+   if(oc!=='off')st[oc]=Math.max(0,st[oc]-1);
+   if(nc!=='off')st[nc]++;
+   st.hours+=hours(sh)-hours(old);
+   out.push({employee:best,date,shift:sh});
+  }
+ }
+}
+async function autoBalance(){const w=state();if(!w?.dates?.length)return;let req=[];try{req=(await prevApi('list_requests')).requests||[]}catch{}const locks=acceptedLocks(req),out=[];balanceResponsible(w,locks,out);balanceSameDay(w,C,locks,out);balanceSameDay(w,S1,locks,out);const ded=[...new Map(out.map(x=>[`${x.employee}|${x.date}`,x])).values()].filter(x=>x.employee!=='Marco'&&w.schedule[x.employee]?.[w.dates.indexOf(x.date)]!==x.shift).sort((a,b)=>(a.date+a.employee).localeCompare(b.date+b.employee)),old=load().filter(x=>x.employee!=='Marco').sort((a,b)=>(a.date+a.employee).localeCompare(b.date+b.employee));if(JSON.stringify(old)!==JSON.stringify(ded)){save(ded);window.tmOptimizationChanged?.('bilanciamento mattine/pomeriggi')}}
 function groupedTable(title,people,w){const wrap=document.createElement('section');wrap.className='card tm-role-card';const head=w.dates.map(d=>{const x=new Date(d+'T12:00:00');return`<div class="cell head ${x.getDay()===0?'sun':''}">${fmtDate(d).slice(0,3)}<br>${x.getDate()}</div>`}).join('');const rows=people.map(n=>`<div class="cell name">${esc(n)}</div>${w.schedule[n].map((s,i)=>`<button type="button" class="cell tm-role-cell ${new Date(w.dates[i]+'T12:00:00').getDay()===0?'sun':''} ${OFF.has(s)?'rest':''}" data-person="${esc(n)}" data-date="${w.dates[i]}">${esc(s)}</button>`).join('')}`).join('');const chips=people.map(n=>{const z=counts(w,n);return`<span><b>${esc(n)}</b> · M ${z.morning} · C ${z.central} · P ${z.afternoon} · ${Math.round(z.hours*10)/10}h</span>`}).join('');wrap.innerHTML=`<h3>${title}</h3><div class="month-grid"><div class="month-table tm-role-table" style="--days:${w.dates.length}"><div class="cell head"></div>${head}${rows}</div></div><div class="tm-balance-chips">${chips}</div>`;return wrap}
 function dayBuckets(w,i){const b={morning:[],central:[],afternoon:[],off:[]};for(const n of ALL){const s=w.schedule?.[n]?.[i]||'—',c=cat(s);if(c==='off')b.off.push({n,s});else b[c].push({n,s})}return b}
 function peopleList(arr,date){return arr.length?arr.map(x=>`<button type="button" class="tm-day-person" data-person="${esc(x.n)}" data-date="${date}"><b>${esc(x.n)}</b><small>${esc(x.s)}</small></button>`).join(''):'<em>Nessuno</em>'}
