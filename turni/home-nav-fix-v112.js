@@ -1,0 +1,1 @@
+(()=>{try{if(typeof adminHome!=='function')return;const old=adminHome;adminHome=function(w){return old(w)+'<div style="display:none"><button id="prev" type="button"></button><button id="next" type="button"></button></div>'}}catch(e){console.warn('home nav fix',e)}})();
