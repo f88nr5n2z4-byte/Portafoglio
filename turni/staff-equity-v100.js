@@ -64,7 +64,8 @@ function validateSundaySeven(data,out){
    const sh=C.hours(w.schedule[n][si]);
    if(Math.abs(sh-5)>.001)out.push({type:'ore',weekIndex:wi,date:w.dates[si],employee:n,message:`${n}: la domenica deve essere di 5h esatte`});
   });
- }
+ });
+}
 function validateSplitEquity(data,out){
  const z=splitCounts(data),vals=Object.values(z);
  if(!vals.length)return;
