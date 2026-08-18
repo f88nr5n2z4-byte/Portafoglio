@@ -3,10 +3,11 @@
  function firstStart(s){const m=String(s||'').match(/(\d{1,2}):(\d{2})/);return m?(+m[1]*60)+(+m[2]):null}
  function classify(s){if(!s||s==='—'||ABSENCES.has(s))return 'absence';const st=firstStart(s);return st!==null&&st<810?'morning':'afternoon'}
  function dayName(d){return new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'numeric'}).format(new Date(d+'T12:00:00'))}
+ function byArrival(a,b){const aa=firstStart(a.s),bb=firstStart(b.s);if(aa===null&&bb===null)return a.n.localeCompare(b.n,'it');if(aa===null)return 1;if(bb===null)return-1;return aa-bb||a.n.localeCompare(b.n,'it')}
  function renderDaily(host,w){
    selectedDay=Math.max(0,Math.min(6,selectedDay));
    const i=selectedDay,date=w.dates[i],rows=Object.keys(w.schedule).map(n=>({n,s:(w.schedule[n]||[])[i]||'—'}));
-   const morning=rows.filter(x=>classify(x.s)==='morning'),afternoon=rows.filter(x=>classify(x.s)==='afternoon'),absent=rows.filter(x=>classify(x.s)==='absence'&&x.s!=='—');
+   const morning=rows.filter(x=>classify(x.s)==='morning').sort(byArrival),afternoon=rows.filter(x=>classify(x.s)==='afternoon').sort(byArrival),absent=rows.filter(x=>classify(x.s)==='absence'&&x.s!=='—');
    const item=x=>`<div class="hdv-person"><b>${esc(x.n)}</b><span>${esc(x.s)}</span></div>`;
    host.innerHTML=`<div class="hdv-head"><div><span class="kicker">Vista giornaliera</span><h2>Turni per giorno</h2></div><strong>${esc(fmtDate(date))}</strong></div><div class="hdv-tabs">${w.dates.map((d,di)=>`<button type="button" class="${di===i?'active':''}" data-hdv-day="${di}"><b>${esc(dayName(d).split(' ')[0])}</b><span>${new Date(d+'T12:00:00').getDate()}</span></button>`).join('')}</div><div class="hdv-cols"><section><h3>☀️ Mattina</h3>${morning.length?morning.map(item).join(''):'<div class="hdv-empty">Nessun turno</div>'}</section><section><h3>🌙 Pomeriggio</h3>${afternoon.length?afternoon.map(item).join(''):'<div class="hdv-empty">Nessun turno</div>'}</section></div><section class="hdv-abs"><h3>Assenze / Stati</h3>${absent.length?`<div class="hdv-abs-grid">${absent.map(item).join('')}</div>`:'<div class="hdv-empty">Nessuna assenza o riposo</div>'}</section>`;
    host.querySelectorAll('[data-hdv-day]').forEach(b=>b.onclick=()=>{selectedDay=+b.dataset.hdvDay;renderDaily(host,w)});
