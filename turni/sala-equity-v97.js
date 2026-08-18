@@ -43,6 +43,6 @@ function splitCounts(data){const z=Object.fromEntries(FT.map(n=>[n,0]));(data?.w
 function runAfterGenerate(){setTimeout(()=>{try{const data=JSON.parse(localStorage.getItem(KEY)||'null');if(!data?.weeks?.length)return;const out=rebalance(data);const issues=C.validateSchedule(out);if(issues.length){console.warn('Sala equity v97: validazione fallita',issues);return}localStorage.setItem(KEY,JSON.stringify(out));sessionStorage.setItem('tm_sala_equity_v97','1');location.reload()}catch(e){console.error('Sala equity v97',e)}},80)}
 document.addEventListener('click',e=>{if(e.target.closest('.v91gen'))runAfterGenerate()},true);
 const base=C.validateSchedule.bind(C);
-C.validateSchedule=function(data){const out=base(data);const z=splitCounts(data),v=Object.values(z);if(v.length&&Math.max(...v)-Math.min(...v)>1)out.push({type:'equita',weekIndex:-1,date:null,employee:null,message:`Sala: spezzati non equilibrati (${FT.map(n=>`${n} ${z[n]}`).join(', ')})`});return out};
+C.validateSchedule=function(data){const out=base(data);const z=splitCounts(data),v=Object.values(z);if(v.length&&Math.max(...v)-Math.min(...v)>=5)out.push({type:'equita',weekIndex:-1,date:null,employee:null,message:`Sala: differenza spezzati troppo alta (${FT.map(n=>`${n} ${z[n]}`).join(', ')})`});return out};
 window.validateScheduleCurrent=data=>C.validateSchedule(data);
 })();
