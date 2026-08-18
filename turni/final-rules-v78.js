@@ -9,6 +9,7 @@ const spans2=s=>{if(!s||OFF2.has(s))return[];return String(s).split('/').map(x=>
 const work2=s=>spans2(s).length>0;
 const at2=(s,t)=>{const x=hm(t);return spans2(s).some(([a,b])=>a<=x&&x<b)};
 const start2=(s,t)=>{const x=hm(t);return spans2(s).some(([a])=>a===x)};
+const hours2=s=>spans2(s).reduce((z,[a,b])=>z+(b-a)/60,0);
 function eachQuarter(a,b,fn){for(let t=hm(a);t<hm(b);t+=15){const x=String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');if(!fn(x))return false}return true}
 function activeAt(w,i,t,pred=()=>true){return Object.keys(w.schedule||{}).filter(n=>pred(n)&&at2(w.schedule[n]?.[i],t))}
 function cashAt2(w,i,t){return activeAt(w,i,t,n=>CC.includes(n)||BB.includes(n))}
@@ -48,7 +49,8 @@ window.validateWeekAdvice=function(w){
   if(c2030>4)tips.push(`${label}: chiusura in ${c2030}; meglio 4, facendo eventualmente uscire qualcuno alle 20:00 e recuperando 30 minuti in un altro giorno`);
   if(![1,3,4].includes(dow)&&!continuousCount(w,i,'13:30','17:00',()=>true,4))tips.push(`${label}: sarebbe preferibile avere almeno 4 persone nella fascia 13:30-17:00`);
  });
- const marco=w.schedule.Marco||[];if(marco.length===7){const h=marco.reduce((z,s)=>z+spans2(s).reduce((a,[x,y])=>a+(y-x)/60,0),0);if(h>17)tips.push(`Marco: ${h}h nella settimana; obiettivo circa 16h, poco più solo se serve`)}
+ const giada=(w.schedule.Giada||[]).reduce((z,s)=>z+hours2(s),0);if(giada<125||giada>135)tips.unshift(`Giada: ${Math.round(giada*10)/10}h nel mese — cerca di stare intorno a 130h`);
+ const marco=w.schedule.Marco||[];if(marco.length===7){const h=marco.reduce((z,s)=>z+hours2(s),0);if(h>17)tips.push(`Marco: ${h}h nella settimana; obiettivo circa 16h, poco più solo se serve`)}
  return [...new Set(tips)].slice(0,5);
 };
 })();
