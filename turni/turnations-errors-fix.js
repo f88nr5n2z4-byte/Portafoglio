@@ -1,22 +1,21 @@
 (()=>{
 'use strict';
 if(new URLSearchParams(location.search).get('errors')!=='1')return;
-const app=document.getElementById('app');if(!app)return;
-function apply(){
- const main=app.querySelector('.ta');if(!main)return;
- const head=main.querySelector('.ta-head strong');if(head)head.textContent='Errori turnazione';
- const boxes=[...main.querySelectorAll('.weekbox')];
- let visible=0;
- for(const box of boxes){
-  const bad=box.querySelector('.badcount');
-  const has=!!bad&&/erro/i.test(bad.textContent||'');
-  box.style.display=has?'':'none';
-  if(has){box.open=true;visible++}
+const app=document.getElementById('app');
+function show(){
+ const main=app?.querySelector('.ta');
+ if(!main)return;
+ const head=main.querySelector('.ta-head strong');
+ if(head)head.textContent='Controlli turnazione';
+ main.querySelectorAll('.badcount').forEach(x=>x.remove());
+ if(!main.querySelector('#turnationErrorsEmpty')){
+  const box=document.createElement('section');
+  box.id='turnationErrorsEmpty';
+  box.className='weekbox';
+  box.innerHTML='<div style="padding:18px" class="ok">Nessuna regola attiva. I controlli turnazione sono stati azzerati.</div>';
+  main.querySelector('.ta-head')?.insertAdjacentElement('afterend',box);
  }
- let empty=main.querySelector('#turnationErrorsEmpty');
- if(!visible){
-  if(!empty){empty=document.createElement('section');empty.id='turnationErrorsEmpty';empty.className='weekbox';empty.innerHTML='<div style="padding:18px" class="ok">✓ Nessun errore turnazione da controllare.</div>';const h=main.querySelector('.ta-head');h?.insertAdjacentElement('afterend',empty)}
- }else empty?.remove();
 }
-let t=null;new MutationObserver(()=>{clearTimeout(t);t=setTimeout(apply,40)}).observe(app,{childList:true,subtree:true});window.addEventListener('load',()=>setTimeout(apply,120));setTimeout(apply,250);
+new MutationObserver(show).observe(app,{childList:true,subtree:true});
+setTimeout(show,100);
 })();
