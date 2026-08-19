@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='v139';
+const VERSION='v140';
 async function cleanup(){
  try{
   if('caches' in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)))}
