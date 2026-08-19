@@ -1,0 +1,1 @@
+(()=>{const set=()=>{const x=document.querySelector('#v121Pre .v121head>span');if(x)x.textContent='v124'};new MutationObserver(set).observe(document.documentElement,{childList:true,subtree:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',set);else set();setTimeout(set,200)})();
