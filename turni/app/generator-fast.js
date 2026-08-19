@@ -4,7 +4,7 @@ const C=window.TM91,LEGACY=window.TM112,BASE=window.TM_TEMPLATE_BASE_V139,BAL=wi
 if(!C||!LEGACY||!BASE)return;
 const ABS='tm_v125_absences',REQ='tm_v125_requests';
 const RESP=[...C.RESPONSABILI],CASH=[...C.CASSA],FLOOR=['Giuliano','Manuel','Daniele','Paolo'],PEOPLE=[...RESP,...CASH,...C.SALA];
-const OFF=new Set(['RIPOSO','FERIE','PERMESSO','MALATTIA','MATERNITÀ','—']);
+const MONTHS={gen:0,feb:1,mar:2,apr:3,mag:4,giu:5,lug:6,ago:7,set:8,ott:9,nov:10,dic:11};
 const works=s=>C.works(s), at=(s,t)=>C.at(s,t), hours=s=>C.hours(s);
 function load(k,d=[]){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))??d}catch{return d}}
 function role(n){return RESP.includes(n)?'resp':CASH.includes(n)?'cash':FLOOR.includes(n)?'floor':n==='Marco'?'marco':''}
@@ -15,22 +15,13 @@ function sortCandidates(list,missingRole,extra){return list.sort((a,b)=>{const p
 function repairDay(w,d,abs,extra){const date=w.dates[d],original={};PEOPLE.forEach(n=>original[n]=w.schedule[n]?.[d]||'RIPOSO');const missing=[];for(const n of PEOPLE){const a=absentOn(abs,n,date);if(!a)continue;const old=original[n];w.schedule[n][d]=String(a.type||'FERIE').toUpperCase();if(works(old))missing.push({employee:n,shift:old,role:role(n)})}
 if(!missing.length||dayValid(w,d))return true;
 const snapshot=()=>Object.fromEntries(PEOPLE.map(n=>[n,w.schedule[n][d]])),restore=s=>PEOPLE.forEach(n=>w.schedule[n][d]=s[n]);
-function recurse(i){if(i>=missing.length)return dayValid(w,d);const m=missing[i];
- let resters=PEOPLE.filter(n=>n!=='Marco'&&!absentOn(abs,n,date)&&!works(w.schedule[n][d]));
- if(C.isSunday(date))resters=resters.filter(n=>sameSundayRole(n,m.employee));
- sortCandidates(resters,m.role,extra);
- for(const r of resters){const s=snapshot();w.schedule[r][d]=m.shift;if(recurse(i+1)){extra[r]=(extra[r]||0)+hours(m.shift);return true}restore(s)}
- if(C.isSunday(date))return false;
- const active=PEOPLE.filter(n=>n!==m.employee&&n!=='Marco'&&!absentOn(abs,n,date)&&works(w.schedule[n][d]));
- sortCandidates(active,m.role,extra);
- for(const a of active){const old=w.schedule[a][d];const afterRest=PEOPLE.filter(n=>n!=='Marco'&&n!==a&&!absentOn(abs,n,date)&&!works(w.schedule[n][d]));sortCandidates(afterRest,role(a),extra);
-  for(const r of afterRest){const s=snapshot();w.schedule[a][d]=m.shift;w.schedule[r][d]=old;if(recurse(i+1)){extra[r]=(extra[r]||0)+hours(old);extra[a]=(extra[a]||0)+Math.max(0,hours(m.shift)-hours(old));return true}restore(s)}
- }
- return false}
+function recurse(i){if(i>=missing.length)return dayValid(w,d);const m=missing[i];let resters=PEOPLE.filter(n=>n!=='Marco'&&!absentOn(abs,n,date)&&!works(w.schedule[n][d]));if(C.isSunday(date))resters=resters.filter(n=>sameSundayRole(n,m.employee));sortCandidates(resters,m.role,extra);for(const r of resters){const s=snapshot();w.schedule[r][d]=m.shift;if(recurse(i+1)){extra[r]=(extra[r]||0)+hours(m.shift);return true}restore(s)}if(C.isSunday(date))return false;const active=PEOPLE.filter(n=>n!==m.employee&&n!=='Marco'&&!absentOn(abs,n,date)&&works(w.schedule[n][d]));sortCandidates(active,m.role,extra);for(const a of active){const old=w.schedule[a][d],afterRest=PEOPLE.filter(n=>n!=='Marco'&&n!==a&&!absentOn(abs,n,date)&&!works(w.schedule[n][d]));sortCandidates(afterRest,role(a),extra);for(const r of afterRest){const s=snapshot();w.schedule[a][d]=m.shift;w.schedule[r][d]=old;if(recurse(i+1)){extra[r]=(extra[r]||0)+hours(old);extra[a]=(extra[a]||0)+Math.max(0,hours(m.shift)-hours(old));return true}restore(s)}}return false}
 const before=snapshot();if(recurse(0))return true;restore(before);return false}
-function relevantAbs(start,abs){const a=new Date(start+'T12:00:00');a.setDate(a.getDate()-((a.getDay()+6)%7));const b=new Date(a);b.setDate(b.getDate()+20);const lo=a.toISOString().slice(0,10),hi=b.toISOString().slice(0,10);return abs.filter(x=>x.from&&x.to&&x.to>=lo&&x.from<=hi)}
-function relevantReq(){return load(REQ,[]).some(x=>x?.status==='ACCETTATA')}
-function generate(start){const abs=relevantAbs(start,load(ABS,[]));if(!abs.length||relevantReq())return LEGACY.generate(start);const data=BASE.generate(start),extra={};for(const w of data.weeks){for(let d=0;d<7;d++){if(!w.dates[d])continue;const any=abs.some(x=>x.from<=w.dates[d]&&x.to>=w.dates[d]);if(!any)continue;if(!repairDay(w,d,abs,extra))return LEGACY.generate(start)}}data.constraints={acceptedRequests:[],absences:abs};data.generator='v201-fast-absence';if(BAL)BAL.apply(data);return data}
+function range(start){const a=new Date(start+'T12:00:00');a.setDate(a.getDate()-((a.getDay()+6)%7));const b=new Date(a);b.setDate(b.getDate()+20);return[a.toISOString().slice(0,10),b.toISOString().slice(0,10)]}
+function relevantAbs(start,abs){const[lo,hi]=range(start);return abs.filter(x=>x.from&&x.to&&x.to>=lo&&x.from<=hi)}
+function reqDate(x){const g=String(x?.message||'').match(/Giorno:\s*([^\n]+)/);if(!g)return null;const m=g[1].toLowerCase().match(/(?:lun|mar|mer|gio|ven|sab|dom)?\s*(\d{1,2})\s+([a-zà]+)/i);if(!m)return null;const mon=MONTHS[m[2].slice(0,3)];if(mon===undefined)return null;const base=x.created_at?new Date(x.created_at):new Date(),ys=[base.getFullYear()-1,base.getFullYear(),base.getFullYear()+1];let best=null,z=Infinity;for(const y of ys){const d=new Date(y,mon,+m[1],12),q=Math.abs(d-base);if(q<z){best=d;z=q}}return best?best.toISOString().slice(0,10):null}
+function relevantReq(start){const[lo,hi]=range(start);return load(REQ,[]).some(x=>{if(x?.status!=='ACCETTATA')return false;const d=reqDate(x);return d&&d>=lo&&d<=hi})}
+function generate(start){const abs=relevantAbs(start,load(ABS,[]));if(!abs.length||relevantReq(start))return LEGACY.generate(start);const data=BASE.generate(start),extra={};for(const w of data.weeks){for(let d=0;d<7;d++){const date=w.dates[d];if(!date||!abs.some(x=>x.from<=date&&x.to>=date))continue;if(!repairDay(w,d,abs,extra))return LEGACY.generate(start)}}data.constraints={acceptedRequests:[],absences:abs};data.generator='v202-fast-absence';if(BAL)BAL.apply(data);return data}
 function validateSchedule(data){return LEGACY.validateSchedule?.(data)||[]}
-window.TM112={generate,validateSchedule};window.TM_FAST_V201={generate,validateSchedule};
+window.TM112={generate,validateSchedule};window.TM_FAST_V202={generate,validateSchedule};
 })();
