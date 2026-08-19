@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='v134';
+const VERSION='v135';
 async function cleanup(){
  try{
   if('caches' in window){
