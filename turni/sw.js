@@ -1,7 +1,20 @@
-const CACHE='torre-maura-turni-v133';
-const ASSETS=['./','index.html','styles.css','common.js','page-guard-v88.js','api-routing.js','app.js','maintenance-login-v89.js','turnistica-core-v91.js','validation-v125.js','generator-v112.js','generator-0700-v116.js','pre-generation-v125.js','generator-unified-v126.js','new-turns-v132.js','zero-weeks-fix.js','request-options-patch.js','home-simple-v112.js','home-nav-fix-v112.js','home-menu.js','home-clean-v128.js','force-update.js','clear-drafts-v102.js','hours-summary.html','hours-summary.js','calendar-request.html','calendar-request.js','calendar-request-policy-v128.js','requests.html','requests.js','avvisi.html','avvisi.js','inbox.html','inbox.js','new-turns.html','turnations.html','turnations.js','admin.html','admin.js','review-change.html','review-v126.js','review-policy-v128.js','manifest.webmanifest','icon.svg','schedule.json'];
-self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)))});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;event.respondWith(fetch(event.request,{cache:'no-store'}).then(response=>{const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy));return response}).catch(()=>caches.match(event.request)))});
-self.addEventListener('push',event=>{let data={title:'Eurospin Torre Maura',body:'Nuovo aggiornamento',url:'./'};if(event.data){try{data={...data,...event.data.json()}}catch{}}event.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:'icon.svg',badge:'icon.svg',data:{url:data.url}}))});
-self.addEventListener('notificationclick',event=>{event.notification.close();const url=event.notification.data&&event.notification.data.url?event.notification.data.url:'./';event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(const c of list){if('focus'in c)return c.navigate(url).then(()=>c.focus())}return clients.openWindow(url)}))});
+self.addEventListener('install',event=>{self.skipWaiting()});
+self.addEventListener('activate',event=>{
+ event.waitUntil((async()=>{
+  try{const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)))}catch{}
+  await self.clients.claim();
+ })());
+});
+self.addEventListener('push',event=>{
+ let data={title:'Eurospin Torre Maura',body:'Nuovo aggiornamento',url:'./'};
+ if(event.data){try{data={...data,...event.data.json()}}catch{}}
+ event.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:'icon.svg',badge:'icon.svg',data:{url:data.url}}));
+});
+self.addEventListener('notificationclick',event=>{
+ event.notification.close();
+ const url=event.notification.data&&event.notification.data.url?event.notification.data.url:'./';
+ event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
+  for(const c of list){if('focus'in c)return c.navigate(url).then(()=>c.focus())}
+  return clients.openWindow(url);
+ }));
+});
