@@ -15,10 +15,10 @@
   setTimeout(()=>el.click(),0);
  }, {passive:false,capture:true});
  if(!('serviceWorker' in navigator))return;
- const KEY='tm_force_sw_v132';
+ const KEY='tm_force_sw_v133';
  window.addEventListener('load',async()=>{
   try{
-   const reg=await navigator.serviceWorker.register('sw.js?v=132',{scope:'./'});
+   const reg=await navigator.serviceWorker.register('sw.js?v=133',{scope:'./'});
    await reg.update();
    localStorage.setItem(KEY,'1');
   }catch(e){console.warn('force sw update',e)}
