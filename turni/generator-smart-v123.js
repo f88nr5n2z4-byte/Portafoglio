@@ -149,6 +149,7 @@ function repairSunday(w,acc,abs){
 function smartWeek(w,acc,abs){
  const constraints=weekConstraints(w,acc,abs),absPeople=[...new Set(constraints.filter(x=>absentValue(x.wanted)).map(x=>x.employee))];
  if(!constraints.length)return zeroSplitWeek(w);
+ repairSunday(w,acc,abs);
  const original=clone(w.schedule),sun=sundayWorkers(w),two=absPeople.length>=2;
  const ctx={allowSplit:true,normal:false,respShortage:absPeople.some(n=>RESP.includes(n)),priorOT:{},priorSplit:{},totalSplit:0};
  for(let d=0;d<6;d++){
@@ -173,7 +174,6 @@ function smartWeek(w,acc,abs){
   if(!sol)throw new Error(`${C.dateLabel(date)}: non trovo una combinazione valida con le assenze/richieste inserite.`);
   applySolution(w,d,sol,ctx);
  }
- repairSunday(w,acc,abs);
  w.smartV123=true;w.smartMode=two?'assenze-2+':'assenze-1';w.constraintsRespShortage=ctx.respShortage;
  w.v123Overtime=Object.fromEntries(ALL.map(n=>[n,Math.max(0,C.weekHours(w,n)-(C.TARGET[n]||0))]));
  w.v123Splits=Object.fromEntries(ALL.map(n=>[n,(w.schedule[n]||[]).filter(isSplit).length]));
