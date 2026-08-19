@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: eurospin-turni-solver
+    runtime: docker
+    region: frankfurt
+    dockerfilePath: ./solver-service/Dockerfile
+    dockerContext: ./solver-service
+    healthCheckPath: /health
+    autoDeployTrigger: off
