@@ -1,0 +1,19 @@
+(()=>{
+'use strict';
+const API='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-v2-api';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function user(){try{return JSON.parse(localStorage.getItem('tm2_user')||'null')}catch{return null}}
+function admin(){return user()?.role==='admin'}
+function route(){return (location.hash||'#home').slice(1)}
+function token(){return localStorage.getItem('tm2_token')||''}
+async function call(action,{method='GET',body}={}){const r=await fetch(`${API}?action=${encodeURIComponent(action)}`,{method,headers:{'Content-Type':'application/json',...(token()?{Authorization:`Bearer ${token()}`}:{})},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({error:'Risposta non valida'}));if(!r.ok)throw new Error(d.error||'Errore');return d}
+function clear(){document.getElementById('adminTodoHome')?.remove();document.getElementById('genRequestPanel')?.remove()}
+function injectHome(){if(route()!=='home'||!admin())return;const hero=document.querySelector('.shell .hero');if(!hero||document.getElementById('adminTodoHome'))return;hero.insertAdjacentHTML('afterend','<div id="adminTodoHome" style="margin:8px 0 12px;padding:7px 10px;border:1px solid #ead48a;background:#fff9df;border-radius:10px;font:600 12px/1.3 system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;color:#6b5600">⚠️ Da risolvere: 2 persone Cassa in ferie contemporaneamente</div>')}
+function card(r){const extra=r.wanted_shift?`<div style="margin-top:4px">Turno richiesto: <b>${esc(r.wanted_shift)}</b></div>`:'';const msg=r.message?`<div style="margin-top:4px">${esc(r.message)}</div>`:'';return `<div class="item"><div class="meta">${esc(r.employee_name)} · ${esc(r.kind)}</div><small>${esc(r.request_date||'')}${r.end_date&&r.end_date!==r.request_date?' → '+esc(r.end_date):''}</small>${extra}${msg}<div class="toolbar" style="margin-top:7px"><button class="btn blue" data-gen-resolve="${r.id}" data-status="ACCETTATA">Accetta</button><button class="btn ghost" data-gen-resolve="${r.id}" data-status="RIFIUTATA">Rifiuta</button></div></div>`}
+async function injectGenerate(){if(route()!=='generate'||!admin())return;const hero=document.querySelector('.shell .hero');if(!hero||document.getElementById('genRequestPanel'))return;let open=[];try{const d=await call('my_requests');open=(d.requests||[]).filter(r=>r.status==='DA_VALUTARE')}catch{return}const el=document.createElement('section');el.id='genRequestPanel';el.className='card';el.style.marginBottom='12px';el.innerHTML=`<h2>📨 Richieste da valutare · ${open.length}</h2>${open.length?`<div class="list">${open.map(card).join('')}</div>`:'<div class="notice">Nessuna richiesta da valutare.</div>'}`;hero.insertAdjacentElement('afterend',el)}
+function inject(){clear();if(!admin())return;injectHome();injectGenerate()}
+function retry(){let n=0;const t=setInterval(()=>{inject();if(++n>=8)clearInterval(t)},180)}
+window.addEventListener('hashchange',()=>setTimeout(retry,30));window.addEventListener('load',retry);
+document.addEventListener('click',async e=>{const b=e.target.closest?.('[data-gen-resolve]');if(b){const status=b.dataset.status,id=Number(b.dataset.genResolve);if(!confirm(status==='ACCETTATA'?'Accettare questa richiesta?':'Rifiutare questa richiesta?'))return;b.disabled=true;try{await call('resolve_request',{method:'POST',body:{id,status,reply:status==='ACCETTATA'?'Richiesta accettata da Eurospin.':'Richiesta rifiutata da Eurospin.'}});document.getElementById('genRequestPanel')?.remove();await injectGenerate()}catch(err){alert(err.message)}return}if(route()==='generate')setTimeout(retry,220)});
+retry();
+})();
