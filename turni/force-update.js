@@ -1,12 +1,26 @@
 (()=>{
 'use strict';
-const VERSION='v141';
+const VERSION='v142';
 async function cleanup(){
  try{
-  if('caches' in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)))}
-  if('serviceWorker' in navigator){const reg=await navigator.serviceWorker.register(`sw.js?${VERSION}`,{scope:'./',updateViaCache:'none'});await reg.update()}
+  if('serviceWorker' in navigator){
+   const regs=await navigator.serviceWorker.getRegistrations();
+   await Promise.all(regs.map(r=>r.unregister()));
+  }
+  if('caches' in window){
+   const keys=await caches.keys();
+   await Promise.all(keys.map(k=>caches.delete(k)));
+  }
+  const prev=localStorage.getItem('tm_runtime_version');
   localStorage.setItem('tm_runtime_version',VERSION);
- }catch(e){console.warn('runtime refresh',e)}
+  if(prev!==VERSION){
+   const u=new URL(location.href);
+   if(u.searchParams.get('_rt')!==VERSION){
+    u.searchParams.set('_rt',VERSION);
+    location.replace(u.toString());
+   }
+  }
+ }catch(e){console.warn('runtime reset',e)}
 }
-if(document.readyState==='complete')cleanup();else window.addEventListener('load',cleanup,{once:true});
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cleanup,{once:true});else cleanup();
 })();
