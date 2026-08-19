@@ -1,1 +1,0 @@
-(()=>{'use strict';/* Gestito da home-simple-v110.js dalla v111. */})();
