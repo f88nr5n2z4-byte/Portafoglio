@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const MANAGEMENT='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-v2-api';
-const GENERATOR='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-v2-generate-v11';
+const GENERATOR='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-v2-generate-v18';
 const nativeFetch=window.fetch.bind(window);
 window.fetch=function(input,init){
  try{
