@@ -1,12 +1,12 @@
 (()=>{
 'use strict';
-const ALT='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-alt-generate-v1';
+const ALT='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-alt-generate-guard-v1';
 const API='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-clean-api';
 const PEOPLE=['Umberto','Fabio','Emanuele','Stefania B','Stefania F','Romina','Giada','Giuliano','Manuel','Daniele','Paolo','Marco'];
 const ROLE={Umberto:'Responsabile',Fabio:'Responsabile',Emanuele:'Responsabile','Stefania B':'Cassa','Stefania F':'Cassa',Romina:'Cassa',Giada:'Cassa',Giuliano:'Sala',Manuel:'Sala',Daniele:'Sala',Paolo:'Sala',Marco:'Sala'};
 const ROLE_COLOR={Responsabile:'#0057a8',Cassa:'#e53935',Sala:'#43a047'};
 let draft=null,busy=false,lastKey='';
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const token=()=>localStorage.getItem('tm2_token')||'';
 const monday=s=>{const d=new Date(s+'T12:00:00');const q=d.getDay()||7;d.setDate(d.getDate()-q+1);return d};
 const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
