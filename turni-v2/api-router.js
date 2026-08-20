@@ -4,30 +4,20 @@ const OLD_API='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-v2-ap
 const CLEAN_API='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-clean-api';
 const nativeFetch=window.fetch.bind(window);
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function fetchWithRetry(url,init,tries=2){
- let lastErr=null;
- for(let i=0;i<tries;i++){
-  try{
-   const r=await nativeFetch(url,init);
-   if(r.status!==546&&r.status!==502&&r.status!==503&&r.status!==504)return r;
-   if(i===tries-1)return r;
-  }catch(e){lastErr=e;if(i===tries-1)throw e}
-  await wait(700*(i+1));
- }
- if(lastErr)throw lastErr;
- return nativeFetch(url,init);
-}
-window.fetch=function(input,init){
- try{
-  const raw=typeof input==='string'?input:input?.url;
-  const u=new URL(raw,location.href);
-  if(u.origin+u.pathname===OLD_API){
-   const target=new URL(CLEAN_API);
-   target.search=u.search;
-   if(u.searchParams.get('action')==='generate')return fetchWithRetry(target.toString(),init,2);
-   return nativeFetch(target.toString(),init);
-  }
- }catch{}
- return nativeFetch(input,init);
-};
+const GROUPS=[['Umberto','Fabio','Emanuele'],['Stefania B','Stefania F','Romina'],['Giuliano','Manuel','Daniele']];
+const PEOPLE=['Umberto','Fabio','Emanuele','Stefania B','Stefania F','Romina','Giada','Giuliano','Manuel','Daniele','Paolo','Marco'];
+const OFF=new Set(['RIPOSO','FERIE','PERMESSO','MALATTIA','MATERNITÀ','—']);
+const hm=t=>{const[a,b]=String(t).split(':').map(Number);return a*60+b};
+const hours=s=>OFF.has(String(s||'').trim().toUpperCase())?0:String(s||'').split('/').reduce((z,p)=>{const[a,b]=p.trim().split('-').map(x=>x.trim()),aa=hm(a),bb=hm(b);return z+(bb>aa?(bb-aa)/60:0)},0);
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const addDays=(s,k)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()+k);return ymd(d)};
+const clone=x=>JSON.parse(JSON.stringify(x));
+async function fetchWithRetry(url,init,tries=2){let lastErr=null;for(let i=0;i<tries;i++){try{const r=await nativeFetch(url,init);if(r.status!==546&&r.status!==502&&r.status!==503&&r.status!==504)return r;if(i===tries-1)return r}catch(e){lastErr=e;if(i===tries-1)throw e}await wait(700*(i+1))}if(lastErr)throw lastErr;return nativeFetch(url,init)}
+function headersFrom(init){return {'Content-Type':'application/json',...((init&&init.headers)||{})}}
+async function getJson(url,init){const r=await nativeFetch(url,{method:'GET',headers:headersFrom(init)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Errore');return d}
+function rotateGroup(out,tpl,group,shift){for(let i=0;i<group.length;i++){const dest=group[i],src=group[(i+shift)%group.length];out.schedule[dest]=clone(tpl.schedule[src]||Array(7).fill('RIPOSO'))}}
+function hasTemplateAbsence(tpl){return PEOPLE.some(n=>(tpl.schedule?.[n]||[]).some(s=>['FERIE','PERMESSO','MALATTIA','MATERNITÀ'].includes(String(s||'').trim().toUpperCase())))}
+function buildMechanical(start,published){const src=(published?.data?.weeks||[]).slice(-3);if(!src.length||src.some(hasTemplateAbsence))return null;const weeks=[];for(let wi=0;wi<3;wi++){const tpl=clone(src[wi%src.length]),dates=Array.from({length:7},(_,d)=>addDays(start,wi*7+d));const out={...tpl,dates,label:`${dates[0]} – ${dates[6]}`,schedule:clone(tpl.schedule||{}),meta:{...(tpl.meta||{}),mechanicalRotation:true,templateWeek:tpl.dates?.[0]||null}};const shift=wi+1;for(const g of GROUPS)rotateGroup(out,tpl,g,shift%g.length);const weekHours={};for(const n of PEOPLE)weekHours[n]=+(out.schedule[n]||[]).reduce((z,s)=>z+hours(s),0).toFixed(2);out.meta.weekHours=weekHours;weeks.push(out)}return{version:'mechanical-rotation-v1',engine:'mechanical-safe-rotation',startDate:weeks[0].dates[0],endDate:weeks[2].dates[6],generatedAt:new Date().toISOString(),weeks,rules:{mechanical:true,groups:'Responsabili + Cassa 40h + Sala abilitata Cassa',excludedFromBlindSwap:['Giada','Paolo','Marco'],constraints:'con assenze/richieste si usa il generatore normale'}}}
+async function mechanicalOrNormal(target,init){try{const body=JSON.parse(init?.body||'{}'),start=String(body.startDate||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(start))return fetchWithRetry(target,init,2);const end=addDays(start,20),base=CLEAN_API;const [sch,abs,req]=await Promise.all([getJson(`${base}?action=get_schedule`,init),getJson(`${base}?action=absences`,init),getJson(`${base}?action=my_requests`,init)]);const hasAbs=(abs.absences||[]).some(a=>a.date_from<=end&&a.date_to>=start);const hasReq=(req.requests||[]).some(r=>r.status==='ACCETTATA'&&['RIPOSO','TURNO'].includes(String(r.kind||'').toUpperCase())&&r.request_date>=start&&r.request_date<=end);const published=sch.schedule;if(!hasAbs&&!hasReq&&published?.data?.weeks?.length&&published.end_date<start){const schedule=buildMechanical(start,published);if(schedule)return new Response(JSON.stringify({schedule}),{status:200,headers:{'Content-Type':'application/json'}})}return fetchWithRetry(target,init,2)}catch{return fetchWithRetry(target,init,2)}}
+window.fetch=function(input,init){try{const raw=typeof input==='string'?input:input?.url;const u=new URL(raw,location.href);if(u.origin+u.pathname===OLD_API){const target=new URL(CLEAN_API);target.search=u.search;if(u.searchParams.get('action')==='generate')return mechanicalOrNormal(target.toString(),init);return nativeFetch(target.toString(),init)}}catch{}return nativeFetch(input,init)};
 })();
