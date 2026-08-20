@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 sys.path.insert(0, str((Path(__file__).resolve().parent.parent / "solver-service").resolve()))
-from solver import solve_three_weeks
+from solver_weekly import solve_three_weeks_weekly
 
-app = FastAPI(title="Eurospin Turni Solver", version="1.0.0")
+app = FastAPI(title="Eurospin Turni Solver", version="1.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,7 +34,7 @@ def health() -> dict[str, str]:
 @app.post("/solve")
 def solve(payload: SolveRequest) -> dict[str, Any]:
     try:
-        return {"schedule": solve_three_weeks(payload.model_dump())}
+        return {"schedule": solve_three_weeks_weekly(payload.model_dump())}
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:
