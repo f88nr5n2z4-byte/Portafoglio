@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+sys.path.insert(0, str((Path(__file__).resolve().parent.parent / "solver-service").resolve()))
 from solver import solve_three_weeks
 
 app = FastAPI(title="Eurospin Turni Solver", version="1.0.0")
