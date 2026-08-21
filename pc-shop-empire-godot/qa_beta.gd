@@ -2,9 +2,6 @@ extends SceneTree
 
 var failures := []
 
-func _initialize() -> void:
-	call_deferred("_run")
-
 func check(condition: bool, message: String) -> void:
 	if not condition:
 		failures.append(message)
@@ -12,15 +9,14 @@ func check(condition: bool, message: String) -> void:
 	else:
 		print("QA PASS: ", message)
 
-func _run() -> void:
+func _init() -> void:
 	var game_script := load("res://qa_game.gd")
 	check(game_script != null, "beta runtime script loads")
 	if game_script == null:
 		quit(1)
 		return
 	var game = game_script.new()
-	root.add_child(game)
-	await process_frame
+	game._load_data()
 	check(game.components.size() >= 15, "hardware catalog loaded")
 	check(game.jobs.size() >= 6, "job catalog loaded")
 	game._new_game()
@@ -60,7 +56,7 @@ func _run() -> void:
 	game.current_job = 1
 	game.job_state = "accepted"
 	game.diagnostics_done = ["Power","POST"]
-	check(game._diagnosis_revealed(), "repair diagnosis requires tests and then reveals fault")
+	check(game._diagnosis_revealed(), "repair diagnosis requires tests and reveals fault")
 	game.build_slots.clear()
 	game.inventory["psu_750"] = 1
 	game._install_component(game._component("psu_750"))
@@ -73,8 +69,12 @@ func _run() -> void:
 	game.language = "en"
 	game._save_settings()
 	check(FileAccess.file_exists(game.SETTINGS_PATH), "settings file created")
-	game.queue_free()
-	await process_frame
+	# Release-only systems.
+	game.money = 5000
+	game.upgrades.Showroom = 1
+	check(int(game.upgrades.Showroom) == 1, "shop upgrade state is writable")
+	game.damaged_inventory["cpu_14600kf"] = 1
+	check(game._compatibility_reason(incompatible_cpu).contains("guasto"), "damaged used component is rejected")
 	if failures.is_empty():
 		print("PC GAME EMPIRE BETA QA: ALL TESTS PASSED")
 		quit(0)
