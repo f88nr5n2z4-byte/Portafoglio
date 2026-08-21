@@ -1,4 +1,4 @@
-name: Build PC SHOP EMPIRE Native
+name: Build PC GAME EMPIRE Native
 
 on:
   workflow_dispatch:
@@ -30,19 +30,22 @@ jobs:
       - name: Import project
         run: godot --headless --path pc-shop-empire-godot --editor --quit
 
+      - name: Run native beta QA
+        run: godot --headless --path pc-shop-empire-godot --script res://qa_beta.gd
+
       - name: Export Windows build
         run: |
           mkdir -p build
-          godot --headless --path pc-shop-empire-godot --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/PC-SHOP-EMPIRE.exe"
+          godot --headless --path pc-shop-empire-godot --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/PC-GAME-EMPIRE.exe"
 
       - name: Package
         run: |
           cd build
-          zip -9 PC-SHOP-EMPIRE-WINDOWS.zip PC-SHOP-EMPIRE.exe
+          zip -9 PC-GAME-EMPIRE-BETA-WINDOWS.zip PC-GAME-EMPIRE.exe
 
       - name: Upload playable Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PC-SHOP-EMPIRE-WINDOWS
-          path: build/PC-SHOP-EMPIRE-WINDOWS.zip
+          name: PC-GAME-EMPIRE-BETA-WINDOWS
+          path: build/PC-GAME-EMPIRE-BETA-WINDOWS.zip
           if-no-files-found: error
