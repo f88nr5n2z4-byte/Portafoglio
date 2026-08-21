@@ -13,12 +13,12 @@ func check(condition: bool, message: String) -> void:
 		print("QA PASS: ", message)
 
 func _run() -> void:
-	var scene := load("res://beta.tscn")
-	check(scene != null, "beta scene loads")
-	if scene == null:
+	var game_script := load("res://qa_game.gd")
+	check(game_script != null, "beta runtime script loads")
+	if game_script == null:
 		quit(1)
 		return
-	var game = scene.instantiate()
+	var game = game_script.new()
 	root.add_child(game)
 	await process_frame
 	check(game.components.size() >= 15, "hardware catalog loaded")
