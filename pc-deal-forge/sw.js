@@ -1,5 +1,5 @@
-const CACHE='pc-deal-forge-v4';
-const STATIC=['./','./index.html','./styles-v2.css?v=4','./app-v2.js?v=4','./manifest.webmanifest','./icon.svg','./offers-live.json','./catalog-extra.json'];
+const CACHE='pc-deal-forge-v5';
+const STATIC=['./','./index.html','./styles-v2.css?v=5','./app-v2.js?v=5','./daily-builds.js?v=5','./manifest.webmanifest','./icon.svg','./offers-live.json','./catalog-extra.json'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)))});
 self.addEventListener('activate',e=>{e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))]))});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.pathname.endsWith('/offers-live.json')||u.pathname.endsWith('/catalog-extra.json')){e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request)));return}e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))))});
