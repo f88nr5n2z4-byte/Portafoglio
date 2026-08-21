@@ -1,16 +1,29 @@
 import fs from 'node:fs/promises';
 const base=[
-{id:'cpu9800',cat:'CPU',name:'AMD Ryzen 7 9800X3D',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/processori/processore-amd-ryzen-7-b2243294',socket:'AM5',tdp:120},
-{id:'mbb850',cat:'Motherboard',name:'ASRock B850 Riptide WiFi',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-madri/scheda-madre-asrock-b850-b2254118',socket:'AM5',ram:'DDR5',form:'ATX'},
-{id:'ram32',cat:'RAM',name:'Kingston Fury Beast RGB 32GB DDR5-6000 CL30',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/memorie/ram-dimm-ddr5-2x16gb-b2210889',ram:'DDR5',gb:32},
-{id:'gpu5070',cat:'GPU',name:'PNY RTX 5070 EPIC-X RGB OC 12GB',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-video/rtx5070-pny-5070-b2267077',watts:250,length:300},
-{id:'ssd2tb',cat:'SSD',name:'Lexar NM790 2TB NVMe Gen4',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/ssd/2tb-lexar-nm790-m-b2087723',gb:2000},
-{id:'psu850',cat:'PSU',name:'Seasonic Core GX 850W ATX 3.1 Gold',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/alimentatori-pc/alimentatore-850w-seasonic-serie-b2252025',watts:850,atx31:true},
-{id:'caseh7',cat:'Case',name:'NZXT H7 Flow 2024',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/case-pc/nzxt-h7-flow-2024-b2207796',form:['ATX','mATX','ITX'],gpuMax:410},
-{id:'coolnhd15',cat:'Cooler',name:'Noctua NH-D15',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/dissipatori/dissipatore-cpu-noctua-nh-b0367016',sockets:['AM5','AM4','LGA1700']}
+{id:'cpu9600',cat:'CPU',name:'AMD Ryzen 5 9600X',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/processori/cpu-amd-ryzen-5-b2217426/',socket:'AM5',tdp:65,ref:220},
+{id:'cpu9700',cat:'CPU',name:'AMD Ryzen 7 9700X',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/processori/cpu-amd-ryzen-7-b2217427',socket:'AM5',tdp:65,ref:330},
+{id:'cpu9800',cat:'CPU',name:'AMD Ryzen 7 9800X3D',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/processori/processore-amd-ryzen-7-b2243294',socket:'AM5',tdp:120,ref:450},
+{id:'mbb850g',cat:'Motherboard',name:'Gigabyte B850 Gaming WiFi 6',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-madri/scheda-madre-gigabyte-b850-b2251593',socket:'AM5',ram:'DDR5',form:'ATX',ref:210},
+{id:'mbb850a',cat:'Motherboard',name:'Gigabyte B850 Aorus Elite WiFi 7',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-madri/scheda-madre-gigabyte-b850-b2251590',socket:'AM5',ram:'DDR5',form:'ATX',ref:260},
+{id:'mbb850s',cat:'Motherboard',name:'Sapphire Pure B850A WiFi 7',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-madri/scheda-madre-sapphire-pure-b2287870',socket:'AM5',ram:'DDR5',form:'ATX',ref:220},
+{id:'ramPatriot',cat:'RAM',name:'Patriot Viper Venom 32GB DDR5-6000 CL30',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/memorie/ram-dimm-ddr5-32gb-b2208348',ram:'DDR5',gb:32,ref:180},
+{id:'ramCrucial',cat:'RAM',name:'Crucial Pro 32GB DDR5-6400 CL38',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/memorie/ram-dimm-ddr5-32gb-b2242799',ram:'DDR5',gb:32,ref:190},
+{id:'gpuPalitOC',cat:'GPU',name:'Palit RTX 5070 Infinity 3 OC 12GB',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-video/scheda-nvidia-palit-geforce-b2270457',watts:250,length:292,ref:650},
+{id:'gpuAsus',cat:'GPU',name:'ASUS Dual RTX 5070 OC 12GB',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-video/scheda-nvidia-asus-geforce-b2274607',watts:250,length:249,ref:680},
+{id:'gpuMsi',cat:'GPU',name:'MSI RTX 5070 Ventus 2X OC 12GB',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-video/rtx5070-msi-ventus-5070-b2267074',watts:250,length:236,ref:690},
+{id:'gpuPny',cat:'GPU',name:'PNY RTX 5070 EPIC-X RGB OC 12GB',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/schede-video/rtx5070-pny-5070-b2267077',watts:250,length:300,ref:700},
+{id:'ssdP310',cat:'SSD',name:'Crucial P310 2TB NVMe Gen4 2280',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/ssd/2tb-crucial-p310-gen4-b2264191',gb:2000,ref:250},
+{id:'ssdE100',cat:'SSD',name:'Crucial E100 2TB NVMe Gen4',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/ssd/2tb-crucial-e100-gen4-b2279491',gb:2000,ref:250},
+{id:'ssdT705',cat:'SSD',name:'Crucial T705 2TB NVMe Gen5',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/ssd/2tb-crucial-pcle-gen5-b2168939',gb:2000,ref:340},
+{id:'psu850',cat:'PSU',name:'Seasonic Core GX 850W ATX 3.1 Gold',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/alimentatori-pc/alimentatore-850w-seasonic-serie-b2252025',watts:850,atx31:true,ref:150},
+{id:'psu1000',cat:'PSU',name:'Seasonic Focus GX 1000W ATX 3.1 Gold',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/alimentatori-pc/alimentatore-1000w-seasonic-focus-b2233892',watts:1000,atx31:true,ref:200},
+{id:'caseH7W',cat:'Case',name:'NZXT H7 Flow 2024 White',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/case-pc/nzxt-h7-flow-2024-b2207796',form:['ATX','mATX','ITX'],gpuMax:410,ref:140},
+{id:'caseH7B',cat:'Case',name:'NZXT H7 Flow 2024 Black',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/case-pc/nzxt-h7-flow-2024-b2207797',form:['ATX','mATX','ITX'],gpuMax:410,ref:140},
+{id:'coolNHD15',cat:'Cooler',name:'Noctua NH-D15',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/dissipatori/dissipatore-cpu-noctua-nh-b0367016',sockets:['AM5','AM4','LGA1700'],ref:130},
+{id:'coolLian',cat:'Cooler',name:'Lian Li Galahad II Trinity 360 SL-INF',shop:'BPM Power',url:'https://www.bpm-power.com/it/online/componenti-pc/dissipatori/dissipatore-cpu-dissipatore-cpu-b2106855',sockets:['AM5','AM4','LGA1700'],ref:190}
 ];
 function text(html){return html.replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/gi,' ').replace(/&euro;|&#8364;/gi,'€').replace(/\s+/g,' ')}
 function parsePrice(t){const m=t.match(/Prezzo\s*:\s*([0-9.]+(?:,[0-9]{1,2})?)\s*€/i)||t.match(/Prezzo\s*:\s*([0-9]+(?:\.[0-9]{1,2})?)\s*EUR/i);if(!m)return null;return Number(m[1].replace(/\./g,'').replace(',','.'))}
 const now=new Date().toISOString();const offers=[];
-for(const item of base){let status='unknown',price=null;try{const r=await fetch(item.url,{headers:{'user-agent':'Mozilla/5.0 PCDealForge/1.0'},redirect:'follow'});if(r.ok){const t=text(await r.text());price=parsePrice(t);if(/\bDisponibile\b/i.test(t)||/\bUltimi pezzi\b/i.test(t))status='active';if(/\bEsaurito\b/i.test(t)||/\bNon disponibile\b/i.test(t))status='expired';if(!price||price<=0)status='expired';}}catch{}offers.push({...item,price:price??0,status,verifiedAt:now});}
-await fs.writeFile(new URL('./offers-live.json',import.meta.url),JSON.stringify({updatedAt:now,source:'BPM Power automatic checker',offers},null,2));
+for(const item of base){let status='unknown',price=null;try{const r=await fetch(item.url,{headers:{'user-agent':'Mozilla/5.0 (compatible; PCDealForge/2.0; +https://github.com/f88nr5n2z4-byte/Portafoglio)'},redirect:'follow'});if(r.ok){const t=text(await r.text());price=parsePrice(t);if(/\bDisponibile\b/i.test(t)||/\bUltimi pezzi\b/i.test(t))status='active';if(/\bEsaurito\b/i.test(t)||/\bNon disponibile\b/i.test(t))status='expired';if(!price||price<=0)status='expired';}}catch{}offers.push({...item,price:price??0,status,verifiedAt:now});}
+await fs.writeFile(new URL('./offers-live.json',import.meta.url),JSON.stringify({updatedAt:now,source:'BPM Power automatic checker',trustedRetailers:['BPM Power'],offers},null,2));
