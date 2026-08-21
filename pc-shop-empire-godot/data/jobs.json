@@ -1,0 +1,10 @@
+[
+  {"id":"build_1440p","customer":"Marco","type":"build","title":"PC Gaming 1440p","budget":1300,"reward":1450,"rep":6,"xp":180,"need":["CPU","Motherboard","RAM","GPU","Storage","PSU","Case","Cooling"],"hint":"Buone prestazioni 1440p, stabile e silenzioso."},
+  {"id":"repair_boot","customer":"Giulia","type":"repair","title":"PC non si accende","budget":350,"reward":420,"rep":4,"xp":120,"fault":"PSU","tests":["Power","POST","PSU"],"hint":"Nessun segno di vita quando preme il pulsante."},
+  {"id":"repair_heat","customer":"Luca","type":"repair","title":"Temperature troppo alte","budget":220,"reward":290,"rep":4,"xp":110,"fault":"Cooling","tests":["Boot","Temperatures","Stress"],"hint":"Le ventole urlano e il PC rallenta durante i giochi."},
+  {"id":"upgrade_gpu","customer":"Andrea","type":"upgrade","title":"Upgrade GPU per 1440p","budget":800,"reward":900,"rep":5,"xp":140,"need":["GPU"],"hint":"Vuole più FPS senza cambiare tutto il PC."},
+  {"id":"repair_ram","customer":"Sara","type":"repair","title":"Crash casuali e BSOD","budget":260,"reward":340,"rep":5,"xp":130,"fault":"RAM","tests":["POST","Memory","Stress"],"hint":"Il PC si riavvia sotto carico e mostra errori casuali."},
+  {"id":"storage_upgrade","customer":"Paolo","type":"upgrade","title":"SSD e installazione sistema","budget":300,"reward":370,"rep":3,"xp":100,"need":["Storage"],"hint":"Avvio lento, vuole un SSD e sistema pulito."},
+  {"id":"build_creator","customer":"Elena","type":"build","title":"Workstation Creator","budget":1900,"reward":2150,"rep":8,"xp":240,"need":["CPU","Motherboard","RAM","GPU","Storage","PSU","Case","Cooling"],"hint":"Montaggio video, Blender e multitasking pesante."},
+  {"id":"clean_service","customer":"Davide","type":"repair","title":"Pulizia e manutenzione","budget":120,"reward":155,"rep":2,"xp":70,"fault":"Dust","tests":["Visual","Temperatures"],"hint":"Temperature un po' alte, PC pieno di polvere."}
+]
