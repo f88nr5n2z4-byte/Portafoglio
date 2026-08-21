@@ -1,0 +1,11 @@
+{
+  "name": "PC Deal Forge",
+  "short_name": "PC Forge",
+  "description": "Gioco e configuratore PC con offerte, compatibilità e margine di rivendita.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070910",
+  "theme_color": "#0a0d14",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
