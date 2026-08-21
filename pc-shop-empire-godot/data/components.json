@@ -1,0 +1,20 @@
+[
+  {"id":"cpu_9600x","category":"CPU","name":"AMD Ryzen 5 9600X","price":185,"socket":"AM5","power":65,"score":78},
+  {"id":"cpu_9700x","category":"CPU","name":"AMD Ryzen 7 9700X","price":282,"socket":"AM5","power":65,"score":86},
+  {"id":"cpu_14600kf","category":"CPU","name":"Intel Core i5-14600KF","price":242,"socket":"LGA1700","power":125,"score":82},
+  {"id":"mb_b850","category":"Motherboard","name":"B850 Gaming WiFi","price":166,"socket":"AM5","ram":"DDR5","form":"ATX"},
+  {"id":"mb_z790","category":"Motherboard","name":"Z790 Gaming WiFi","price":219,"socket":"LGA1700","ram":"DDR5","form":"ATX"},
+  {"id":"ram_32","category":"RAM","name":"Kingston Fury Beast 32GB DDR5-6000","price":172,"ram":"DDR5","score":80},
+  {"id":"ram_64","category":"RAM","name":"Corsair Vengeance 64GB DDR5-6000","price":289,"ram":"DDR5","score":92},
+  {"id":"gpu_5060","category":"GPU","name":"GeForce RTX 5060 8GB","price":330,"power":145,"score":70,"length":245},
+  {"id":"gpu_5070","category":"GPU","name":"GeForce RTX 5070 12GB","price":608,"power":250,"score":88,"length":305},
+  {"id":"gpu_7800xt","category":"GPU","name":"Radeon RX 7800 XT 16GB","price":499,"power":263,"score":84,"length":302},
+  {"id":"ssd_1tb","category":"Storage","name":"Samsung NVMe SSD 1TB","price":89,"score":78},
+  {"id":"ssd_2tb","category":"Storage","name":"Crucial NVMe SSD 2TB","price":225,"score":88},
+  {"id":"psu_750","category":"PSU","name":"Seasonic 750W Gold","price":95,"watts":750},
+  {"id":"psu_850","category":"PSU","name":"Seasonic 850W Gold","price":109,"watts":850},
+  {"id":"case_atx","category":"Case","name":"NZXT H7 Flow","price":114,"form":"ATX","gpu_max":400},
+  {"id":"cooler_air","category":"Cooling","name":"Noctua NH-D15","price":114,"sockets":["AM5","LGA1700"]},
+  {"id":"cooler_aio","category":"Cooling","name":"Lian Li AIO 360","price":180,"sockets":["AM5","LGA1700"]},
+  {"id":"fan_120","category":"Fans","name":"RGB Fan 120mm","price":19,"score":10}
+]
