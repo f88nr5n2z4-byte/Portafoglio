@@ -17,8 +17,6 @@ func _draw() -> void:
 	var game = get_parent()
 	if not is_instance_valid(game):
 		return
-	if not ("mode" in game):
-		return
 	if game.mode == "shop":
 		var moving := Input.get_vector("move_left", "move_right", "move_up", "move_down").length() > 0.05
 		var bob := sin(t * 12.0) * 3.0 if moving else sin(t * 2.4) * 1.0
@@ -30,7 +28,7 @@ func _draw() -> void:
 		_draw_build_hands()
 
 func _draw_build_hands() -> void:
-	# Forearms/hands at the workbench edge to make assembly feel first-person.
+	# Forearms and hands at the workbench edge make assembly read as first-person.
 	draw_colored_polygon(PackedVector2Array([Vector2(275,720),Vector2(350,600),Vector2(410,610),Vector2(350,720)]),Color("#111319"))
 	draw_colored_polygon(PackedVector2Array([Vector2(1005,720),Vector2(930,600),Vector2(870,610),Vector2(930,720)]),Color("#111319"))
 	draw_circle(Vector2(385,605),28,Color("#d6a07d"))
