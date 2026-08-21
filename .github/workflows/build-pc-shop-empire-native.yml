@@ -6,6 +6,10 @@ on:
     paths:
       - "pc-shop-empire-godot/**"
       - ".github/workflows/build-pc-shop-empire-native.yml"
+  pull_request:
+    paths:
+      - "pc-shop-empire-godot/**"
+      - ".github/workflows/build-pc-shop-empire-native.yml"
 
 permissions:
   contents: read
