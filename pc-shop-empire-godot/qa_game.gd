@@ -1,4 +1,4 @@
-extends "res://beta_polish.gd"
+extends "res://beta_release.gd"
 
 func _setup_audio() -> void:
 	pass
