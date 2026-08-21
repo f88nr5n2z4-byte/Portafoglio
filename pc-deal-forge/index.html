@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0d14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PC Deal Forge" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <title>PC Deal Forge</title>
+  <link rel="stylesheet" href="styles.css?v=1" />
+</head>
+<body>
+<div class="app">
+  <header class="top"><div class="topin"><div class="brand"><div class="logo">⚡</div><span>PC DEAL FORGE</span></div><div class="nav">
+    <button class="active" data-view="home">Dashboard</button><button data-view="market">Mercato</button><button data-view="builder">Build Lab</button><button data-view="game">Game</button><button data-view="garage">Garage</button>
+  </div><div class="pill" id="xpPill">LV 1 · 0 XP</div></div></header>
+  <main>
+    <section id="home" class="view active">
+      <div class="hero"><div class="card heroMain"><div class="eyebrow">Build. Hunt. Flip.</div><h1>Trova l'affare.<br>Costruisci il mostro.</h1><p>Un simulatore di assemblaggio PC basato su prezzi reali, compatibilità tecnica e valore di rivendita. Caccia le offerte migliori, crea build intelligenti e guadagna XP come un vero PC flipper.</p><div class="cta"><button class="btn" onclick="go('builder')">Crea una build</button><button class="btn secondary" onclick="go('market')">Scansiona offerte</button></div></div>
+      <div class="card stats"><div class="stat"><b id="statDeals">0</b><span>offerte nel radar</span></div><div class="stat"><b id="statAvg">0%</b><span>sconto medio</span></div><div class="stat"><b id="statBuilds">0</b><span>build salvate</span></div><div class="stat"><b id="statBest">—</b><span>best deal score</span></div></div></div>
+      <div class="sectionTitle"><div><h2>🔥 Deal Radar</h2><p>Snapshot di offerte reali + controlli anti-outlier.</p></div><button class="btn secondary" onclick="go('market')">Vedi tutto</button></div><div id="homeDeals" class="grid"></div>
+    </section>
+
+    <section id="market" class="view"><div class="sectionTitle"><div><h2>Mercato componenti</h2><p>Filtra, confronta e valuta il rapporto prezzo/valore.</p></div><div class="toolbar"><input id="search" class="input" placeholder="Cerca RTX, Ryzen, B850..." oninput="renderMarket()"><select id="catFilter" class="select" onchange="renderMarket()"><option value="all">Tutte le categorie</option></select><select id="sort" class="select" onchange="renderMarket()"><option value="score">Miglior affare</option><option value="price">Prezzo crescente</option><option value="discount">Sconto</option></select><button class="btn secondary" onclick="openImport()">+ Importa offerta</button></div></div><div id="marketDeals" class="grid"></div><div class="footerNote">I prezzi sono uno snapshot e possono cambiare rapidamente. Verifica sempre disponibilità, spedizione, venditore e condizioni prima dell'acquisto. Le offerte anomale ricevono un punteggio di affidabilità più basso.</div></section>
+
+    <section id="builder" class="view"><div class="sectionTitle"><div><h2>Build Lab</h2><p>Compatibilità automatica: socket, RAM, form factor, potenza PSU, GPU e case.</p></div><div class="toolbar"><input id="buildName" class="input" value="Build #1"><button class="btn secondary" onclick="randomBuild()">🎲 Build casuale</button></div></div><div class="builder"><div id="slots" class="slots"></div><aside class="card summary"><div class="eyebrow">Build analyzer</div><div class="scoreRow"><div id="scoreRing" class="scoreRing" style="--p:0"><b id="scoreText">0</b></div><div><b id="buildStatus">Build incompleta</b><div class="tiny" id="buildSubtitle">Seleziona i componenti</div></div></div><div id="compat" class="compat"></div><div class="profit"><div class="mini"><span>Costo</span><b id="costMini">€0</b></div><div class="mini"><span>Valore stimato</span><b id="valueMini">€0</b></div><div class="mini"><span>Margine</span><b id="marginMini">€0</b></div></div><div class="total"><span>Totale build</span><strong id="buildTotal">€0</strong></div><div class="cta"><button class="btn" onclick="saveBuild()">Salva nel garage</button><button class="btn secondary" onclick="clearBuild()">Reset</button></div></aside></div></section>
+
+    <section id="game" class="view"><div class="sectionTitle"><div><h2>Game Mode</h2><p>Trasforma la ricerca di componenti in una sfida.</p></div></div><div class="gameGrid"><div><div id="missions"></div></div><div class="card xp"><div class="eyebrow">Profilo flipper</div><div class="level" id="gameLevel">LV 1</div><p class="meta" id="xpText">0 / 500 XP</p><div class="progress"><span id="xpBar" style="width:0%"></span></div><h3>Obiettivi</h3><div id="badges" class="achievements"></div></div></div></section>
+
+    <section id="garage" class="view"><div class="sectionTitle"><div><h2>Garage</h2><p>Le tue build salvate con costo, valore e margine potenziale.</p></div><button class="btn danger" onclick="clearGarage()">Svuota garage</button></div><div class="card marketTable"><table class="table"><thead><tr><th>Build</th><th>Componenti</th><th>Costo</th><th>Valore stimato</th><th>Margine</th><th>Score</th><th></th></tr></thead><tbody id="garageRows"></tbody></table></div></section>
+  </main>
+</div>
+<div class="modal" id="importModal"><div class="card modalbox"><h2>Importa un'offerta reale</h2><p class="meta">Aggiungi manualmente un prezzo trovato online. L'app lo includerà nel radar e nei calcoli.</p><div class="row"><input class="input" id="impName" placeholder="Nome componente"><select class="select" id="impCat"></select><input class="input" id="impPrice" type="number" placeholder="Prezzo €"><input class="input" id="impRef" type="number" placeholder="Prezzo di riferimento €"><input class="input" id="impShop" placeholder="Negozio"><input class="input" id="impUrl" placeholder="Link offerta"></div><div class="cta"><button class="btn" onclick="importDeal()">Aggiungi</button><button class="btn secondary" onclick="closeImport()">Annulla</button></div></div></div><div class="toast" id="toast"></div>
+<script src="app.js?v=1"></script>
+<script>
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+</script>
+</body></html>
