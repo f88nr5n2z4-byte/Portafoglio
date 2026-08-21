@@ -1,0 +1,48 @@
+name: Build PC SHOP EMPIRE Native
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "pc-shop-empire-godot/**"
+      - ".github/workflows/build-pc-shop-empire-native.yml"
+  pull_request:
+    paths:
+      - "pc-shop-empire-godot/**"
+      - ".github/workflows/build-pc-shop-empire-native.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  windows-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Godot 4.7.2
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.2
+          use-dotnet: false
+          include-templates: true
+
+      - name: Import project
+        run: godot --headless --path pc-shop-empire-godot --editor --quit
+
+      - name: Export Windows build
+        run: |
+          mkdir -p build
+          godot --headless --path pc-shop-empire-godot --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/PC-SHOP-EMPIRE.exe"
+
+      - name: Package
+        run: |
+          cd build
+          zip -9 PC-SHOP-EMPIRE-WINDOWS.zip PC-SHOP-EMPIRE.exe
+
+      - name: Upload playable Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC-SHOP-EMPIRE-WINDOWS
+          path: build/PC-SHOP-EMPIRE-WINDOWS.zip
+          if-no-files-found: error
