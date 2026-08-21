@@ -3,6 +3,7 @@ name: Build PC GAME EMPIRE Native
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - "pc-shop-empire-godot/**"
       - ".github/workflows/build-pc-shop-empire-native.yml"
@@ -14,9 +15,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pc-game-empire-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   windows-export:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +37,7 @@ jobs:
         run: godot --headless --path pc-shop-empire-godot --editor --quit
 
       - name: Run native beta QA
-        run: godot --headless --path pc-shop-empire-godot --script res://qa_beta.gd
+        run: timeout 90s godot --headless --path pc-shop-empire-godot --script res://qa_beta.gd
 
       - name: Export Windows build
         run: |
