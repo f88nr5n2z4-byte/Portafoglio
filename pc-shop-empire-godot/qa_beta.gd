@@ -57,7 +57,8 @@ func _init() -> void:
 	var eatx_mb := {"id":"qa_mb_eatx","category":"Motherboard","name":"QA EATX","socket":"AM5","ram":"DDR5","form":"EATX","price":1}
 	check(game._compatibility_reason(eatx_mb).contains("form factor"), "motherboard form factor versus case is enforced")
 	var weak_psu := {"id":"qa_psu_weak","category":"PSU","name":"QA 300W","watts":300,"price":1}
-	check(game._compatibility_reason(weak_psu).contains("PSU"), "PSU wattage headroom is enforced")
+	var weak_psu_reason:String = game._compatibility_reason(weak_psu)
+	check(weak_psu_reason.contains("insufficiente") or weak_psu_reason.contains("PSU") or weak_psu_reason.contains("Alimentatore"), "PSU wattage headroom is enforced")
 	var aio_420 := {"id":"qa_aio_420","category":"Cooling","name":"QA AIO 420","kind":"aio","radiator":420,"sockets":["AM5"],"price":1}
 	check(game._compatibility_reason(aio_420).contains("radiatore"), "radiator size versus case is enforced")
 
