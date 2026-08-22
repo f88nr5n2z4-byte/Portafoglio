@@ -26,18 +26,18 @@
  {"id":"gpu_9070xt","category":"GPU","name":"AMD Radeon RX 9070 XT 16GB","price":702,"power":304,"score":94,"length":330,"price_date":"2026-08-21"},
  {"id":"gpu_5080","category":"GPU","name":"Palit GeForce RTX 5080 16GB","price":1426,"power":360,"score":108,"length":340,"price_date":"2026-08-21"},
 
- {"id":"ssd_1tb","category":"Storage","name":"Samsung 980 PRO NVMe 1TB","price":115,"score":78},
- {"id":"ssd_2tb","category":"Storage","name":"Crucial P310 NVMe 2TB","price":225,"score":88,"price_date":"2026-08-21"},
- {"id":"hdd_2tb","category":"Storage","name":"Seagate Barracuda HDD 2TB","price":59,"score":35},
+ {"id":"ssd_1tb","category":"Storage","name":"Samsung 980 PRO NVMe 1TB","price":115,"score":78,"storage_type":"NVMe"},
+ {"id":"ssd_2tb","category":"Storage","name":"Crucial P310 NVMe 2TB","price":225,"score":88,"storage_type":"NVMe","price_date":"2026-08-21"},
+ {"id":"hdd_2tb","category":"Storage","name":"Seagate Barracuda HDD 2TB","price":59,"score":35,"storage_type":"HDD"},
 
  {"id":"psu_750","category":"PSU","name":"Corsair RM750e 750W Gold","price":99,"watts":750},
  {"id":"psu_850","category":"PSU","name":"Seasonic Core GX 850W Gold","price":109,"watts":850,"price_date":"2026-08-21"},
  {"id":"psu_1000","category":"PSU","name":"Seasonic Focus GX-1000","price":178,"watts":1000,"price_date":"2026-08-21"},
 
- {"id":"case_atx","category":"Case","name":"NZXT H7 Flow White","price":114,"form":"ATX","gpu_max":400,"price_date":"2026-08-21"},
- {"id":"case_lancool","category":"Case","name":"Lian Li LANCOOL 216","price":109,"form":"ATX","gpu_max":392},
+ {"id":"case_atx","category":"Case","name":"NZXT H7 Flow White","price":114,"form":"ATX","supported_forms":["ATX","mATX","ITX"],"gpu_max":400,"cooler_max":185,"rad_max":360,"price_date":"2026-08-21"},
+ {"id":"case_lancool","category":"Case","name":"Lian Li LANCOOL 216","price":109,"form":"ATX","supported_forms":["ATX","mATX","ITX"],"gpu_max":392,"cooler_max":180,"rad_max":360},
 
- {"id":"cooler_air","category":"Cooling","name":"Noctua NH-D15","price":114,"sockets":["AM4","AM5","LGA1700","LGA1851"],"price_date":"2026-08-21"},
- {"id":"cooler_aio","category":"Cooling","name":"Lian Li Galahad II 360","price":180,"sockets":["AM4","AM5","LGA1700","LGA1851"],"price_date":"2026-08-21"},
- {"id":"fan_120","category":"Fans","name":"Lian Li UNI FAN 120 RGB","price":29,"score":10}
+ {"id":"cooler_air","category":"Cooling","name":"Noctua NH-D15","price":114,"kind":"air","height":165,"sockets":["AM4","AM5","LGA1700","LGA1851"],"price_date":"2026-08-21"},
+ {"id":"cooler_aio","category":"Cooling","name":"Lian Li Galahad II 360","price":180,"kind":"aio","radiator":360,"sockets":["AM4","AM5","LGA1700","LGA1851"],"price_date":"2026-08-21"},
+ {"id":"fan_120","category":"Fans","name":"Lian Li UNI FAN 120 RGB","price":29,"size":120,"score":10}
 ]
