@@ -42,14 +42,19 @@ func _run() -> void:
 	Input.action_release("move_left")
 	check(player.global_position.x > -8.75,"wall collision blocks the player")
 
-	print("M0 QA CHECKPOINT: waiting for customer to reach counter")
+	print("M0 QA CHECKPOINT: customer walking test")
+	world.customer.global_position = Vector3(0.0,0.65,1.55)
+	world.customer.velocity = Vector3.ZERO
+	world.customer.set_route([Vector3(0.0,0.65,-0.25)])
+	var customer_start:Vector3 = world.customer.global_position
 	var customer_reached := false
-	for _i in range(480):
+	for _i in range(125):
 		await physics_frame
 		if world.customer.waiting:
 			customer_reached = true
 			break
-	check(customer_reached,"customer walks to and reaches the counter")
+	check(world.customer.global_position.z < customer_start.z - 0.8,"customer actually walks toward counter")
+	check(customer_reached,"customer reaches and waits at the counter")
 	check(world.customer.global_position.z < 0.35,"customer arrived at service area")
 	print("M0 QA CHECKPOINT: customer route complete at ",world.customer.global_position)
 
