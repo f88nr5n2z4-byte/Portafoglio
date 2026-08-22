@@ -2,9 +2,10 @@ extends RefCounted
 
 const Materials = preload("res://game/art/world_materials.gd")
 const ShopAssets = preload("res://game/art/modular_shop_assets.gd")
+const LegacyCleanup = preload("res://game/art/legacy_visual_cleanup.gd")
 
 static func build() -> Node3D:
-	var root:=Node3D.new(); root.name="WorldSurfaceFinish_Final"
+	var root:=LegacyCleanup.new(); root.name="WorldSurfaceFinish_Final"
 	# Thin finish meshes sit above/inside the physical blockout surfaces. Physics remains unchanged.
 	ShopAssets.box(root,"ShopFloorFinish",Vector3(0,0.012,0),Vector3(17.88,0.024,15.88),Materials.floor_material())
 	ShopAssets.box(root,"LabFloorFinish",Vector3(13.5,0.014,-1.0),Vector3(8.88,0.026,11.88),Materials.lab_floor_material())
