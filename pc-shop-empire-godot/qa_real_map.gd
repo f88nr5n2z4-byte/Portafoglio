@@ -31,26 +31,23 @@ func _run() -> void:
 	var world=game.real_world
 	var static_bodies:=0
 	var areas:=0
-	var props:=0
+	var scripted_props:=0
 	for child in world.get_children():
 		if child is StaticBody2D: static_bodies+=1
 		elif child is Area2D: areas+=1
-		elif String(child.name).begins_with("Prop_"): props+=1
+		elif child is Node2D and not child is CharacterBody2D and child.get_script()!=null and child.has_method("configure"):
+			scripted_props+=1
 	check(static_bodies>=8,"StaticBody2D collision objects exist in shop scene graph")
 	check(areas>=5,"Area2D interaction objects exist in shop scene graph")
-	check(props>=20,"furniture/products are separate nodes, not one backdrop")
-	# Verify real movement changes the CharacterBody2D position.
+	check(scripted_props>=20 and int(status.get("props",0))>=20,"furniture/products are separate nodes, not one backdrop")
 	var before:Vector2=world.player_position()
 	world.drive_player(Vector2.LEFT,220.0,0.20)
 	var after:Vector2=world.player_position()
 	check(after.distance_to(before)>1.0,"player physically moves through CharacterBody2D")
-	# Verify customer exists as a physical actor.
 	check(world.customer_body!=null and world.customer_body is CharacterBody2D,"customer is a real actor in the shop")
-	# Force near service counter and verify interaction resolves to a real Area2D.
 	world.player_body.position=Vector2(930,350)
 	var near_customer:String=world.nearest_interaction(160.0)
 	check(near_customer in ["counter","customer"],"customer/counter interaction is spatially resolved")
-	# Enter/build lab room and validate its physical objects.
 	game.set("screen","lab_floor")
 	game._sync_real_room(true)
 	for _i in range(3): await process_frame
