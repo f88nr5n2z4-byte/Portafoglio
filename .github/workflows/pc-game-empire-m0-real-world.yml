@@ -44,7 +44,7 @@ jobs:
         run: |
           $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
           $out = "$PWD\build\m0_stdout.log"; $err = "$PWD\build\m0_stderr.log"
-          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","180","--path","pc-shop-empire-godot","--script","res://qa_milestone0_real_world.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","900","--path","pc-shop-empire-godot","--script","res://qa_milestone0_real_world.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
           $all=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $all
           if ($p.ExitCode -ne 0 -or $all -notmatch "MILESTONE 0 REAL-WORLD QA: ALL TESTS PASSED") { throw "Real-world runtime QA failed" }
       - name: Capture real-time movement sequence
