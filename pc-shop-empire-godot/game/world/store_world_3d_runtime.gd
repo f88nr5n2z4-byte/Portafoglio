@@ -69,19 +69,22 @@ func _build_final_shop_pass() -> void:
 	for x in [-7.4,-3.7,0.0,3.7,7.4]: _add_box("FloorInlay",Vector3(x,0.015,0),Vector3(0.025,0.025,14.8),Color("#334454"),false)
 	for z in [-6.2,-3.0,0.2,3.4,6.4]: _add_box("FloorJoint",Vector3(0,0.018,z),Vector3(16.8,0.02,0.02),Color("#111821"),false)
 	for x in [-7.2,-4.8,-2.4,0.0,2.4,4.8,7.2]: _add_box("WallFrame",Vector3(x,1.7,-7.72),Vector3(0.08,2.6,0.08),Color("#596673"),false)
-	_add_emissive_box("EmpireSign",Vector3(0,2.72,-7.54),Vector3(7.0,0.38,0.08),Color("#ef3156"),2.7)
+	_add_emissive_box("EmpireSign",Vector3(0,2.72,-7.54),Vector3(7.0,0.38,0.08),Color("#ef3156"),1.35)
 	_add_label("PC GAME EMPIRE",Vector3(0,2.74,-7.47),Vector3(0,180,0),36,Color.WHITE)
 	var counter:Node3D=ShopAssets.build_sales_counter(); counter.position=Vector3(0,0.02,-1.70); shop_art_root.add_child(counter); _mark_occludable(counter,1.35,0.85)
-	var entry_shelf:Node3D=ShopAssets.build_wall_shelf("ENTRY",Color("#3bbfe8")); entry_shelf.position=Vector3(-6.65,0.02,-4.65); entry_shelf.rotation_degrees.y=90; shop_art_root.add_child(entry_shelf); _mark_occludable(entry_shelf,1.05,1.2)
-	var gaming_shelf:Node3D=ShopAssets.build_wall_shelf("GAMING",Color("#ed365b")); gaming_shelf.position=Vector3(-6.65,0.02,-1.75); gaming_shelf.rotation_degrees.y=90; shop_art_root.add_child(gaming_shelf); _mark_occludable(gaming_shelf,1.05,1.2)
+	var entry_shelf:Node3D=ShopAssets.build_wall_shelf("CPU & GPU",Color("#3bbfe8")); entry_shelf.position=Vector3(-6.65,0.02,-4.65); entry_shelf.rotation_degrees.y=90; shop_art_root.add_child(entry_shelf); _mark_occludable(entry_shelf,1.05,1.2)
+	var gaming_shelf:Node3D=ShopAssets.build_wall_shelf("MEMORY",Color("#ed365b")); gaming_shelf.position=Vector3(-6.65,0.02,-1.75); gaming_shelf.rotation_degrees.y=90; shop_art_root.add_child(gaming_shelf); _mark_occludable(gaming_shelf,1.05,1.2)
 	var storage_shelf:Node3D=ShopAssets.build_wall_shelf("STORAGE",Color("#9b67ee")); storage_shelf.position=Vector3(-6.65,0.02,1.10); storage_shelf.rotation_degrees.y=90; shop_art_root.add_child(storage_shelf); _mark_occludable(storage_shelf,1.05,1.2)
 	var pc_island:Node3D=ShopAssets.build_display_island(Color("#e93258"),"pc"); pc_island.position=Vector3(2.35,0.02,3.35); shop_art_root.add_child(pc_island); _mark_occludable(pc_island,1.28,0.7)
 	var laptop_island:Node3D=ShopAssets.build_display_island(Color("#39bfe7"),"laptop"); laptop_island.position=Vector3(-2.55,0.02,3.35); shop_art_root.add_child(laptop_island); _mark_occludable(laptop_island,1.20,0.65)
+	var accessory_island:Node3D=ShopAssets.build_display_island(Color("#a861ef"),"accessories"); accessory_island.position=Vector3(-6.45,0.02,4.70); accessory_island.rotation_degrees.y=90; shop_art_root.add_child(accessory_island); _mark_occludable(accessory_island,1.18,0.68)
 	var peripheral:Node3D=ShopAssets.build_peripheral_display(Color("#c84fff")); peripheral.position=Vector3(7.05,0.02,-4.0); peripheral.rotation_degrees.y=-90; shop_art_root.add_child(peripheral); _mark_occludable(peripheral,1.10,1.25)
-	for x in [-2.35,2.35]:
-		var totem:Node3D=ShopAssets.build_brand_totem(Color("#ed3157")); totem.position=Vector3(x,0.02,6.82); shop_art_root.add_child(totem); _mark_occludable(totem,0.55,1.2)
-	var chair_a:Node3D=ShopAssets.build_chair(Color("#e93258")); chair_a.position=Vector3(5.8,0.02,5.65); chair_a.rotation_degrees.y=205; shop_art_root.add_child(chair_a)
-	var chair_b:Node3D=ShopAssets.build_chair(Color("#36bce6")); chair_b.position=Vector3(7.0,0.02,5.35); chair_b.rotation_degrees.y=165; shop_art_root.add_child(chair_b)
+	var build_totem:Node3D=ShopAssets.build_brand_totem(Color("#ed3157"),"BUILD"); build_totem.position=Vector3(-2.35,0.02,6.82); shop_art_root.add_child(build_totem); _mark_occludable(build_totem,0.55,1.2)
+	var play_totem:Node3D=ShopAssets.build_brand_totem(Color("#39c3e9"),"PLAY"); play_totem.position=Vector3(2.35,0.02,6.82); shop_art_root.add_child(play_totem); _mark_occludable(play_totem,0.55,1.2)
+	var entry_mat:Node3D=ShopAssets.build_entry_mat(); entry_mat.position=Vector3(0,0.035,5.62); shop_art_root.add_child(entry_mat)
+	var consultation:Node3D=ShopAssets.build_consultation_table(); consultation.position=Vector3(6.28,0.02,5.38); shop_art_root.add_child(consultation); _mark_occludable(consultation,0.92,0.58)
+	var chair_a:Node3D=ShopAssets.build_chair(Color("#e93258")); chair_a.position=Vector3(4.92,0.02,5.40); chair_a.rotation_degrees.y=90; shop_art_root.add_child(chair_a)
+	var chair_b:Node3D=ShopAssets.build_chair(Color("#36bce6")); chair_b.position=Vector3(7.62,0.02,5.40); chair_b.rotation_degrees.y=-90; shop_art_root.add_child(chair_b)
 	var plant:Node3D=ShopAssets.build_plant(); plant.position=Vector3(7.9,0.02,6.25); shop_art_root.add_child(plant)
 	for i in range(4):
 		var x=-3.9+i*2.55
@@ -89,14 +92,15 @@ func _build_final_shop_pass() -> void:
 		var mroot:=Node3D.new(); mroot.position=Vector3(x,1.78,-7.40); shop_art_root.add_child(mroot)
 		ShopAssets.build_monitor(mroot,Vector3.ZERO,accent,1.0)
 		_add_box("MonitorShelf",Vector3(x,1.12,-7.43),Vector3(2.05,0.08,0.48),Color("#56616d"),false)
-	var terminal_root:=Node3D.new(); terminal_root.name="StoreTerminal_Final"; terminal_root.position=Vector3(6.30,0.02,2.82); shop_art_root.add_child(terminal_root)
-	ShopAssets.build_monitor(terminal_root,Vector3(0,1.48,-0.10),Color("#35bfe8"),0.92)
-	ShopAssets.build_keyboard(terminal_root,Vector3(-0.16,1.10,0.20),Color("#35bfe8"))
-	ShopAssets.build_mouse(terminal_root,Vector3(0.64,1.14,0.18),Color("#ef365b"))
+	var category_labels:PackedStringArray=["CREATOR","GAMING","PRO","ULTRAWIDE"]
+	for i in range(category_labels.size()): _add_label(category_labels[i],Vector3(-3.9+i*2.55,2.29,-7.42),Vector3(0,180,0),16,Color("#d9e4ea"))
+	var terminal_root:Node3D=ShopAssets.build_shop_terminal(Color("#35bfe8")); terminal_root.position=Vector3(6.30,0.02,2.82); shop_art_root.add_child(terminal_root)
 	_mark_occludable(terminal_root,0.82,0.9)
-	for x in [-5.5,0.0,5.5]: _add_emissive_box("ShopLightBar",Vector3(x,3.05,-0.6),Vector3(3.6,0.05,0.16),Color("#e4f2ff"),2.15)
-	_add_light(Vector3(-2.5,2.65,3.4),Color("#78d9ff"),1.35,4.7)
-	_add_light(Vector3(2.4,2.65,3.4),Color("#ff6b86"),1.35,4.7)
+	# Compact practicals replace the old long floating emissive rods.
+	for fixture_data in [[Vector3(-4.8,2.55,-7.42),Color("#74d7f4")],[Vector3(4.8,2.55,-7.42),Color("#f05b78")]]:
+		var fixture:Node3D=ShopAssets.build_track_spot(fixture_data[1]); fixture.position=fixture_data[0]; fixture.rotation_degrees.x=90; shop_art_root.add_child(fixture)
+	_add_light(Vector3(-2.5,2.65,3.4),Color("#78d9ff"),0.72,4.4)
+	_add_light(Vector3(2.4,2.65,3.4),Color("#ff6b86"),0.70,4.4)
 	_register_animation_nodes(shop_art_root)
 
 func _build_final_lab_pass() -> void:
