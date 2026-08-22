@@ -5,8 +5,13 @@ extends RefCounted
 # No world raster is referenced here.
 
 static var _bevel_mesh_cache:Dictionary = {}
+static var _plain_mesh_cache:Dictionary = {}
+static var _cylinder_mesh_cache:Dictionary = {}
+static var _material_cache:Dictionary = {}
 
 static func mat(color:Color, roughness:float=0.42, metallic:float=0.0, emission:Color=Color(0,0,0,0), emission_energy:float=0.0) -> StandardMaterial3D:
+	var key:="%.3f_%.3f_%.3f_%.3f__%.3f_%.3f__%.3f_%.3f_%.3f_%.3f__%.3f"%[color.r,color.g,color.b,color.a,roughness,metallic,emission.r,emission.g,emission.b,emission.a,emission_energy]
+	if _material_cache.has(key): return _material_cache[key] as StandardMaterial3D
 	var m:=StandardMaterial3D.new()
 	m.albedo_color=color
 	m.roughness=roughness
@@ -18,6 +23,7 @@ static func mat(color:Color, roughness:float=0.42, metallic:float=0.0, emission:
 		m.emission_enabled=true
 		m.emission=emission
 		m.emission_energy_multiplier=emission_energy
+	_material_cache[key]=m
 	return m
 
 static func box(parent:Node3D,n:String,pos:Vector3,size:Vector3,material:Material) -> MeshInstance3D:
@@ -27,9 +33,14 @@ static func box(parent:Node3D,n:String,pos:Vector3,size:Vector3,material:Materia
 		var bevel:float=clampf(shortest*0.18,0.012,0.055)
 		node.mesh=_beveled_box_mesh(size,bevel)
 	else:
-		var mesh:=BoxMesh.new(); mesh.size=size; node.mesh=mesh
+		node.mesh=_plain_box_mesh(size)
 	node.material_override=material; parent.add_child(node)
 	return node
+
+static func _plain_box_mesh(size:Vector3) -> BoxMesh:
+	var key:="%.3f_%.3f_%.3f"%[size.x,size.y,size.z]
+	if _plain_mesh_cache.has(key): return _plain_mesh_cache[key] as BoxMesh
+	var mesh:=BoxMesh.new(); mesh.size=size; _plain_mesh_cache[key]=mesh; return mesh
 
 static func _beveled_box_mesh(size:Vector3,bevel:float) -> ArrayMesh:
 	var key:="%.3f_%.3f_%.3f_%.3f"%[size.x,size.y,size.z,bevel]
@@ -83,7 +94,12 @@ static func label3d(parent:Node3D,text_value:String,pos:Vector3,rotation:Vector3
 
 static func cyl(parent:Node3D,n:String,pos:Vector3,radius:float,height:float,material:Material,rotation:Vector3=Vector3.ZERO) -> MeshInstance3D:
 	var node:=MeshInstance3D.new(); node.name=n; node.position=pos; node.rotation_degrees=rotation
-	var mesh:=CylinderMesh.new(); mesh.top_radius=radius; mesh.bottom_radius=radius; mesh.height=height; mesh.radial_segments=24; node.mesh=mesh; node.material_override=material; parent.add_child(node)
+	var key:="%.3f_%.3f"%[radius,height]
+	var mesh:CylinderMesh
+	if _cylinder_mesh_cache.has(key): mesh=_cylinder_mesh_cache[key] as CylinderMesh
+	else:
+		mesh=CylinderMesh.new(); mesh.top_radius=radius; mesh.bottom_radius=radius; mesh.height=height; mesh.radial_segments=24; _cylinder_mesh_cache[key]=mesh
+	node.mesh=mesh; node.material_override=material; parent.add_child(node)
 	return node
 
 static func build_sales_counter() -> Node3D:
@@ -217,9 +233,16 @@ static func build_laptop(parent:Node3D,pos:Vector3,accent:Color) -> Node3D:
 static func build_keyboard(parent:Node3D,pos:Vector3,accent:Color) -> Node3D:
 	var root:=Node3D.new(); root.name="Keyboard"; root.position=pos; parent.add_child(root)
 	box(root,"Deck",Vector3.ZERO,Vector3(0.82,0.055,0.30),mat(Color("#111820"),0.32,0.32))
-	for row in range(4):
-		for col in range(10):
-			box(root,"Key",Vector3(-0.34+col*0.075,0.04,-0.10+row*0.065),Vector3(0.055,0.025,0.045),mat(accent.darkened(0.35+0.03*((row+col)%3)),0.35,0.05,accent,0.18))
+	# Three real MultiMesh batches replace forty individual key draw resources.
+	for variant in range(3):
+		var transforms:Array[Transform3D]=[]
+		for row in range(4):
+			for col in range(10):
+				if (row+col)%3==variant:
+					transforms.append(Transform3D(Basis.IDENTITY,Vector3(-0.34+col*0.075,0.04,-0.10+row*0.065)))
+		var multi:=MultiMesh.new(); multi.transform_format=MultiMesh.TRANSFORM_3D; multi.mesh=_plain_box_mesh(Vector3(0.055,0.025,0.045)); multi.instance_count=transforms.size()
+		for index in range(transforms.size()): multi.set_instance_transform(index,transforms[index])
+		var batch:=MultiMeshInstance3D.new(); batch.name="KeyBatch_%d"%variant; batch.multimesh=multi; batch.material_override=mat(accent.darkened(0.35+0.03*variant),0.35,0.05,accent,0.18); root.add_child(batch)
 	return root
 
 static func build_mouse(parent:Node3D,pos:Vector3,accent:Color) -> Node3D:
