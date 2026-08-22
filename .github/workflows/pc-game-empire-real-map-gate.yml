@@ -1,0 +1,95 @@
+name: PC GAME EMPIRE Real Map Gate
+
+on:
+  pull_request:
+    paths:
+      - "pc-shop-empire-godot/**"
+      - ".github/workflows/pc-game-empire-real-map-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-map-gate:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Godot 4.7.2
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.2
+          use-dotnet: false
+          include-templates: true
+      - name: Import project
+        shell: powershell
+        run: |
+          $godot="$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $p=Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--editor","--quit" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Import failed" }
+      - name: Parse complete runtime
+        shell: powershell
+        run: |
+          $godot="$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $p=Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--path","pc-shop-empire-godot","--script","res://qa_parse_chain.gd" -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { throw "Parser failed" }
+      - name: Verify real map architecture and movement
+        shell: powershell
+        run: |
+          $godot="$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out="$PWD\real_map_qa.log"
+          $err="$PWD\real_map_qa_err.log"
+          $p=Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--path","pc-shop-empire-godot","--script","res://qa_real_map.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue)
+          Write-Host $text
+          if ($p.ExitCode -ne 0) { throw "Real map QA failed" }
+          if ($text -notmatch "PC GAME EMPIRE REAL MAP QA: ALL TESTS PASSED") { throw "Missing real-map PASS marker" }
+          if ($text -notmatch "player physically moves through CharacterBody2D") { throw "Movement proof missing" }
+          if ($text -notmatch "furniture/products are separate nodes") { throw "Scene graph proof missing" }
+      - name: Capture real gameplay map screens
+        shell: powershell
+        run: |
+          $godot="$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          New-Item -ItemType Directory -Force -Path "build\real-map" | Out-Null
+          foreach ($target in @("shop_floor","shop_walk","lab_floor","lab_walk")) {
+            $p=Start-Process -FilePath $godot -ArgumentList "--audio-driver","Dummy","--rendering-method","gl_compatibility","--path","pc-shop-empire-godot","--script","res://qa_visual_capture.gd","--","capture=$target" -Wait -PassThru
+            if ($p.ExitCode -ne 0) { throw "Capture failed: $target" }
+            Copy-Item "build\screenshots\$target.png" "build\real-map\$target.png" -Force
+            if ((Get-Item "build\real-map\$target.png").Length -lt 25000) { throw "Blank/small capture: $target" }
+          }
+      - name: Run gameplay regression QA
+        shell: powershell
+        run: |
+          $godot="$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $p=Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--path","pc-shop-empire-godot","--script","res://qa_beta.gd" -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { throw "Regression QA failed" }
+      - name: Export Windows build
+        shell: powershell
+        run: |
+          $godot="$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          New-Item -ItemType Directory -Force -Path "build\release" | Out-Null
+          $exe="$PWD\build\release\PC-GAME-EMPIRE-REAL-MAP.exe"
+          $p=Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--export-release","Windows Desktop",$exe -Wait -PassThru
+          if ($p.ExitCode -ne 0 -or !(Test-Path $exe)) { throw "Windows export failed" }
+      - name: Launch exported EXE
+        shell: powershell
+        run: |
+          $p=Start-Process -FilePath "$PWD\build\release\PC-GAME-EMPIRE-REAL-MAP.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Exported EXE launch failed" }
+      - name: Package standalone ZIP
+        shell: powershell
+        run: |
+          Compress-Archive -Path "build\release\PC-GAME-EMPIRE-REAL-MAP.exe" -DestinationPath "build\PC_GAME_EMPIRE_REAL_MAP_WINDOWS.zip" -CompressionLevel Optimal -Force
+      - name: Upload real map build
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_REAL_MAP_WINDOWS
+          path: build/PC_GAME_EMPIRE_REAL_MAP_WINDOWS.zip
+          if-no-files-found: error
+      - name: Upload real map screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_REAL_MAP_SCREENSHOTS
+          path: build/real-map/*.png
+          if-no-files-found: error
