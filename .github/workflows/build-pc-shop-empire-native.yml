@@ -85,7 +85,7 @@ jobs:
           foreach ($target in $targets) {
             $out = "$PWD\build\capture_${target}_stdout.log"
             $err = "$PWD\build\capture_${target}_stderr.log"
-            $argLine = "--headless --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_visual_capture.gd -- capture=$target"
+            $argLine = "--audio-driver Dummy --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_visual_capture.gd -- capture=$target"
             $p = Start-Process -FilePath $godot -ArgumentList $argLine -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
             $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
             $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
