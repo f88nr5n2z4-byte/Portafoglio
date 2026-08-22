@@ -1,6 +1,6 @@
 extends Node
 
-const StoreWorld = preload("res://game/world/store_world_3d.gd")
+const StoreWorld = preload("res://game/world/store_world_3d_runtime.gd")
 
 var world: Node3D
 var hud: CanvasLayer
@@ -70,7 +70,6 @@ func _handle_interaction(id: String) -> void:
 		"counter":
 			_open_mode("PRIMO CLIENTE", "Il cliente è un CharacterBody3D reale: entra dal negozio, cammina verso il bancone e attende.\n\nDialogo tutorial/storyline verrà agganciato a questo NPC, non a un hotspot su un fondale.")
 		"lab_door":
-			# Door is handled physically by StoreWorld; no modal needed.
 			seen_interaction = ""
 
 func _open_mode(title: String, body: String) -> void:
