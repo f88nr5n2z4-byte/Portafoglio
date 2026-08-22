@@ -3,11 +3,7 @@ name: Build PC GAME EMPIRE Native
 on:
   workflow_dispatch:
   push:
-    branches: [main]
-    paths:
-      - "pc-shop-empire-godot/**"
-      - ".github/workflows/build-pc-shop-empire-native.yml"
-  pull_request:
+    branches: [main, pc-game-empire-beta-complete]
     paths:
       - "pc-shop-empire-godot/**"
       - ".github/workflows/build-pc-shop-empire-native.yml"
@@ -22,7 +18,7 @@ concurrency:
 jobs:
   windows-export:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -33,25 +29,65 @@ jobs:
           use-dotnet: false
           include-templates: true
 
+      - name: Clean import cache
+        run: rm -rf pc-shop-empire-godot/.godot build
+
       - name: Import project
         run: godot --headless --path pc-shop-empire-godot --editor --quit
 
       - name: Run native beta QA
         run: timeout 90s godot --headless --path pc-shop-empire-godot --script res://qa_beta.gd
 
-      - name: Export Windows build
+      - name: Export clean Windows build
         run: |
+          rm -rf build
           mkdir -p build
           godot --headless --path pc-shop-empire-godot --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/PC-GAME-EMPIRE.exe"
 
-      - name: Package
+      - name: Verify exported executable
+        run: |
+          test -s build/PC-GAME-EMPIRE.exe
+          file build/PC-GAME-EMPIRE.exe
+          ls -lh build/PC-GAME-EMPIRE.exe
+
+      - name: Package clean beta ZIP
         run: |
           cd build
-          zip -9 PC-GAME-EMPIRE-BETA-WINDOWS.zip PC-GAME-EMPIRE.exe
+          zip -9 PC_GAME_EMPIRE_BETA_v0.1.0_WINDOWS.zip PC-GAME-EMPIRE.exe
+          unzip -t PC_GAME_EMPIRE_BETA_v0.1.0_WINDOWS.zip
 
       - name: Upload playable Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PC-GAME-EMPIRE-BETA-WINDOWS
-          path: build/PC-GAME-EMPIRE-BETA-WINDOWS.zip
+          name: PC_GAME_EMPIRE_BETA_v0.1.0_WINDOWS
+          path: build/PC_GAME_EMPIRE_BETA_v0.1.0_WINDOWS.zip
           if-no-files-found: error
+
+  windows-exe-smoke:
+    needs: windows-export
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - name: Download final Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_BETA_v0.1.0_WINDOWS
+          path: artifact
+
+      - name: Extract ZIP and verify contents
+        shell: powershell
+        run: |
+          $zip = "artifact\PC_GAME_EMPIRE_BETA_v0.1.0_WINDOWS.zip"
+          if (!(Test-Path $zip)) { throw "Final ZIP missing" }
+          Expand-Archive -Path $zip -DestinationPath extracted -Force
+          if (!(Test-Path "extracted\PC-GAME-EMPIRE.exe")) { throw "EXE missing after extraction" }
+          $size = (Get-Item "extracted\PC-GAME-EMPIRE.exe").Length
+          if ($size -lt 10000000) { throw "EXE unexpectedly small: $size bytes" }
+          Write-Host "EXE size: $size bytes"
+
+      - name: Launch exported EXE on Windows
+        shell: powershell
+        run: |
+          $p = Start-Process -FilePath "$PWD\extracted\PC-GAME-EMPIRE.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Exported EXE exited with code $($p.ExitCode)" }
+          Write-Host "PC-GAME-EMPIRE.exe launch smoke test PASSED"
