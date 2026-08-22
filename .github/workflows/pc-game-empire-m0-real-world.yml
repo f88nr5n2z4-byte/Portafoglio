@@ -65,7 +65,10 @@ jobs:
         run: |
           $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
           $outPath="$env:GITHUB_WORKSPACE\build\PC-GAME-EMPIRE-M0.exe"
-          $p=Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--export-release","Windows Desktop","$outPath" -Wait -PassThru
+          $exportOut="$PWD\build\export_stdout.log"; $exportErr="$PWD\build\export_stderr.log"
+          $argLine = "--headless --path pc-shop-empire-godot --export-release `"Windows Desktop`" `"$outPath`""
+          $p=Start-Process -FilePath $godot -ArgumentList $argLine -RedirectStandardOutput $exportOut -RedirectStandardError $exportErr -Wait -PassThru
+          $all=(Get-Content $exportOut -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $exportErr -Raw -ErrorAction SilentlyContinue); Write-Host $all
           if ($p.ExitCode -ne 0 -or !(Test-Path $outPath)) { throw "Windows export failed" }
           if ((Get-Item $outPath).Length -lt 10000000) { throw "EXE unexpectedly small" }
       - name: Launch exported EXE
