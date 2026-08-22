@@ -178,7 +178,7 @@ func _draw_splash() -> void:
 	_txt(Vector2(690,470),"PC GAME",68,WHITE)
 	_txt(Vector2(690,555),"EMPIRE",86,RED)
 	_txt(Vector2(760,615),"BUILD • FIX • UPGRADE",19,MUTED)
-	var progress:=clamp(1.0-splash_time/1.8,0.0,1.0)
+	var progress: float = clampf(1.0-splash_time/1.8,0.0,1.0)
 	draw_rect(Rect2(680,700,560,6),Color("#252b35"),true)
 	draw_rect(Rect2(680,700,560*progress,6),RED,true)
 
@@ -188,7 +188,6 @@ func _draw_neon_backdrop() -> void:
 
 func _draw_shop_environment() -> void:
 	draw_texture_rect(shop_bg,Rect2(0,0,VW,VH),false)
-	# Dynamic interaction glows remain game-driven above the imported 2.5D environment.
 	for z in zones:
 		if String(z.id)==near_zone:
 			var r:Rect2=z.rect
@@ -198,8 +197,8 @@ func _draw_shop_environment() -> void:
 func _draw_case() -> void:
 	draw_texture_rect(build_bg,Rect2(320,150,1080,790),false)
 	for k in build_slots.keys():
-		var c=_component(String(build_slots[k]))
-		var r=_build_drop_rect(String(k))
+		var c: Dictionary = _component(String(build_slots[k]))
+		var r: Rect2 = _build_drop_rect(String(k))
 		draw_rect(r,Color(0.2,0.75,0.85,0.10),true)
 		draw_rect(r,CYAN,false,3)
 		_txt(r.position+Vector2(12,28),String(c.name),14,WHITE)
@@ -232,5 +231,5 @@ func _draw_inventory() -> void:
 		_panel(Rect2(1390,130,450,190),Color("#0d141d"),YELLOW,2)
 		_txt(Vector2(1420,170),"ORDINI IN CONSEGNA",17,YELLOW)
 		for i in range(min(pending_orders.size(),4)):
-			var o=pending_orders[i]
+			var o: Dictionary = pending_orders[i]
 			_txt(Vector2(1420,210+i*30),String(o.name),14,WHITE)
