@@ -1,4 +1,4 @@
-extends "res://maximum_quality_final.gd"
+extends "res://real_map_pass.gd"
 
 func _setup_audio() -> void:
 	pass
