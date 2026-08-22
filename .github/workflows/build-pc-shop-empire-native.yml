@@ -42,15 +42,25 @@ jobs:
 
       - name: Import project
         shell: powershell
-        run: godot --headless --path pc-shop-empire-godot --editor --quit
+        run: |
+          $godot = (Get-ChildItem "$HOME\godot\*console.exe" | Select-Object -First 1).FullName
+          if (!(Test-Path $godot)) { throw "Godot console executable not found" }
+          & $godot --headless --path pc-shop-empire-godot --editor --quit
+          if ($LASTEXITCODE -ne 0) { throw "Godot import failed: $LASTEXITCODE" }
 
       - name: Run native beta QA
         shell: powershell
-        run: godot --headless --audio-driver Dummy --path pc-shop-empire-godot --script res://qa_beta.gd
+        run: |
+          $godot = (Get-ChildItem "$HOME\godot\*console.exe" | Select-Object -First 1).FullName
+          & $godot --headless --audio-driver Dummy --path pc-shop-empire-godot --script res://qa_beta.gd
+          if ($LASTEXITCODE -ne 0) { throw "Native beta QA failed: $LASTEXITCODE" }
 
       - name: Export clean Windows build
         shell: powershell
-        run: godot --headless --path pc-shop-empire-godot --export-release "Windows Desktop" "$env:GITHUB_WORKSPACE\build\PC-GAME-EMPIRE.exe"
+        run: |
+          $godot = (Get-ChildItem "$HOME\godot\*console.exe" | Select-Object -First 1).FullName
+          & $godot --headless --path pc-shop-empire-godot --export-release "Windows Desktop" "$env:GITHUB_WORKSPACE\build\PC-GAME-EMPIRE.exe"
+          if ($LASTEXITCODE -ne 0) { throw "Windows export failed: $LASTEXITCODE" }
 
       - name: Verify exported executable
         shell: powershell
