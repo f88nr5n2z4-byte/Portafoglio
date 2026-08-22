@@ -53,11 +53,11 @@ func _run() -> void:
 	world.player.global_position=Vector3(8.0,0.02,-1.9); world.player.velocity=Vector3.ZERO; world.camera.size=9.7
 	if world.lab_door_open:
 		world._toggle_lab_door()
-		for _i in range(28): await process_frame
+		await _wait_until_door_idle(world)
 	world._toggle_lab_door()
-	for _i in range(8): await process_frame
+	await create_timer(0.15).timeout
 	await _save_frame("09_lab_door_opening")
-	for _i in range(24): await process_frame
+	await _wait_until_door_idle(world)
 
 	await _frame_at("10_shop_terminal",Vector3(5.6,0.02,3.65),9.5,24)
 
@@ -101,3 +101,9 @@ func _save_frame(name:String) -> void:
 	if err!=OK:
 		printerr("M0 VISUAL GATE FAIL: save ",path," code=",err); quit(12); return
 	print("M0 VISUAL FRAME PASS: ",name," 1920x1080")
+
+func _wait_until_door_idle(world_node:Node,timeout_ms:int=2000)->void:
+	var deadline:=Time.get_ticks_msec()+timeout_ms
+	while bool(world_node.get("door_busy")) and Time.get_ticks_msec()<deadline:
+		await process_frame
+	await process_frame
