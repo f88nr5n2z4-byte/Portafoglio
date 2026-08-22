@@ -4,6 +4,7 @@ const FollowCamera = preload("res://game/world/follow_camera_3d.gd")
 const ActorVisual = preload("res://game/world/stylized_actor_visual.gd")
 const ShopAssets = preload("res://game/art/modular_shop_assets.gd")
 const LabAssets = preload("res://game/art/modular_lab_assets.gd")
+const SurfacePass = preload("res://game/art/world_surface_pass.gd")
 
 var animated_monitors:Array[MeshInstance3D] = []
 var animated_fans:Array[Node3D] = []
@@ -15,6 +16,7 @@ func _build_environment() -> void:
 	super._build_environment()
 	_add_collision_box("ShopFloorCollision", Vector3(0,-0.15,0), Vector3(18,0.3,16))
 	_add_collision_box("LabFloorCollision", Vector3(13.5,-0.15,-1.0), Vector3(9,0.3,12))
+	add_child(SurfacePass.build())
 	_build_final_shop_pass()
 	_build_final_lab_pass()
 
@@ -81,27 +83,21 @@ func _build_final_shop_pass() -> void:
 
 func _build_final_lab_pass() -> void:
 	lab_art_root=Node3D.new(); lab_art_root.name="ModularLabArt_Final"; add_child(lab_art_root)
-	# Finished tool wall replaces the pegboard-only look with a reusable dense module.
 	var tools:Node3D=LabAssets.build_tool_wall(); tools.position=Vector3(13.35,0.12,-6.68); lab_art_root.add_child(tools)
-	# Detailed workbench sits on the existing physical workbench footprint so the interaction/collider stay valid.
 	var bench:Node3D=LabAssets.build_workbench(); bench.position=Vector3(13.2,0.02,-3.70); lab_art_root.add_child(bench)
 	var tray:Node3D=LabAssets.build_component_tray(); tray.position=Vector3(13.85,1.32,-3.56); lab_art_root.add_child(tray)
 	var open_pc:Node3D=LabAssets.build_open_pc(); open_pc.position=Vector3(11.85,1.78,-3.78); open_pc.rotation_degrees.y=8; lab_art_root.add_child(open_pc)
-	# Diagnostics module overlays the old desk while preserving the Area3D interaction.
 	var diag:Node3D=LabAssets.build_diagnostics_station(); diag.position=Vector3(15.8,0.02,1.50); lab_art_root.add_child(diag)
-	# Modular storage creates real visual density without dozens of unrelated one-off meshes.
 	var storage:Node3D=LabAssets.build_storage_shelf(); storage.position=Vector3(10.55,0.02,3.95); storage.rotation_degrees.y=180; lab_art_root.add_child(storage)
 	for index in range(3):
 		var accent:=Color("#e93a5d") if index%2==0 else Color("#38bfe8")
 		var cabinet:Node3D=LabAssets.build_lab_cabinet(accent); cabinet.position=Vector3(17.08,0.02,-0.25+index*1.75); cabinet.rotation_degrees.y=-90; lab_art_root.add_child(cabinet)
-	# Spare component table: PSU, RAM, retail boxes and fan stacks.
 	var parts_table:=Node3D.new(); parts_table.name="SparePartsTable_Final"; parts_table.position=Vector3(15.3,0.02,3.65); lab_art_root.add_child(parts_table)
 	ShopAssets.box(parts_table,"TableBase",Vector3(0,0.42,0),Vector3(2.6,0.82,1.25),ShopAssets.mat(Color("#26313c"),0.34,0.52))
 	ShopAssets.box(parts_table,"TableTop",Vector3(0,0.88,0),Vector3(2.76,0.10,1.38),ShopAssets.mat(Color("#65717c"),0.22,0.72))
 	for i in range(3): ShopAssets.build_product_box(parts_table,Vector3(-0.78+i*0.68,1.15,-0.18),Vector3(0.48,0.44,0.48),Color("#d63a58") if i%2==0 else Color("#337fa0"),i)
 	for i in range(3):
 		var fan:=ShopAssets.cyl(parts_table,"SpareFan",Vector3(-0.55+i*0.55,1.08,0.38),0.18,0.055,ShopAssets.mat(Color("#111820"),0.28,0.20,Color("#9d61ef") if i==1 else Color("#39bfe7"),1.1),Vector3(90,0,0)); animated_fans.append(fan)
-	# Layered task lighting: neutral bench light plus red/cyan accents.
 	_add_emissive_box("LabTaskLight",Vector3(13.2,2.88,-3.7),Vector3(5.4,0.08,0.22),Color("#e8f5ff"),2.65)
 	_add_light(Vector3(13.2,2.55,-3.7),Color("#e8f5ff"),2.35,5.9)
 	_add_light(Vector3(10.8,2.1,2.8),Color("#55c8f0"),0.85,3.8)
