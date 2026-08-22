@@ -13,8 +13,8 @@ static func cyl(parent:Node3D,n:String,pos:Vector3,r:float,h:float,material:Mate
 
 static func build_workbench()->Node3D:
 	var root:=Node3D.new(); root.name="Workbench_Final"
-	var frame:=mat(Color("#202a34"),0.30,0.70)
-	var steel:=mat(Color("#697681"),0.20,0.82)
+	var frame:=mat(Color("#26333e"),0.34,0.40)
+	var steel:=mat(Color("#7b8893"),0.28,0.44)
 	var top:=mat(Color("#3b4651"),0.36,0.40)
 	var rubber:=mat(Color("#102127"),0.68,0.0)
 	box(root,"Frame",Vector3(0,0.55,0),Vector3(5.7,1.10,1.62),frame)
@@ -29,7 +29,8 @@ static func build_workbench()->Node3D:
 	# Rear service rail and task light
 	for x in [-2.45,2.45]: box(root,"RearPost",Vector3(x,2.0,-0.72),Vector3(0.08,1.65,0.08),steel)
 	box(root,"RearRail",Vector3(0,2.74,-0.72),Vector3(5.0,0.08,0.08),steel)
-	box(root,"TaskLight",Vector3(0,2.62,-0.58),Vector3(3.75,0.07,0.12),mat(Color("#0e141b"),0.20,0.20,Color("#e7f4ff"),2.8))
+	box(root,"TaskLightHousing",Vector3(0,2.62,-0.62),Vector3(3.70,0.17,0.24),mat(Color("#17212a"),0.34,0.38))
+	box(root,"TaskLightDiffuser",Vector3(0,2.53,-0.53),Vector3(3.18,0.025,0.11),mat(Color("#cad8df"),0.28,0.05,Color("#dff3ff"),0.90))
 	# Parts trays and tool dock
 	for i in range(4):
 		box(root,"PartsTray",Vector3(-1.15+i*0.55,1.32,0.44),Vector3(0.46,0.09,0.34),mat(Color("#444f5a"),0.46,0.34))
@@ -106,7 +107,7 @@ static func build_open_pc()->Node3D:
 static func build_diagnostics_station()->Node3D:
 	var root:=Node3D.new(); root.name="DiagnosticsStation_Final"
 	var frame:=mat(Color("#26313c"),0.32,0.55)
-	var metal:=mat(Color("#65727e"),0.20,0.74)
+	var metal:=mat(Color("#788691"),0.29,0.40)
 	box(root,"Desk",Vector3(0,0.55,0),Vector3(2.45,1.1,1.20),frame)
 	box(root,"Top",Vector3(0,1.15,0),Vector3(2.60,0.12,1.32),metal)
 	ShopAssets.build_monitor(root,Vector3(-0.38,1.58,-0.16),Color("#38c0e9"),0.90)

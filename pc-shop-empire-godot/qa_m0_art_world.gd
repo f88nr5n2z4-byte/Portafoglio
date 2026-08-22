@@ -32,6 +32,10 @@ func _run()->void:
 	check(_find_named(world,"ShopFrontLeftCutaway")!=null,"camera-facing architecture uses a finished cutaway module")
 	check(_find_named(world,"DisplayIsland_accessories")!=null,"dedicated peripheral product island is instantiated")
 	check(_find_named(world,"ShopLightBar")==null,"obsolete floating shop light bars are removed")
+	check(_find_named(world,"LabTaskLight")==null and _find_named(world,"TaskLightHousing")!=null,"laboratory task light is mounted in a real housing")
+	check(_find_named(world,"KeyBatch_0") is MultiMeshInstance3D,"repeated keyboard keys use real MultiMesh batching")
+	var lab_label:=_find_named(world,"Label_LABORATORIO") as Label3D
+	check(lab_label!=null and absf(lab_label.rotation_degrees.y)<1.0,"environment signage faces the camera without mirrored text")
 	var modular_counter:=_find_named(world,"SalesCounter_Final")
 	var counter_top:=modular_counter.get_node_or_null("CounterTop") as MeshInstance3D if modular_counter!=null else null
 	check(counter_top!=null and counter_top.mesh is ArrayMesh,"visible counter uses chamfered modular mesh geometry")

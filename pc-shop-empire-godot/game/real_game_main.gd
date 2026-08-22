@@ -67,18 +67,18 @@ func _build_render_environment() -> void:
 	env.background_color = Color("#070c13")
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color("#a5b7c7")
-	env.ambient_light_energy = 0.62
+	env.ambient_light_energy = 0.70
 	env.ambient_light_sky_contribution = 0.0
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 0.94
+	env.tonemap_exposure = 0.98
 	env.glow_enabled = true
 	env.glow_intensity = 0.34
 	env.glow_strength = 0.60
 	env_node.environment = env
 	add_child(env_node)
 	var key := DirectionalLight3D.new(); key.name="KeyLight"
-	key.rotation_degrees = Vector3(-56,-34,0); key.light_color = Color("#e3edf5"); key.light_energy = 0.74; key.shadow_enabled = true; key.directional_shadow_max_distance=34.0; add_child(key)
-	var fill := DirectionalLight3D.new(); fill.name="FillLight"; fill.rotation_degrees=Vector3(-48,132,0); fill.light_color=Color("#83b7d4"); fill.light_energy=0.21; fill.shadow_enabled=false; add_child(fill)
+	key.rotation_degrees = Vector3(-56,-34,0); key.light_color = Color("#e3edf5"); key.light_energy = 0.82; key.shadow_enabled = true; key.directional_shadow_max_distance=34.0; add_child(key)
+	var fill := DirectionalLight3D.new(); fill.name="FillLight"; fill.rotation_degrees=Vector3(-48,132,0); fill.light_color=Color("#83b7d4"); fill.light_energy=0.23; fill.shadow_enabled=false; add_child(fill)
 	var rim:=DirectionalLight3D.new(); rim.name="WarmRim"; rim.rotation_degrees=Vector3(-35,-145,0); rim.light_color=Color("#e34a65"); rim.light_energy=0.10; rim.shadow_enabled=false; add_child(rim)
 
 func _panel_style(bg:Color,border:Color,radius:int=10)->StyleBoxFlat:
