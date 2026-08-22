@@ -11,7 +11,7 @@ func check(condition: bool, message: String) -> void:
 
 func _init() -> void:
 	var game_script := load("res://qa_game.gd")
-	check(game_script != null, "final beta runtime script loads")
+	check(game_script != null, "Milestone A runtime script loads")
 	if game_script == null:
 		quit(1)
 		return
@@ -27,20 +27,40 @@ func _init() -> void:
 	check(game.current_job == 0 and game.job_state == "offered", "first customer job is offered")
 	game.job_state = "accepted"
 	check(game._job_validation_reason() != "", "early delivery is rejected")
-	var build_ids := ["cpu_9600x","mb_b850","ram_32","gpu_5060","ssd_1tb","psu_750","case_atx"]
+
+	# Milestone A assembly order: case -> platform -> hardware -> paste/cooling -> simplified cabling -> close case.
+	var build_ids := ["case_atx","mb_b850","cpu_9600x","ram_32","ssd_1tb","psu_750","gpu_5060"]
 	for id in build_ids:
 		game.inventory[id] = 1
 		var c: Dictionary = game._component(id)
 		check(not c.is_empty(), "component exists: " + id)
 		check(game._compatibility_reason(c) == "", "compatible component accepted: " + id)
 		game._install_component(c)
+	check(game.case_panel_open, "installing the case opens the work area")
 	game._apply_thermal_paste()
 	game.inventory["cooler_air"] = 1
 	game._install_component(game._component("cooler_air"))
 	game._connect_cables()
-	check(game._build_ready(), "complete build is mechanically ready")
+	check(not game._build_ready(), "open side panel blocks final test")
+	game.case_panel_open = false
+	check(game._build_ready(), "complete simplified assembly is mechanically ready")
 	check(game._build_cost() <= int(game._job().budget), "build respects customer budget")
 	check(game._build_score() >= float(game._job().min_score), "build respects performance target")
+
+	# Milestone A compatibility matrix.
+	var wrong_socket: Dictionary = game._component("cpu_14600kf")
+	check(game._compatibility_reason(wrong_socket).contains("socket"), "CPU socket mismatch explains the reason")
+	var wrong_ram := {"id":"qa_ram_wrong","category":"RAM","name":"QA DDR4","ram":"DDR4","price":1}
+	check(game._compatibility_reason(wrong_ram).contains("RAM") or game._compatibility_reason(wrong_ram).contains("DDR"), "DDR generation mismatch is rejected")
+	var huge_gpu := {"id":"qa_gpu_huge","category":"GPU","name":"QA Oversize GPU","length":500,"power":200,"price":1}
+	check(game._compatibility_reason(huge_gpu).contains("GPU"), "GPU length versus case is enforced")
+	var eatx_mb := {"id":"qa_mb_eatx","category":"Motherboard","name":"QA EATX","socket":"AM5","ram":"DDR5","form":"EATX","price":1}
+	check(game._compatibility_reason(eatx_mb).contains("form factor"), "motherboard form factor versus case is enforced")
+	var weak_psu := {"id":"qa_psu_weak","category":"PSU","name":"QA 300W","watts":300,"price":1}
+	check(game._compatibility_reason(weak_psu).contains("PSU"), "PSU wattage headroom is enforced")
+	var aio_420 := {"id":"qa_aio_420","category":"Cooling","name":"QA AIO 420","kind":"aio","radiator":420,"sockets":["AM5"],"price":1}
+	check(game._compatibility_reason(aio_420).contains("radiatore"), "radiator size versus case is enforced")
+
 	check(game._job_validation_reason().contains("sistema operativo"), "OS requirement blocks delivery")
 	game.os_installed = true
 	check(game._job_validation_reason() == "", "validated build becomes deliverable")
@@ -52,13 +72,16 @@ func _init() -> void:
 	game._finish_job()
 	check(game.money == paid_money, "double delivery cannot duplicate payment")
 
-	# Save/load persistence.
+	# Save/load persistence, including the new simplified assembly state.
+	game.case_panel_open = true
 	game._save_game()
 	check(FileAccess.file_exists(game.SAVE_PATH), "save file created")
 	var saved_money: int = int(game.money)
 	game.money = 1
+	game.case_panel_open = false
 	game._load_game()
 	check(game.money == saved_money, "load restores player balance")
+	check(game.case_panel_open, "load restores assembly panel state")
 
 	# Repair regression: diagnosis alone must NEVER complete the repair.
 	game.current_job = 1 # repair_boot / PSU fault
@@ -100,7 +123,7 @@ func _init() -> void:
 	check(zero_money < int(game._component("gpu_5060").price), "zero balance cannot afford purchase")
 	game.money = 5000
 	game.pending_orders.clear()
-	game.pending_orders.append({"id":"ssd_1tb","name":"Samsung 990 EVO 1TB","arrival_day":game.day,"arrival_hour":game.hour})
+	game.pending_orders.append({"id":"ssd_1tb","name":"Samsung 980 PRO NVMe 1TB","arrival_day":game.day,"arrival_hour":game.hour})
 	var inv_before: int = int(game.inventory.get("ssd_1tb",0))
 	game._check_deliveries()
 	check(int(game.inventory.get("ssd_1tb",0)) == inv_before + 1 and game.pending_orders.is_empty(), "arrived order transfers once into inventory")
@@ -122,8 +145,9 @@ func _init() -> void:
 	check(String(game.settings.resolution) == "1280x720" and game.language == "en", "video/language settings persist")
 
 	if failures.is_empty():
+		print("PC GAME EMPIRE MILESTONE A QA: ALL TESTS PASSED")
 		print("PC GAME EMPIRE BETA QA: ALL TESTS PASSED")
 		quit(0)
 	else:
-		printerr("PC GAME EMPIRE BETA QA: ", failures.size(), " FAILURE(S)")
+		printerr("PC GAME EMPIRE MILESTONE A QA: ", failures.size(), " FAILURE(S)")
 		quit(1)
