@@ -1,0 +1,55 @@
+name: Capture PC GAME EMPIRE Visuals
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "pc-shop-empire-godot/**"
+      - ".github/workflows/capture-pc-game-empire-visuals.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  capture-real-game-screens:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Godot 4.7.2
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.2
+          use-dotnet: false
+      - name: Import project
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--editor","--quit" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Import failed" }
+      - name: Capture real rendered screens
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          New-Item -ItemType Directory -Force -Path "build\screenshots" | Out-Null
+          $targets = @("menu","shop_floor","diagnostics","build","online_shop")
+          foreach ($target in $targets) {
+            $out = "$PWD\build\capture_${target}_stdout.log"
+            $err = "$PWD\build\capture_${target}_stderr.log"
+            $argLine = "--audio-driver Dummy --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_visual_capture.gd -- capture=$target"
+            $p = Start-Process -FilePath $godot -ArgumentList $argLine -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+            Write-Host (Get-Content $out -Raw -ErrorAction SilentlyContinue)
+            Write-Host (Get-Content $err -Raw -ErrorAction SilentlyContinue)
+            if ($p.ExitCode -ne 0) { throw "Capture failed for $target with code $($p.ExitCode)" }
+            $png = "build\screenshots\$target.png"
+            if (!(Test-Path $png)) { throw "Missing screenshot: $png" }
+            $size = (Get-Item $png).Length
+            if ($size -lt 50000) { throw "Screenshot too small/blank: $target $size bytes" }
+            Write-Host "REAL SCREENSHOT PASS: $target $size bytes"
+          }
+      - name: Upload real Godot screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_VISUAL_UPGRADE_SCREENSHOTS
+          path: build/screenshots/*.png
+          if-no-files-found: error
