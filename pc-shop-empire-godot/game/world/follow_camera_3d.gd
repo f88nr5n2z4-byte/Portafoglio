@@ -5,6 +5,7 @@ extends Camera3D
 @export var look_height:float = 0.88
 @export var ortho_size:float = 13.6
 @export var occlusion_padding:float = 0.32
+@export var occlusion_fade:float = 0.72
 var target: Node3D
 var occludables:Array[Dictionary] = []
 var hidden_last_frame:Array[Node] = []
@@ -27,7 +28,7 @@ func register_occludable(node:Node3D,radius:float=0.8,height_bias:float=0.7) -> 
 	occludables.append({"node":node,"radius":radius,"height_bias":height_bias})
 
 func clear_occludables() -> void:
-	for node:Node in hidden_last_frame: _set_mesh_visibility(node,true)
+	for node:Node in hidden_last_frame: _set_occlusion_amount(node,0.0)
 	hidden_last_frame.clear(); occludables.clear()
 
 func _process(delta: float) -> void:
@@ -40,7 +41,7 @@ func _process(delta: float) -> void:
 
 func _update_occlusion() -> void:
 	for previous:Node in hidden_last_frame:
-		if is_instance_valid(previous): _set_mesh_visibility(previous,true)
+		if is_instance_valid(previous): _set_occlusion_amount(previous,0.0)
 	hidden_last_frame.clear()
 	if target==null: return
 	var from:Vector3=global_position
@@ -57,7 +58,7 @@ func _update_occlusion() -> void:
 		var camera_to_node:float=from.distance_to(point)
 		var camera_to_target:float=from.distance_to(to)
 		if distance<radius and camera_to_node<camera_to_target-0.45:
-			_set_mesh_visibility(node,false)
+			_set_occlusion_amount(node,occlusion_fade)
 			hidden_last_frame.append(node)
 
 func _distance_point_segment(point:Vector3,a:Vector3,b:Vector3)->float:
@@ -68,6 +69,8 @@ func _distance_point_segment(point:Vector3,a:Vector3,b:Vector3)->float:
 	var t:float=clampf(projected,0.0,1.0)
 	return point.distance_to(a+ab*t)
 
-func _set_mesh_visibility(node:Node,enabled:bool)->void:
-	if node is MeshInstance3D: (node as MeshInstance3D).visible=enabled
-	for child:Node in node.get_children(): _set_mesh_visibility(child,enabled)
+func _set_occlusion_amount(node:Node,amount:float)->void:
+	# GeometryInstance transparency preserves the object's silhouette and context while
+	# revealing the player. It also avoids mutating cached/shared materials.
+	if node is GeometryInstance3D: (node as GeometryInstance3D).transparency=amount
+	for child:Node in node.get_children(): _set_occlusion_amount(child,amount)

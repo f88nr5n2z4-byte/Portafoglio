@@ -85,7 +85,9 @@ func _run()->void:
 	# Camera cutaway should activate with player behind the sales counter from camera direction.
 	world.player.global_position=Vector3(0,0.02,-2.85)
 	for _i in range(18): await process_frame
-	check(world.camera.hidden_last_frame.size()>0,"camera cutaway hides a real occluder when needed")
+	check(world.camera.hidden_last_frame.size()>0,"camera cutaway detects a real occluder when needed")
+	var faded_counter:=_find_named(world,"CounterBody") as GeometryInstance3D
+	check(faded_counter!=null and faded_counter.transparency>0.45 and faded_counter.transparency<0.92,"occlusion uses contextual geometry fade instead of deleting the furniture")
 	# Existing physical interactions remain present after art pass.
 	check(world.interactions.size()>=5,"physical Area3D interactions survived art pass")
 	if failures.is_empty():
