@@ -25,6 +25,19 @@ func _run()->void:
 	check(int(status.get("ambient_customer_count",0))>=3,"three additional ambient customers are spawned")
 	check(int(status.get("ambient_animation_count",0))>=4,"animated environmental props are instantiated")
 	var world=game.world
+	# Modular shop pass must be made from live scene geometry, not a visual reference layer.
+	var terminal:=_find_named(world,"StoreTerminal_Final")
+	check(terminal!=null and terminal.get_node_or_null("TerminalBody")!=null,"shop terminal has a real modular workstation body")
+	check(_find_named(world,"DioramaFoundation")!=null,"real 3D diorama foundation replaces the empty world void")
+	check(_find_named(world,"ShopFrontLeftCutaway")!=null,"camera-facing architecture uses a finished cutaway module")
+	check(_find_named(world,"DisplayIsland_accessories")!=null,"dedicated peripheral product island is instantiated")
+	check(_find_named(world,"ShopLightBar")==null,"obsolete floating shop light bars are removed")
+	var modular_counter:=_find_named(world,"SalesCounter_Final")
+	var counter_top:=modular_counter.get_node_or_null("CounterTop") as MeshInstance3D if modular_counter!=null else null
+	check(counter_top!=null and counter_top.mesh is ArrayMesh,"visible counter uses chamfered modular mesh geometry")
+	var glass:=_find_named(world,"Glass") as MeshInstance3D
+	var glass_material:=glass.material_override as StandardMaterial3D if glass!=null else null
+	check(glass_material!=null and glass_material.transparency==BaseMaterial3D.TRANSPARENCY_ALPHA,"gaming PC glass is genuinely transparent")
 	var technician=world.player.get_node_or_null("TechnicianVisual")
 	check(technician!=null and technician.get_node_or_null("VisualRig")!=null,"technician uses articulated visual rig")
 	check(game.ambient_customers.size()>=3,"ambient NPC set exists in gameplay scene")
