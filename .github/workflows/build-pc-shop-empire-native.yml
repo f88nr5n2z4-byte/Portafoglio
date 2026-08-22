@@ -48,6 +48,20 @@ jobs:
           $p = Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--editor","--quit" -Wait -PassThru
           if ($p.ExitCode -ne 0) { throw "Godot import failed: $($p.ExitCode)" }
 
+      - name: Validate GDScript inheritance chain
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\parse_stdout.log"
+          $err = "$PWD\build\parse_stderr.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_parse_chain.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
+          if ($p.ExitCode -ne 0) { throw "Inheritance-chain parse validation failed: $($p.ExitCode)" }
+          if (($stdout + "`n" + $stderr) -notmatch "PARSE CHAIN: ALL SCRIPTS INSTANTIABLE") { throw "Parse validation ended without explicit PASS marker" }
+
       - name: Run native beta QA
         shell: powershell
         run: |
