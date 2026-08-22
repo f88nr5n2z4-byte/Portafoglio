@@ -16,33 +16,39 @@ func _capture() -> void:
 	var game := packed.instantiate()
 	root.add_child(game)
 	root.size = Vector2i(1920,1080)
-	# Configure representative live game state for UI-heavy screens.
-	game.set("screen",target)
+	var actual_screen := target
+	if target=="shop_walk": actual_screen="shop_floor"
+	if target=="lab_walk": actual_screen="lab_floor"
+	game.set("screen",actual_screen)
 	game.set("money",27540)
 	game.set("reputation",82)
 	game.set("level",8)
 	game.set("day",34)
 	game.set("hour",11.7)
-	if target in ["build","diagnostics","benchmark"]:
+	if actual_screen in ["build","diagnostics","benchmark"]:
 		var all_jobs: Array = game.get("jobs")
 		var chosen := 0
 		for i in range(all_jobs.size()):
 			var j: Dictionary = all_jobs[i]
-			if target=="diagnostics" and String(j.get("type",""))=="repair":
+			if actual_screen=="diagnostics" and String(j.get("type",""))=="repair":
 				chosen=i
 				break
-			if target!="diagnostics" and String(j.get("type",""))=="build":
+			if actual_screen!="diagnostics" and String(j.get("type",""))=="build":
 				chosen=i
 				break
 		game.set("current_job",chosen)
 		game.set("job_state","working")
-	if target=="shop_floor":
-		game.set("player",Vector2(960,760))
-	for _i in range(8):
-		await process_frame
+	if actual_screen=="shop_floor":
+		game.set("current_job",0)
+		game.set("job_state","offered")
+		game.set("player",Vector2(960,760) if target=="shop_floor" else Vector2(1240,660))
+	if actual_screen=="lab_floor":
+		game.set("current_job",0)
+		game.set("job_state","working")
+		game.set("lab_player",Vector2(930,800) if target=="lab_floor" else Vector2(720,650))
+	for _i in range(10): await process_frame
 	game.queue_redraw()
-	for _i in range(5):
-		await process_frame
+	for _i in range(6): await process_frame
 	var image: Image = root.get_texture().get_image()
 	if image == null or image.is_empty():
 		printerr("VISUAL CAPTURE: viewport image empty for ",target)
