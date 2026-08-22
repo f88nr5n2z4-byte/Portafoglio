@@ -1,7 +1,7 @@
 extends "res://beta_hotfix.gd"
 
-var premium_atlas := preload("res://assets/premium_world_atlas.svg")
-var premium_chars := preload("res://assets/premium_characters.svg")
+var premium_atlas: Texture2D
+var premium_chars: Texture2D
 var visual_phase: float = 0.0
 var lab_player := Vector2(960, 810)
 var lab_near_zone := ""
@@ -19,6 +19,8 @@ var lab_blockers := [
 ]
 
 func _ready() -> void:
+	premium_atlas = _decode_embedded_texture("res://assets/premium_world_atlas.svg",false)
+	premium_chars = _decode_embedded_texture("res://assets/premium_characters.svg",true)
 	super._ready()
 	zones = [
 		{"id":"terminal","rect":Rect2(290,190,300,220)},
@@ -30,6 +32,31 @@ func _ready() -> void:
 	]
 	player = Vector2(960,820)
 	queue_redraw()
+
+func _decode_embedded_texture(path:String,is_png:bool) -> Texture2D:
+	var text:String = FileAccess.get_file_as_string(path)
+	if text.is_empty():
+		printerr("PREMIUM ASSET READ FAILED: ",path)
+		return null
+	var marker := "base64,"
+	var begin:int = text.find(marker)
+	if begin < 0:
+		printerr("PREMIUM ASSET BASE64 MARKER MISSING: ",path)
+		return null
+	begin += marker.length()
+	var ending:int = text.find("\"",begin)
+	if ending <= begin:
+		printerr("PREMIUM ASSET BASE64 END MISSING: ",path)
+		return null
+	var encoded:String = text.substr(begin,ending-begin)
+	var bytes:PackedByteArray = Marshalls.base64_to_raw(encoded)
+	var image := Image.new()
+	var err:Error = image.load_png_from_buffer(bytes) if is_png else image.load_jpg_from_buffer(bytes)
+	if err != OK:
+		printerr("PREMIUM ASSET DECODE FAILED: ",path," code=",err)
+		return null
+	print("PREMIUM ASSET READY: ",path," ",image.get_width(),"x",image.get_height())
+	return ImageTexture.create_from_image(image)
 
 func _process(delta: float) -> void:
 	visual_phase += delta
@@ -114,7 +141,6 @@ func _draw() -> void:
 func _draw_shop_environment() -> void:
 	_draw_atlas_region(Rect2(0,0,VW,VH),Rect2(0,0,640,360))
 	draw_rect(Rect2(0,0,VW,VH),Color(0.0,0.0,0.0,0.05),true)
-	# Physical interaction lights live in world-space rather than as flat labels.
 	for z in zones:
 		if String(z.id)==near_zone:
 			var r:Rect2=z.rect
@@ -125,7 +151,6 @@ func _draw_floor() -> void:
 	_draw_shop_environment()
 	_draw_world_customer(Vector2(700,330))
 	_draw_world_player(player,false)
-	# Redraw real photographed/rendered fixtures over the avatar for 2.5D occlusion.
 	if player.y < 430.0: _shop_patch(Rect2(470,155,680,300))
 	if player.y < 610.0: _shop_patch(Rect2(555,385,560,235))
 	if player.y < 830.0: _shop_patch(Rect2(405,560,645,300))
@@ -149,8 +174,7 @@ func _draw_lab_floor() -> void:
 	_txt(Vector2(62,182),"LABORATORIO",18,RED)
 	_txt(Vector2(62,225),"Banco • diagnostica • ricambi • strumenti",18,WHITE)
 	_txt(Vector2(62,268),"E interagisci  •  ESC torna al negozio",14,MUTED)
-	if lab_near_zone!="":
-		_button(_btn(800,885,320,62),"E  INTERAGISCI")
+	if lab_near_zone!="": _button(_btn(800,885,320,62),"E  INTERAGISCI")
 
 func _draw_world_player(p:Vector2,in_lab:bool) -> void:
 	var moving := Input.get_vector("move_left","move_right","move_up","move_down").length()>0.05
@@ -158,16 +182,20 @@ func _draw_world_player(p:Vector2,in_lab:bool) -> void:
 	draw_set_transform(p+Vector2(0,40),0.0,Vector2(1.0,0.38))
 	draw_circle(Vector2.ZERO,38.0,Color(0,0,0,0.46))
 	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
-	# Character atlas left half. Slight scale/bob makes the sprite feel grounded and animated.
-	draw_texture_rect_region(premium_chars,Rect2(p.x-55,p.y-125+bob,110,190),Rect2(0,0,128,220))
-	if moving:
-		draw_circle(p+Vector2(player_dir.x*22,58),4.0,Color(0.9,0.1,0.18,0.50))
+	if premium_chars != null:
+		draw_texture_rect_region(premium_chars,Rect2(p.x-55,p.y-125+bob,110,190),Rect2(0,0,128,220))
+	else:
+		super._draw_player()
+	if moving: draw_circle(p+Vector2(player_dir.x*22,58),4.0,Color(0.9,0.1,0.18,0.50))
 
 func _draw_world_customer(p:Vector2) -> void:
 	draw_set_transform(p+Vector2(0,38),0.0,Vector2(1.0,0.40))
 	draw_circle(Vector2.ZERO,34.0,Color(0,0,0,0.38))
 	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
-	draw_texture_rect_region(premium_chars,Rect2(p.x-54,p.y-120,108,188),Rect2(128,0,128,220))
+	if premium_chars != null:
+		draw_texture_rect_region(premium_chars,Rect2(p.x-54,p.y-120,108,188),Rect2(128,0,128,220))
+	else:
+		super._draw_customer(p)
 	if current_job>=0: _txt(p+Vector2(38,-92),"!",34,YELLOW)
 
 func _draw_player() -> void:
@@ -177,7 +205,6 @@ func _draw_customer(p:Vector2) -> void:
 	_draw_world_customer(p)
 
 func _draw_case() -> void:
-	# Detailed close-up comes from a real raster asset; gameplay slots remain live and draggable.
 	_draw_atlas_region(Rect2(290,135,1130,785),Rect2(0,360,640,445))
 	draw_rect(Rect2(290,135,1130,785),Color(0,0,0,0.03),true)
 	for k in build_slots.keys():
@@ -213,19 +240,17 @@ func _draw_online_shop() -> void:
 	_button(_btn(55,950,230,70),T("back"))
 
 func _draw_component_photo(dest:Rect2,cat:String,idx:int) -> void:
-	# Category-specific crops from the detailed assembly render provide real visual product imagery.
-	var src:=Rect2(70,470,160,90)
+	var src:=Rect2(70,110,160,90)
 	match cat:
-		"CPU": src=Rect2(225,455,95,75)
-		"Motherboard": src=Rect2(160,430,190,120)
-		"RAM": src=Rect2(270,430,75,120)
-		"GPU": src=Rect2(165,545,250,85)
-		"Storage": src=Rect2(345,470,100,75)
-		"PSU": src=Rect2(105,600,150,95)
-		"Cooling": src=Rect2(210,430,140,115)
-		"Fans": src=Rect2(430,430,130,170)
-		"Case": src=Rect2(100,400,420,300)
-	# Build image starts at y=360 inside atlas.
+		"CPU": src=Rect2(225,95,95,75)
+		"Motherboard": src=Rect2(160,70,190,120)
+		"RAM": src=Rect2(270,70,75,120)
+		"GPU": src=Rect2(165,185,250,85)
+		"Storage": src=Rect2(345,110,100,75)
+		"PSU": src=Rect2(105,240,150,95)
+		"Cooling": src=Rect2(210,70,140,115)
+		"Fans": src=Rect2(430,70,130,170)
+		"Case": src=Rect2(100,40,420,300)
 	src.position.y += 360.0
 	_draw_atlas_region(dest,src)
 	draw_rect(dest,Color(0.85,0.04,0.12,0.18),false,2.0)
@@ -276,4 +301,7 @@ func _lab_patch(dest:Rect2) -> void:
 	_draw_atlas_region(dest,src)
 
 func _draw_atlas_region(dest:Rect2,src:Rect2) -> void:
-	draw_texture_rect_region(premium_atlas,dest,src)
+	if premium_atlas != null:
+		draw_texture_rect_region(premium_atlas,dest,src)
+	else:
+		draw_rect(dest,Color("#111720"),true)
