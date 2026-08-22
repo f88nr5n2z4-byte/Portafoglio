@@ -1,4 +1,4 @@
-extends "res://milestone_a_complete.gd"
+extends "res://milestone_a_final.gd"
 
 func _setup_audio() -> void:
 	pass
