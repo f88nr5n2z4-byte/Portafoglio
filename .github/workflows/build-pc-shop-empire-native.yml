@@ -3,7 +3,11 @@ name: Build PC GAME EMPIRE Native
 on:
   workflow_dispatch:
   push:
-    branches: [main, pc-game-empire-beta-complete]
+    branches: [main]
+    paths:
+      - "pc-shop-empire-godot/**"
+      - ".github/workflows/build-pc-shop-empire-native.yml"
+  pull_request:
     paths:
       - "pc-shop-empire-godot/**"
       - ".github/workflows/build-pc-shop-empire-native.yml"
