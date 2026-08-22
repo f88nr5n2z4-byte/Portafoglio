@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+ <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#171c24"/><stop offset="1" stop-color="#080b10"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#566270"/><stop offset=".25" stop-color="#202631"/><stop offset=".75" stop-color="#090c12"/><stop offset="1" stop-color="#39414d"/></linearGradient>
+ <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#25405a" stop-opacity=".62"/><stop offset="1" stop-color="#0a0f17" stop-opacity=".88"/></linearGradient>
+ <pattern id="floor" width="120" height="100" patternUnits="userSpaceOnUse"><rect width="120" height="100" fill="#1b1f25"/><path d="M0 0H120V100H0Z" fill="none" stroke="#353b44" stroke-width="2"/><path d="M0 98L120 3" stroke="#242931"/></pattern>
+ <radialGradient id="r"><stop stop-color="#ff244a" stop-opacity=".45"/><stop offset="1" stop-color="#ff244a" stop-opacity="0"/></radialGradient>
+ <radialGradient id="p"><stop stop-color="#d633ff" stop-opacity=".38"/><stop offset="1" stop-color="#d633ff" stop-opacity="0"/></radialGradient>
+ <radialGradient id="b"><stop stop-color="#2ab7ff" stop-opacity=".35"/><stop offset="1" stop-color="#2ab7ff" stop-opacity="0"/></radialGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="9" result="x"/><feMerge><feMergeNode in="x"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1920" height="1080" fill="#05080d"/>
+<polygon points="50,125 1870,125 1800,1010 120,1010" fill="url(#floor)" stroke="#343c48" stroke-width="5"/>
+<ellipse cx="980" cy="520" rx="700" ry="460" fill="url(#p)"/>
+<ellipse cx="1460" cy="520" rx="520" ry="360" fill="url(#b)"/>
+<ellipse cx="760" cy="800" rx="520" ry="300" fill="url(#r)"/>
+<!-- rear wall + brand -->
+<polygon points="50,125 1870,125 1850,275 65,275" fill="url(#wall)" stroke="#313a47" stroke-width="5"/>
+<rect x="690" y="147" width="560" height="91" rx="9" fill="#05070b" stroke="#682039" stroke-width="4"/>
+<text x="795" y="195" fill="#f7f8fb" font-family="Arial" font-size="29" font-weight="700">PC GAME</text><text x="942" y="226" fill="#ff2a4f" font-family="Arial" font-size="43" font-weight="900" font-style="italic">EMPIRE</text>
+<path d="M90 270L1838 270" stroke="#ff2348" stroke-width="7" filter="url(#glow)"/>
+<!-- left shelving / accessories -->
+<polygon points="80,310 485,310 455,655 60,680" fill="#0a0f16" stroke="#435063" stroke-width="4"/>
+<g fill="#121923" stroke="#465367" stroke-width="3"><rect x="110" y="345" width="150" height="110"/><rect x="285" y="345" width="150" height="110"/><rect x="100" y="485" width="150" height="110"/><rect x="275" y="485" width="150" height="110"/></g>
+<g><rect x="132" y="365" width="106" height="58" fill="#182f52"/><rect x="307" y="365" width="106" height="58" fill="#3a174d"/><rect x="122" y="505" width="106" height="58" fill="#3e1a29"/><rect x="297" y="505" width="106" height="58" fill="#14344a"/></g>
+<g fill="#ced6df"><circle cx="154" cy="440" r="8"/><circle cx="330" cy="440" r="8"/><rect x="157" y="434" width="60" height="9" rx="4"/><rect x="333" y="434" width="60" height="9" rx="4"/></g>
+<!-- sales counter -->
+<polygon points="645,315 1125,315 1178,365 600,365" fill="#4b515b" stroke="#768190" stroke-width="4"/>
+<polygon points="600,365 1178,365 1148,535 630,535" fill="url(#metal)" stroke="#3e4857" stroke-width="4"/>
+<path d="M645 510L1135 510" stroke="#ff284e" stroke-width="9" filter="url(#glow)"/>
+<rect x="720" y="250" width="155" height="95" rx="6" fill="#070b11" stroke="#596678" stroke-width="4"/><rect x="740" y="270" width="115" height="58" fill="#163456"/>
+<rect x="920" y="250" width="155" height="95" rx="6" fill="#070b11" stroke="#596678" stroke-width="4"/><rect x="940" y="270" width="115" height="58" fill="#33164e"/>
+<g fill="#080b10" stroke="#3d4652" stroke-width="3"><rect x="790" y="340" width="60" height="25"/><rect x="990" y="340" width="60" height="25"/></g>
+<!-- right laboratory behind glass -->
+<polygon points="1360,305 1815,305 1780,665 1325,640" fill="#080d14" stroke="#526074" stroke-width="4"/>
+<polygon points="1390,330 1778,330 1750,620 1360,600" fill="url(#glass)" stroke="#6b7685" stroke-width="3"/>
+<path d="M1415 354L1738 354" stroke="#2cb9ff" stroke-width="7" filter="url(#glow)"/>
+<g stroke="#c9d0d8" stroke-width="6" stroke-linecap="round"><path d="M1450 405L1450 500"/><path d="M1490 410L1490 510"/><path d="M1530 400L1530 500"/><path d="M1575 420L1575 515"/><path d="M1620 400L1620 500"/><path d="M1660 415L1660 510"/></g>
+<rect x="1415" y="535" width="255" height="50" fill="#161d27" stroke="#465468" stroke-width="3"/><rect x="1685" y="390" width="55" height="190" fill="#0b0f15" stroke="#54465f" stroke-width="3"/>
+<!-- two display islands -->
+<g>
+ <polygon points="470,595 800,595 840,630 430,630" fill="#3b424c" stroke="#687383" stroke-width="4"/><polygon points="430,630 840,630 820,785 450,785" fill="#0d1219" stroke="#414c5b" stroke-width="4"/>
+ <polygon points="880,585 1215,585 1255,620 840,620" fill="#3b424c" stroke="#687383" stroke-width="4"/><polygon points="840,620 1255,620 1235,780 860,780" fill="#0d1219" stroke="#414c5b" stroke-width="4"/>
+</g>
+<!-- pc towers on islands -->
+<g fill="#080b10" stroke="#586678" stroke-width="4"><rect x="500" y="500" width="100" height="165" rx="7"/><rect x="645" y="500" width="100" height="165" rx="7"/><rect x="915" y="490" width="100" height="165" rx="7"/><rect x="1060" y="490" width="100" height="165" rx="7"/></g>
+<g fill="none" stroke-width="8"><circle cx="550" cy="545" r="28" stroke="#d735ff"/><circle cx="550" cy="615" r="28" stroke="#28b7ff"/><circle cx="695" cy="545" r="28" stroke="#ff284e"/><circle cx="695" cy="615" r="28" stroke="#9639ff"/><circle cx="965" cy="535" r="28" stroke="#2ab8ff"/><circle cx="965" cy="605" r="28" stroke="#ff2b55"/><circle cx="1110" cy="535" r="28" stroke="#a53dff"/><circle cx="1110" cy="605" r="28" stroke="#2ad1d1"/></g>
+<!-- product boxes / stools / detail clutter -->
+<g fill="#202733" stroke="#465467" stroke-width="2"><rect x="155" y="730" width="90" height="62"/><rect x="260" y="730" width="90" height="62"/><rect x="365" y="730" width="90" height="62"/><rect x="145" y="810" width="90" height="62"/><rect x="250" y="810" width="90" height="62"/><rect x="355" y="810" width="90" height="62"/></g>
+<g fill="#371744"><rect x="165" y="740" width="70" height="11"/><rect x="270" y="740" width="70" height="11"/><rect x="375" y="740" width="70" height="11"/></g>
+<g fill="#151a21" stroke="#59616d" stroke-width="3"><ellipse cx="1310" cy="790" rx="54" ry="20"/><rect x="1303" y="790" width="14" height="86"/><ellipse cx="1570" cy="790" rx="54" ry="20"/><rect x="1563" y="790" width="14" height="86"/></g>
+<!-- entrance -->
+<polygon points="760,895 1155,895 1120,1010 800,1010" fill="#080b10" stroke="#455164" stroke-width="4"/><path d="M820 920L1100 920" stroke="#8f2cd6" stroke-width="8" filter="url(#glow)"/>
+<!-- floor emissive guidance -->
+<path d="M486 805L812 805" stroke="#c82eff" stroke-width="5" opacity=".75"/><path d="M900 800L1225 800" stroke="#2ab7ff" stroke-width="5" opacity=".75"/><path d="M625 545L1145 545" stroke="#ff284e" stroke-width="4" opacity=".55"/>
+<!-- reflections -->
+<polygon points="455,790 820,790 760,1010 390,1010" fill="#bf33ff" opacity=".05"/><polygon points="860,785 1235,785 1310,1010 900,1010" fill="#27b7ff" opacity=".05"/>
+</svg>
