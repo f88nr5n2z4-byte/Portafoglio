@@ -490,7 +490,7 @@ func _iso_counter(r:Rect2,label:String,accent:Color) -> void:
  draw_colored_polygon(side,Color("#090c11")); draw_line(r.position+Vector2(0,r.size.y-6),r.position+Vector2(r.size.x,r.size.y-6),accent,5); _txt(r.position+Vector2(24,40),label,18,WHITE)
 
 func _pc_display(p:Vector2,i:int) -> void:
- _panel(Rect2(p,170,220),Color("#0d1118"),Color("#343c49")); draw_circle(p+Vector2(85,72),48,Color("#341b48") if i%2==0 else Color("#113f59")); draw_circle(p+Vector2(85,72),31,MAGENTA if i%2==0 else BLUE); draw_rect(Rect2(p+Vector2(32,132),Vector2(106,12)),Color("#252d3a")); _txt(p+Vector2(34,190),"GAMING PC",15,MUTED)
+ _panel(Rect2(p,Vector2(170,220)),Color("#0d1118"),Color("#343c49")); draw_circle(p+Vector2(85,72),48,Color("#341b48") if i%2==0 else Color("#113f59")); draw_circle(p+Vector2(85,72),31,MAGENTA if i%2==0 else BLUE); draw_rect(Rect2(p+Vector2(32,132),Vector2(106,12)),Color("#252d3a")); _txt(p+Vector2(34,190),"GAMING PC",15,MUTED)
 
 func _draw_player() -> void:
  draw_set_transform(player+Vector2(0,30),0,Vector2(1,0.42)); draw_circle(Vector2.ZERO,30,Color(0,0,0,0.35)); draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
