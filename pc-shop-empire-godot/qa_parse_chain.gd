@@ -13,6 +13,7 @@ func _init() -> void:
 		"res://visual_upgrade.gd",
 		"res://visual_upgrade_real.gd",
 		"res://milestone_a.gd",
+		"res://milestone_a_complete.gd",
 		"res://qa_game.gd"
 	]
 	var failed := false
