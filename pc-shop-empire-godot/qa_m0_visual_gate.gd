@@ -19,19 +19,12 @@ func _run() -> void:
 	if world==null or world.player==null or world.camera==null:
 		printerr("M0 VISUAL GATE FAIL: world/player/camera missing"); quit(2); return
 
-	# 01 — storefront/entrance, real level and player.
 	await _frame_at("01_ingresso",Vector3(0,0.02,5.85),14.2,22)
-
-	# 02 — readable overall shop composition.
 	await _frame_at("02_shop_overview",Vector3(0,0.02,2.2),15.0,24)
-
-	# 03 — real sales counter and customer service area.
 	await _frame_at("03_bancone",Vector3(-0.8,0.02,0.35),11.8,24)
-
-	# 04 — PC/laptop product islands and real merchandise.
 	await _frame_at("04_product_islands",Vector3(0.0,0.02,4.25),10.9,24)
 
-	# 05 — actual input-driven walking, not a posed screenshot.
+	# Actual input-driven walking.
 	world.player.global_position=Vector3(-4.8,0.02,4.2); world.player.velocity=Vector3.ZERO
 	world.camera.size=11.4
 	for _i in range(12): await process_frame
@@ -42,41 +35,39 @@ func _run() -> void:
 	Input.action_release("move_right")
 	for _i in range(5): await process_frame
 
-	# 06 — wait for the main CharacterBody3D customer to physically reach the counter.
+	# Main customer must physically reach the service counter.
 	var waited:=0
 	while not world.customer.waiting and waited<520:
-		await physics_frame; waited+=1
+		await physics_frame
+		waited+=1
 	if not world.customer.waiting:
 		printerr("M0 VISUAL GATE FAIL: customer never reached counter"); quit(3); return
 	world.player.global_position=Vector3(-1.4,0.02,0.55); world.player.velocity=Vector3.ZERO; world.camera.size=10.5
 	for _i in range(24): await process_frame
 	await _save_frame("06_customer_counter")
 
-	# 07 — real laboratory room.
 	await _frame_at("07_laboratory",Vector3(13.3,0.02,0.4),12.2,26)
-
-	# 08 — detailed physical workbench.
 	await _frame_at("08_lab_workbench",Vector3(13.2,0.02,-1.9),9.6,24)
 
-	# 09 — door caught during its real tween animation.
+	# Door captured during the real tween.
 	world.player.global_position=Vector3(8.0,0.02,-1.9); world.player.velocity=Vector3.ZERO; world.camera.size=9.7
-	if world.lab_door_open: world._toggle_lab_door(); for _i in range(28): await process_frame
+	if world.lab_door_open:
+		world._toggle_lab_door()
+		for _i in range(28): await process_frame
 	world._toggle_lab_door()
 	for _i in range(8): await process_frame
 	await _save_frame("09_lab_door_opening")
 	for _i in range(24): await process_frame
 
-	# 10 — physical shop terminal.
 	await _frame_at("10_shop_terminal",Vector3(5.6,0.02,3.65),9.5,24)
 
-	# 11 — camera cutaway/occlusion in an actual occluding route.
+	# Camera cutaway must activate on genuine occluding geometry.
 	world.player.global_position=Vector3(0,0.02,-2.85); world.player.velocity=Vector3.ZERO; world.camera.size=10.2
 	for _i in range(30): await process_frame
 	if world.camera.hidden_last_frame.is_empty():
 		printerr("M0 VISUAL GATE FAIL: occlusion cutaway did not activate"); quit(4); return
 	await _save_frame("11_occlusion_test")
 
-	# 12 — final broad real-time shot with shop/lab boundary and live NPCs.
 	await _frame_at("12_overall_premium",Vector3(4.4,0.02,0.7),14.6,30)
 
 	var dir:=DirAccess.open(out_dir)
