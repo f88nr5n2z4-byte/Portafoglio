@@ -15,6 +15,7 @@ func _init() -> void:
 		"res://milestone_a.gd",
 		"res://milestone_a_complete.gd",
 		"res://milestone_a_final.gd",
+		"res://maximum_quality_pass.gd",
 		"res://qa_game.gd"
 	]
 	var failed := false
