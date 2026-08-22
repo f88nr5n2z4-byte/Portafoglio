@@ -38,6 +38,7 @@ func _init() -> void:
 		"res://game/real_game_main.gd",
 		"res://qa_milestone0_real_world.gd",
 		"res://qa_m0_art_world.gd",
+		"res://qa_m0_visual_gate.gd",
 		"res://qa_game.gd"
 	]
 	var failed := false
