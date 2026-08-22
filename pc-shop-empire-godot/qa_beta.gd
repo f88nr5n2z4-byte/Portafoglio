@@ -44,18 +44,18 @@ func _init() -> void:
 	check(game._job_validation_reason().contains("sistema operativo"), "OS requirement blocks delivery")
 	game.os_installed = true
 	check(game._job_validation_reason() == "", "validated build becomes deliverable")
-	var before_money: int = game.money
+	var before_money: int = int(game.money)
 	game._finish_job()
 	check(game.money > before_money, "completed build pays the player")
 	check(game.reputation > 0 and game.completed_jobs == 1, "completion grants reputation and progression")
-	var paid_money := game.money
+	var paid_money: int = int(game.money)
 	game._finish_job()
 	check(game.money == paid_money, "double delivery cannot duplicate payment")
 
 	# Save/load persistence.
 	game._save_game()
 	check(FileAccess.file_exists(game.SAVE_PATH), "save file created")
-	var saved_money: int = game.money
+	var saved_money: int = int(game.money)
 	game.money = 1
 	game._load_game()
 	check(game.money == saved_money, "load restores player balance")
@@ -66,7 +66,7 @@ func _init() -> void:
 	game.diagnostics_done = ["Power","POST","PSU"]
 	check(game._diagnosis_revealed(), "repair fault is revealed after diagnostic tests")
 	check(not game._build_ready(), "diagnosis alone does not complete repair")
-	var repair_money_before := game.money
+	var repair_money_before: int = int(game.money)
 	game._finish_job()
 	check(game.money == repair_money_before and game.job_state != "none", "premature repair delivery is rejected")
 	game.job_state = "working"
@@ -76,7 +76,7 @@ func _init() -> void:
 	check(game._job_validation_reason() == "", "completed repair passes delivery validation")
 	game._finish_job()
 	check(game.money > repair_money_before and game.job_state == "none", "correct repair pays once and closes job")
-	var after_repair_money := game.money
+	var after_repair_money: int = int(game.money)
 	game._finish_job()
 	check(game.money == after_repair_money, "closed repair cannot pay twice")
 
@@ -96,13 +96,12 @@ func _init() -> void:
 
 	# Economy and order-delivery edge cases.
 	game.money = 0
-	var zero_money := game.money
-	# Direct affordability invariant used by every shop purchase path.
+	var zero_money: int = int(game.money)
 	check(zero_money < int(game._component("gpu_5060").price), "zero balance cannot afford purchase")
 	game.money = 5000
 	game.pending_orders.clear()
 	game.pending_orders.append({"id":"ssd_1tb","name":"Samsung 990 EVO 1TB","arrival_day":game.day,"arrival_hour":game.hour})
-	var inv_before := int(game.inventory.get("ssd_1tb",0))
+	var inv_before: int = int(game.inventory.get("ssd_1tb",0))
 	game._check_deliveries()
 	check(int(game.inventory.get("ssd_1tb",0)) == inv_before + 1 and game.pending_orders.is_empty(), "arrived order transfers once into inventory")
 	game._check_deliveries()
