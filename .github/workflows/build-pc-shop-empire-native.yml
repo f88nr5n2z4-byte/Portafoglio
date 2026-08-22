@@ -54,10 +54,13 @@ jobs:
           $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
           $out = "$PWD\build\qa_stdout.log"
           $err = "$PWD\build\qa_stderr.log"
-          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--path","pc-shop-empire-godot","--script","res://qa_beta.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
-          Get-Content $out -ErrorAction SilentlyContinue
-          Get-Content $err -ErrorAction SilentlyContinue
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_beta.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
           if ($p.ExitCode -ne 0) { throw "Native beta QA failed: $($p.ExitCode)" }
+          if (($stdout + "`n" + $stderr) -notmatch "PC GAME EMPIRE BETA QA: ALL TESTS PASSED") { throw "QA process ended without explicit PASS marker" }
 
       - name: Export clean Windows build
         shell: powershell
@@ -82,11 +85,12 @@ jobs:
           $out = "$PWD\build\exe_stdout.log"
           $err = "$PWD\build\exe_stderr.log"
           $p = Start-Process -FilePath "$PWD\build\PC-GAME-EMPIRE.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
-          Get-Content $out -ErrorAction SilentlyContinue
-          Get-Content $err -ErrorAction SilentlyContinue
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
           if ($p.ExitCode -ne 0) { throw "Exported EXE exited with code $($p.ExitCode)" }
-          $all = ((Get-Content $out -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content $err -Raw -ErrorAction SilentlyContinue))
-          if ($all -match "SCRIPT ERROR|Parse Error") { throw "Runtime script/parse error detected in exported EXE" }
+          if (($stdout + "`n" + $stderr) -match "SCRIPT ERROR|Parse Error") { throw "Runtime script/parse error detected in exported EXE" }
           Write-Host "PC-GAME-EMPIRE.exe launch smoke test PASSED"
 
       - name: Package final ZIP
@@ -107,11 +111,12 @@ jobs:
           $out = "$PWD\verify_extract\zip_exe_stdout.log"
           $err = "$PWD\verify_extract\zip_exe_stderr.log"
           $p = Start-Process -FilePath "$PWD\verify_extract\PC-GAME-EMPIRE.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
-          Get-Content $out -ErrorAction SilentlyContinue
-          Get-Content $err -ErrorAction SilentlyContinue
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
           if ($p.ExitCode -ne 0) { throw "EXE from extracted ZIP exited with code $($p.ExitCode)" }
-          $all = ((Get-Content $out -Raw -ErrorAction SilentlyContinue) + "`n" + (Get-Content $err -Raw -ErrorAction SilentlyContinue))
-          if ($all -match "SCRIPT ERROR|Parse Error") { throw "Runtime script/parse error detected in EXE extracted from ZIP" }
+          if (($stdout + "`n" + $stderr) -match "SCRIPT ERROR|Parse Error") { throw "Runtime script/parse error detected in EXE extracted from ZIP" }
           Write-Host "Extracted ZIP EXE smoke test PASSED"
 
       - name: Upload final Windows beta artifact
