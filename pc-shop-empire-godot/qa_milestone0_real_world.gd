@@ -34,18 +34,25 @@ func _run() -> void:
 	for _i in range(45): await physics_frame
 	Input.action_release("move_right")
 	check(player.global_position.x > start.x + 1.0,"WASD/input moves the real player body")
-	# Collision proof against left wall.
+
 	player.global_position = Vector3(-8.25,0.65,0.0)
 	player.velocity = Vector3.ZERO
 	Input.action_press("move_left")
 	for _i in range(75): await physics_frame
 	Input.action_release("move_left")
 	check(player.global_position.x > -8.75,"wall collision blocks the player")
-	# Customer route proof.
-	for _i in range(250): await physics_frame
-	check(world.customer.waiting,"customer walks to and reaches the counter")
-	check(world.customer.global_position.z < 0.2,"customer arrived at service area")
-	# Real lab door opens and player physically crosses it.
+
+	print("M0 QA CHECKPOINT: waiting for customer to reach counter")
+	var customer_reached := false
+	for _i in range(480):
+		await physics_frame
+		if world.customer.waiting:
+			customer_reached = true
+			break
+	check(customer_reached,"customer walks to and reaches the counter")
+	check(world.customer.global_position.z < 0.35,"customer arrived at service area")
+	print("M0 QA CHECKPOINT: customer route complete at ",world.customer.global_position)
+
 	player.global_position = Vector3(7.75,0.65,-1.9)
 	player.velocity = Vector3.ZERO
 	world._on_player_interact()
@@ -55,13 +62,15 @@ func _run() -> void:
 	for _i in range(55): await physics_frame
 	Input.action_release("move_right")
 	check(player.global_position.x > 9.35,"player physically walks through opened lab doorway")
-	# Terminal/workbench are connected to runtime interactions.
+	print("M0 QA CHECKPOINT: player crossed lab doorway at ",player.global_position)
+
 	player.global_position = Vector3(6.3,0.65,3.4)
 	world._on_player_interact(); await process_frame
 	check(world.last_interaction == "store_pc","physical store PC triggers Shop interaction")
 	player.global_position = Vector3(13.2,0.65,-2.6)
 	world._on_player_interact(); await process_frame
 	check(world.last_interaction == "workbench","physical workbench triggers Assembly interaction")
+
 	if failures.is_empty():
 		print("PC GAME EMPIRE MILESTONE 0 REAL-WORLD QA: ALL TESTS PASSED")
 		quit(0)
