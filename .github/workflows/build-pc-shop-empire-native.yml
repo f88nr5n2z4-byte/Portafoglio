@@ -83,7 +83,8 @@ jobs:
           $outPath = "$env:GITHUB_WORKSPACE\build\PC-GAME-EMPIRE.exe"
           $out = "$PWD\build\export_stdout.log"
           $err = "$PWD\build\export_stderr.log"
-          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--export-release","Windows Desktop",$outPath -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $argLine = "--headless --path pc-shop-empire-godot --export-release `"Windows Desktop`" `"$outPath`""
+          $p = Start-Process -FilePath $godot -ArgumentList $argLine -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
           $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
           $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
           Write-Host $stdout
