@@ -221,7 +221,11 @@ func _interact_zone() -> void:
   "customer":
    if current_job < 0: _offer_next_job()
    elif job_state == "offered": screen="job_offer"
-   elif job_state == "accepted": screen="diagnostics" if _job().type == "repair" else screen="jobs"
+   elif job_state == "accepted":
+    if String(_job().get("type","")) == "repair":
+     screen="diagnostics"
+    else:
+     screen="jobs"
    elif job_state == "ready": _finish_job()
    else: _notify("Il lavoro è ancora in corso")
   "terminal": screen="online_shop"
@@ -465,7 +469,6 @@ func _draw_floor() -> void:
  _panel(Rect2(45,150,360,170),Color(0.04,0.05,0.075,0.94),Color("#39465a")); _txt(Vector2(70,188),T("objective"),16,MUTED); _txt(Vector2(70,230),_objective_text(),22,WHITE); _txt(Vector2(70,275),"WASD • E • TAB/I • J • ESC",16,MUTED)
 
 func _draw_shop_environment() -> void:
- # 2.5D showroom: perspective floor, raised counters and lit display furniture.
  var floor_poly=PackedVector2Array([Vector2(100,140),Vector2(1820,140),Vector2(1780,960),Vector2(140,960)])
  draw_colored_polygon(floor_poly,Color("#20242c"))
  for y in range(160,960,80): draw_line(Vector2(120,y),Vector2(1800,y),Color("#303640"),2)
