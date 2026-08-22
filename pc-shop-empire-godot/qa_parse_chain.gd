@@ -25,6 +25,7 @@ func _init() -> void:
 		"res://game/world/customer_3d.gd",
 		"res://game/world/interactable_3d.gd",
 		"res://game/world/store_world_3d.gd",
+		"res://game/world/store_world_3d_runtime.gd",
 		"res://game/real_game_main.gd",
 		"res://qa_game.gd"
 	]
