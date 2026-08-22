@@ -16,7 +16,7 @@ parallelamente a:
 
 ## Milestone ufficiali
 
-- **A — Assemblaggio PC completo semplificato + compatibilità** — IMPLEMENTING
+- **A — Assemblaggio PC completo semplificato + compatibilità** — COMPLETE
 - **B — Riparazioni + diagnostica + BIOS + benchmark** — PLAYABLE, da completare/polish
 - **C — Catalogo hardware + shop + inventario** — PLAYABLE, contenuto da espandere
 - **D — Clienti + lavori + recensioni + storyline** — IMPLEMENTING
@@ -26,13 +26,17 @@ parallelamente a:
 - **H — Tutorial + settings + localization + salvataggi** — PLAYABLE, da completare
 - **I — Final QA + performance + polish + Windows release** — NOT STARTED
 
-## Milestone A — criterio COMPLETE
+## Milestone A — COMPLETE
 
-Assemblaggio interattivo tramite drag & drop / snap points / animazioni e feedback, senza micro-simulazione esasperata. Componenti principali: case, motherboard, CPU, cooler/AIO, RAM, GPU, PSU, storage, fans. Ogni installazione deve cambiare visivamente il PC.
+Assemblaggio interattivo tramite drag & drop, snap points, feedback visivo compatibile/incompatibile, animazioni brevi di installazione, apertura/chiusura pannello, rimozione e sostituzione componenti, pasta termica dedicata e cablaggio aggregato semplificato.
 
-Compatibilità minima obbligatoria: socket CPU, motherboard, DDR generation, RAM, GPU length, case/form factor, PSU wattage, cooler/socket, radiator size.
+Componenti principali rappresentati realmente nella build: case, motherboard, CPU, cooler/AIO, RAM, GPU, PSU, storage e fans. La presentazione distingue visivamente fasce Entry / Mid / High End / Enthusiast mantenendo la direzione premium 2.5D approvata.
 
-Operazioni volutamente semplificate: viti, standoff e cablaggio interno sono step/animazioni aggregate e non operazioni pin-by-pin.
+Compatibilità implementata: socket CPU, motherboard, DDR generation, RAM, GPU length, case/form factor, PSU wattage/headroom, cooler/socket, altezza dissipatore e radiator size. Gli errori spiegano il motivo al giocatore.
+
+Operazioni volutamente semplificate: viti, standoff e cablaggio interno restano step/animazioni aggregate e non operazioni pin-by-pin.
+
+Gate di chiusura Milestone A: strict parser Godot 4.7.2, regression QA, QA finale Entry/Mid/High-End, replace/remove, save/load, finalizzazione pannello, 8 screenshot reali, clean Windows export, EXE launch, ZIP extraction e EXE launch dallo ZIP — PASS.
 
 ## Target contenuto 1.0
 
