@@ -1,0 +1,100 @@
+name: PC GAME EMPIRE M0 Real World Gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "pc-shop-empire-godot/**"
+      - ".github/workflows/pc-game-empire-m0-real-world.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  real-world-gate:
+    runs-on: windows-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Godot 4.7.2
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.2
+          use-dotnet: false
+          include-templates: true
+      - name: Clean and import
+        shell: powershell
+        run: |
+          Remove-Item -Recurse -Force "pc-shop-empire-godot\.godot" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "build" -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path "build" | Out-Null
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--editor","--quit" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Godot import failed: $($p.ExitCode)" }
+      - name: Strict parser
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\parse_stdout.log"; $err = "$PWD\build\parse_stderr.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_parse_chain.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $all=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $all
+          if ($p.ExitCode -ne 0 -or $all -notmatch "PARSE CHAIN: ALL SCRIPTS INSTANTIABLE") { throw "Parser gate failed" }
+      - name: Real movement collision NPC interaction QA
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\m0_stdout.log"; $err = "$PWD\build\m0_stderr.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","900","--path","pc-shop-empire-godot","--script","res://qa_milestone0_real_world.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $all=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $all
+          if ($p.ExitCode -ne 0 -or $all -notmatch "MILESTONE 0 REAL-WORLD QA: ALL TESTS PASSED") { throw "Real-world runtime QA failed" }
+      - name: Capture real-time movement sequence
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          New-Item -ItemType Directory -Force -Path "build\m0_frames" | Out-Null
+          $out = "$PWD\build\capture_stdout.log"; $err = "$PWD\build\capture_stderr.log"
+          $argLine = "--audio-driver Dummy --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_m0_capture_sequence.gd"
+          $p = Start-Process -FilePath $godot -ArgumentList $argLine -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $all=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $all
+          if ($p.ExitCode -ne 0 -or $all -notmatch "M0 REAL-TIME SEQUENCE CAPTURE: PASS") { throw "Movement sequence capture failed" }
+          $files=Get-ChildItem "build\m0_frames\*.png"
+          if ($files.Count -ne 4) { throw "Expected 4 runtime frames, got $($files.Count)" }
+          foreach ($f in $files) { if ($f.Length -lt 25000) { throw "Frame too small: $($f.Name) $($f.Length)" } }
+      - name: Export Windows technical slice
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $outPath="$env:GITHUB_WORKSPACE\build\PC-GAME-EMPIRE-M0.exe"
+          $exportOut="$PWD\build\export_stdout.log"; $exportErr="$PWD\build\export_stderr.log"
+          $argLine = "--headless --path pc-shop-empire-godot --export-release `"Windows Desktop`" `"$outPath`""
+          $p=Start-Process -FilePath $godot -ArgumentList $argLine -RedirectStandardOutput $exportOut -RedirectStandardError $exportErr -Wait -PassThru
+          $all=(Get-Content $exportOut -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $exportErr -Raw -ErrorAction SilentlyContinue); Write-Host $all
+          if ($p.ExitCode -ne 0 -or !(Test-Path $outPath)) { throw "Windows export failed" }
+          if ((Get-Item $outPath).Length -lt 10000000) { throw "EXE unexpectedly small" }
+      - name: Launch exported EXE
+        shell: powershell
+        run: |
+          $out="$PWD\build\exe_stdout.log"; $err="$PWD\build\exe_stderr.log"
+          $p=Start-Process -FilePath "$PWD\build\PC-GAME-EMPIRE-M0.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","180" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $all=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $all
+          if ($p.ExitCode -ne 0 -or $all -match "SCRIPT ERROR|Parse Error") { throw "Exported EXE runtime failed" }
+      - name: Package and relaunch extracted EXE
+        shell: powershell
+        run: |
+          Compress-Archive -Path "build\PC-GAME-EMPIRE-M0.exe" -DestinationPath "build\PC_GAME_EMPIRE_M0_REAL_WORLD_WINDOWS.zip" -CompressionLevel Optimal -Force
+          Remove-Item -Recurse -Force "verify_m0" -ErrorAction SilentlyContinue
+          Expand-Archive "build\PC_GAME_EMPIRE_M0_REAL_WORLD_WINDOWS.zip" "verify_m0" -Force
+          $p=Start-Process -FilePath "$PWD\verify_m0\PC-GAME-EMPIRE-M0.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","180" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Extracted EXE launch failed" }
+      - name: Upload Windows slice
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_M0_REAL_WORLD_WINDOWS
+          path: build/PC_GAME_EMPIRE_M0_REAL_WORLD_WINDOWS.zip
+          if-no-files-found: error
+      - name: Upload runtime movement frames
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_M0_REAL_WORLD_SEQUENCE
+          path: build/m0_frames/*.png
+          if-no-files-found: error
