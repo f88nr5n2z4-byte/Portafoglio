@@ -36,7 +36,7 @@ func _run()->void:
 	var start_z:float=door.position.z
 	world.player.global_position=Vector3(7.8,0.02,-1.9)
 	world._on_player_interact()
-	for _i in range(28): await process_frame
+	await _wait_until_door_idle(world)
 	check(world.lab_door_open,"door state becomes open")
 	check(door.visible,"door mesh remains visible while open")
 	check(absf(door.position.z-start_z)>1.2,"door visibly slides open")
@@ -45,7 +45,7 @@ func _run()->void:
 		if child is CollisionShape3D: collider_disabled=child.disabled
 	check(collider_disabled,"door collider is synchronized open")
 	world._toggle_lab_door()
-	for _i in range(30): await process_frame
+	await _wait_until_door_idle(world)
 	check(not world.lab_door_open,"door closes again")
 	check(absf(door.position.z-start_z)<0.18,"door returns to closed visual position")
 	var collider_enabled:=false
@@ -75,6 +75,12 @@ func _run()->void:
 		print("PC GAME EMPIRE M0 ART/RUNTIME QA: ALL TESTS PASSED"); quit(0)
 	else:
 		printerr("PC GAME EMPIRE M0 ART/RUNTIME QA: ",failures.size()," FAILURE(S)"); quit(1)
+
+func _wait_until_door_idle(world_node:Node,timeout_ms:int=2000)->void:
+	var deadline:=Time.get_ticks_msec()+timeout_ms
+	while bool(world_node.get("door_busy")) and Time.get_ticks_msec()<deadline:
+		await process_frame
+	await process_frame
 
 func _find_named(node:Node,target:String)->Node:
 	if String(node.name)==target: return node
