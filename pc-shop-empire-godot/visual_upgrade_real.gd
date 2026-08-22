@@ -1,5 +1,8 @@
 extends "res://beta_hotfix.gd"
 
+const PremiumWorldData = preload("res://premium_world_data.gd")
+const PremiumCharsData = preload("res://premium_chars_data.gd")
+
 var premium_atlas: Texture2D
 var premium_chars: Texture2D
 var visual_phase: float = 0.0
@@ -19,8 +22,12 @@ var lab_blockers := [
 ]
 
 func _ready() -> void:
-	premium_atlas = _decode_embedded_texture("res://assets/premium_world_atlas.svg",false)
-	premium_chars = _decode_embedded_texture("res://assets/premium_characters.svg",true)
+	premium_atlas = _texture_from_webp_data(PremiumWorldData.DATA,"world")
+	premium_chars = _texture_from_webp_data(PremiumCharsData.DATA,"characters")
+	if premium_atlas == null or premium_chars == null:
+		printerr("PREMIUM WEBP LOAD FAILURE")
+	else:
+		print("PREMIUM WEBP LOAD PASS")
 	super._ready()
 	zones = [
 		{"id":"terminal","rect":Rect2(290,190,300,220)},
@@ -33,29 +40,20 @@ func _ready() -> void:
 	player = Vector2(960,820)
 	queue_redraw()
 
-func _decode_embedded_texture(path:String,is_png:bool) -> Texture2D:
-	var text:String = FileAccess.get_file_as_string(path)
-	if text.is_empty():
-		printerr("PREMIUM ASSET READ FAILED: ",path)
+func _texture_from_webp_data(encoded:String,label:String) -> Texture2D:
+	if encoded.is_empty():
+		printerr("PREMIUM WEBP DATA EMPTY: ",label)
 		return null
-	var marker := "base64,"
-	var begin:int = text.find(marker)
-	if begin < 0:
-		printerr("PREMIUM ASSET BASE64 MARKER MISSING: ",path)
-		return null
-	begin += marker.length()
-	var ending:int = text.find("\"",begin)
-	if ending <= begin:
-		printerr("PREMIUM ASSET BASE64 END MISSING: ",path)
-		return null
-	var encoded:String = text.substr(begin,ending-begin)
 	var bytes:PackedByteArray = Marshalls.base64_to_raw(encoded)
-	var image := Image.new()
-	var err:Error = image.load_png_from_buffer(bytes) if is_png else image.load_jpg_from_buffer(bytes)
-	if err != OK:
-		printerr("PREMIUM ASSET DECODE FAILED: ",path," code=",err)
+	if bytes.is_empty():
+		printerr("PREMIUM WEBP BASE64 DECODE FAILED: ",label)
 		return null
-	print("PREMIUM ASSET READY: ",path," ",image.get_width(),"x",image.get_height())
+	var image := Image.new()
+	var err:Error = image.load_webp_from_buffer(bytes)
+	if err != OK or image.is_empty():
+		printerr("PREMIUM WEBP IMAGE DECODE FAILED: ",label," code=",err)
+		return null
+	print("PREMIUM WEBP READY: ",label," ",image.get_width(),"x",image.get_height())
 	return ImageTexture.create_from_image(image)
 
 func _process(delta: float) -> void:
