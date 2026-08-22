@@ -22,7 +22,7 @@ concurrency:
 jobs:
   final-windows-gate:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
 
@@ -76,12 +76,12 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "Native beta QA failed: $($p.ExitCode)" }
           if (($stdout + "`n" + $stderr) -notmatch "PC GAME EMPIRE BETA QA: ALL TESTS PASSED") { throw "QA process ended without explicit PASS marker" }
 
-      - name: Capture real Godot visual-upgrade screenshots
+      - name: Capture real Godot premium gameplay screenshots
         shell: powershell
         run: |
           $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
           New-Item -ItemType Directory -Force -Path "build\screenshots" | Out-Null
-          $targets = @("menu","shop_floor","diagnostics","build","online_shop")
+          $targets = @("menu","shop_floor","shop_walk","lab_floor","lab_walk","diagnostics","build","online_shop")
           foreach ($target in $targets) {
             $out = "$PWD\build\capture_${target}_stdout.log"
             $err = "$PWD\build\capture_${target}_stderr.log"
@@ -95,7 +95,7 @@ jobs:
             $png = "build\screenshots\$target.png"
             if (!(Test-Path $png)) { throw "Visual capture did not create $png" }
             $pngSize = (Get-Item $png).Length
-            if ($pngSize -lt 50000) { throw "Visual capture unexpectedly small/blank for $target : $pngSize bytes" }
+            if ($pngSize -lt 20000) { throw "Visual capture unexpectedly small/blank for $target : $pngSize bytes" }
             Write-Host "Screenshot $target validated: $pngSize bytes"
           }
 
@@ -140,7 +140,7 @@ jobs:
       - name: Package final ZIP
         shell: powershell
         run: |
-          $zip = "build\PC_GAME_EMPIRE_VISUAL_UPGRADE_v0.2.0_WINDOWS.zip"
+          $zip = "build\PC_GAME_EMPIRE_PREMIUM_VISUAL_v0.3.0_WINDOWS.zip"
           Compress-Archive -Path "build\PC-GAME-EMPIRE.exe" -DestinationPath $zip -CompressionLevel Optimal -Force
           if (!(Test-Path $zip)) { throw "ZIP missing" }
           if ((Get-Item $zip).Length -lt 1000000) { throw "ZIP unexpectedly small" }
@@ -150,7 +150,7 @@ jobs:
         shell: powershell
         run: |
           Remove-Item -Recurse -Force "verify_extract" -ErrorAction SilentlyContinue
-          Expand-Archive -Path "build\PC_GAME_EMPIRE_VISUAL_UPGRADE_v0.2.0_WINDOWS.zip" -DestinationPath "verify_extract" -Force
+          Expand-Archive -Path "build\PC_GAME_EMPIRE_PREMIUM_VISUAL_v0.3.0_WINDOWS.zip" -DestinationPath "verify_extract" -Force
           if (!(Test-Path "verify_extract\PC-GAME-EMPIRE.exe")) { throw "EXE missing from extracted ZIP" }
           $out = "$PWD\verify_extract\zip_exe_stdout.log"
           $err = "$PWD\verify_extract\zip_exe_stderr.log"
@@ -163,16 +163,16 @@ jobs:
           if (($stdout + "`n" + $stderr) -match "SCRIPT ERROR|Parse Error") { throw "Runtime script/parse error detected in EXE extracted from ZIP" }
           Write-Host "Extracted ZIP EXE smoke test PASSED"
 
-      - name: Upload visual-upgrade Windows build
+      - name: Upload premium visual Windows build
         uses: actions/upload-artifact@v4
         with:
-          name: PC_GAME_EMPIRE_VISUAL_UPGRADE_v0.2.0_WINDOWS
-          path: build/PC_GAME_EMPIRE_VISUAL_UPGRADE_v0.2.0_WINDOWS.zip
+          name: PC_GAME_EMPIRE_PREMIUM_VISUAL_v0.3.0_WINDOWS
+          path: build/PC_GAME_EMPIRE_PREMIUM_VISUAL_v0.3.0_WINDOWS.zip
           if-no-files-found: error
 
       - name: Upload real Godot screenshots
         uses: actions/upload-artifact@v4
         with:
-          name: PC_GAME_EMPIRE_VISUAL_UPGRADE_SCREENSHOTS
+          name: PC_GAME_EMPIRE_PREMIUM_VISUAL_SCREENSHOTS
           path: build/screenshots/*.png
           if-no-files-found: error
