@@ -16,7 +16,17 @@ const EXACT_NAMES := {
 	"Workbench": true,
 	"WorkbenchTop": true,
 	"DiagnosticDesk": true,
-	"ProductBox": true
+	"ProductBox": true,
+	# Camera-facing architectural meshes are replaced by intentional low cutaway modules.
+	# Their StaticBody3D colliders stay untouched and full-height.
+	"FrontWallL": true,
+	"FrontWallR": true,
+	"EntranceLeft": true,
+	"EntranceRight": true,
+	"RightPartitionA": true,
+	"RightPartitionB": true,
+	"LabRightWall": true,
+	"LabFrontWall": true
 }
 
 func _ready() -> void:
