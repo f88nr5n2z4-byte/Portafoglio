@@ -103,10 +103,12 @@ func _handle_interaction(id: String) -> void:
 		"store_pc": _open_mode("SHOP HARDWARE", "Terminale fisico del negozio collegato al catalogo hardware.\n\nMilestone 0 verifica il mondo reale e l'interazione. Catalogo, prezzi, compatibilità e inventario completi vengono reintegrati nella relativa milestone del nuovo mondo.")
 		"workbench": _open_mode("BANCO ASSEMBLAGGIO", "Banco fisico del laboratorio collegato al modulo Assembly.\n\nLa logica drag & drop e compatibilità valida della vecchia build verrà reintegrata qui dopo la chiusura di Milestone 0.")
 		"diagnostics": _open_mode("DIAGNOSTICA", "Postazione diagnostica fisicamente presente nel laboratorio.\n\nIl sistema completo di riparazioni e benchmark appartiene alla Milestone B.")
-		"counter":
-			_open_mode("PRIMO CLIENTE", "Il cliente è entrato realmente nel negozio, ha percorso la scena e ora attende al bancone.\n\nQuesto punto diventerà il primo dialogo tutorial della carriera.")
-			var customer_visual:=world.customer.get_node_or_null("CustomerVisual") if world.customer!=null else null
-			if customer_visual!=null and customer_visual.has_method("play_action"): customer_visual.play_action("talk",0.9)
+			"counter":
+				_open_mode("PRIMO CLIENTE", "Il cliente è entrato realmente nel negozio, ha percorso la scena e ora attende al bancone.\n\nQuesto punto diventerà il primo dialogo tutorial della carriera.")
+				var customer_visual:Node = null
+				if world.customer!=null:
+					customer_visual=world.customer.get_node_or_null("CustomerVisual")
+				if customer_visual!=null and customer_visual.has_method("play_action"): customer_visual.play_action("talk",0.9)
 		"lab_door": seen_interaction = ""
 
 func _open_mode(title: String, body: String) -> void:
