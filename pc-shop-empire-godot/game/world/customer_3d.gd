@@ -5,8 +5,10 @@ var waypoints: Array[Vector3] = []
 var waypoint_index := 0
 var waiting := false
 
-func set_route(points: Array[Vector3]) -> void:
-	waypoints = points
+func set_route(points: Array) -> void:
+	waypoints.clear()
+	for point in points:
+		waypoints.append(Vector3(point))
 	waypoint_index = 0
 	waiting = false
 
