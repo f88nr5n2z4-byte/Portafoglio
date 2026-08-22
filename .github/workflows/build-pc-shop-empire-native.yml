@@ -52,7 +52,11 @@ jobs:
         shell: powershell
         run: |
           $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
-          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--path","pc-shop-empire-godot","--script","res://qa_beta.gd" -Wait -PassThru
+          $out = "$PWD\build\qa_stdout.log"
+          $err = "$PWD\build\qa_stderr.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--path","pc-shop-empire-godot","--script","res://qa_beta.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          Get-Content $out -ErrorAction SilentlyContinue
+          Get-Content $err -ErrorAction SilentlyContinue
           if ($p.ExitCode -ne 0) { throw "Native beta QA failed: $($p.ExitCode)" }
 
       - name: Export clean Windows build
