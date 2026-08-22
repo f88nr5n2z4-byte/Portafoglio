@@ -1,10 +1,10 @@
 # PC GAME EMPIRE
 
-Versione: Beta 0.5 Native (Windows x86_64)
-Engine: Godot 4.7.x
+Versione: Beta v0.1.0 Native (Windows x86_64)
+Engine: Godot 4.7.2
 
 ## Avvio
-Estrarre il pacchetto Windows e avviare `PC-GAME-EMPIRE.exe`.
+Estrai `PC_GAME_EMPIRE_BETA_v0.1.0_WINDOWS.zip` e avvia `PC-GAME-EMPIRE.exe`.
 
 ## Controlli
 - WASD / Frecce: movimento
@@ -14,7 +14,7 @@ Estrarre il pacchetto Windows e avviare `PC-GAME-EMPIRE.exe`.
 - U: miglioramenti negozio
 - Mouse: UI e drag & drop componenti
 - ESC: pausa / indietro
-- Controller: stick sinistro movimento, A interazione, B pausa/indietro, D-Pad navigazione menu principale
+- Controller: stick sinistro movimento, A interazione/installazione, B indietro, D-Pad navigazione
 
 ## Gameplay
 Cliente → richiesta → diagnostica/preventivo → shop → consegna componenti → inventario → assemblaggio/riparazione → benchmark → consegna → pagamento → reputazione → upgrade → giorno successivo.
@@ -34,5 +34,5 @@ UI di riferimento 1920×1080 con scaling Godot. Preset selezionabili: 1280×720,
 - GPU compatibile OpenGL 3.3 / Vulkan-capable consigliata
 - Tastiera e mouse; controller opzionale
 
-## Build
-La pipeline GitHub Actions importa il progetto, esegue QA headless end-to-end e, solo se i test passano, esporta e impacchetta la build Windows.
+## Build e QA
+La pipeline GitHub Actions esegue su Windows: import pulito, QA logica end-to-end, export Godot release, avvio dell'EXE esportato, creazione ZIP, estrazione dello ZIP e secondo avvio dell'EXE estratto. L'artefatto viene pubblicato solo se l'intero gate passa.
