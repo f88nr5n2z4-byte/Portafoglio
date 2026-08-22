@@ -57,7 +57,6 @@ func _draw_customer(p:Vector2) -> void:
 
 func _draw_shop_environment() -> void:
 	super._draw_shop_environment()
-	# Used hardware bench in the lower-right showroom.
 	_panel(Rect2(1280,690,480,190),Color(0.04,0.06,0.09,0.84),Color("#614838"),3)
 	_txt(Vector2(1310,730),"USATO & OCCASIONI",18,YELLOW)
 	for i in range(3):
@@ -95,7 +94,7 @@ func _online_shop_click(p:Vector2) -> void:
 			var price:=int(c.price)
 			if money<price: _notify("Fondi insufficienti",false); return
 			money-=price
-			var delay:=max(0.06,0.18-0.03*int(upgrades.Magazzino))
+			var delay: float = maxf(0.06,0.18-0.03*int(upgrades.Magazzino))
 			pending_orders.append({"id":String(c.id),"name":String(c.name),"arrival_day":day,"arrival_hour":hour+delay})
 			_notify("Ordine confermato • consegna %.0f min"%(delay*60.0))
 			_beep(760,0.09,"sfx"); tutorial_step=max(tutorial_step,5); _autosave(); return
