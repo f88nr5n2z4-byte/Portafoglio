@@ -28,6 +28,7 @@ func _init() -> void:
 		"res://game/audio/world_audio.gd",
 		"res://game/world/player_3d.gd",
 		"res://game/world/customer_3d.gd",
+		"res://game/world/customer_factory_3d.gd",
 		"res://game/world/interactable_3d.gd",
 		"res://game/world/follow_camera_3d.gd",
 		"res://game/world/stylized_actor_visual.gd",
