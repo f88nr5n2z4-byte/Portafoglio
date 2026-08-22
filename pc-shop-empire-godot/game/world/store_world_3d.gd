@@ -71,10 +71,10 @@ func _build_environment() -> void:
 	_add_interaction("diagnostics", "APRI DIAGNOSTICA", Vector3(15.8,1.0,2.4), Vector3(3.2,2.5,3.0))
 	_add_shelf(Vector3(11.1,0.8,2.7), "LAB PARTS")
 	# Accent/practical lights: actual real-time lights.
-	_add_light(Vector3(-4.5,2.7,-1.0), Color("#70cfff"), 2.2, 7.0)
-	_add_light(Vector3(4.2,2.7,-1.0), Color("#ff4a68"), 2.0, 7.0)
-	_add_light(Vector3(13.4,2.7,-1.5), Color("#6bc8ff"), 2.2, 6.0)
-	_add_light(Vector3(16.2,2.7,-4.0), Color("#ff4668"), 1.8, 5.0)
+	_add_light(Vector3(-4.5,2.7,-1.0), Color("#70cfff"), 1.18, 6.4)
+	_add_light(Vector3(4.2,2.7,-1.0), Color("#ff4a68"), 1.12, 6.4)
+	_add_light(Vector3(13.4,2.7,-1.5), Color("#6bc8ff"), 1.30, 5.8)
+	_add_light(Vector3(16.2,2.7,-4.0), Color("#ff4668"), 1.05, 4.8)
 	# Interactions around physical customer/counter.
 	_add_interaction("counter", "PARLA AL CLIENTE", Vector3(0,1.0,-0.6), Vector3(5.8,2.2,2.8))
 
