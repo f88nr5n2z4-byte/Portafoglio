@@ -43,6 +43,11 @@ func install_component(id:String)->Dictionary:
 	_refresh(String(last_result.get("message","")),bool(last_result.get("ok",false)))
 	return last_result
 
+func remove_component(category:String)->Dictionary:
+	last_result=core.remove(category)
+	_refresh(String(last_result.get("message","")),bool(last_result.get("ok",false)))
+	return last_result
+
 func perform_action(action:String)->Dictionary:
 	match action:
 		"panel": last_result=core.toggle_case_panel()
@@ -103,8 +108,10 @@ func _refresh(message:String="",success:bool=true)->void:
 	for category:String in AssemblyCore.DEFAULT_REQUIRED:
 		var row:=Panel.new(); row.custom_minimum_size=Vector2(602,52); row.add_theme_stylebox_override("panel",_style(Color("#111d29"),Color("#263b4c"),7)); slots_list.add_child(row)
 		var category_label:=Label.new(); category_label.position=Vector2(14,8); category_label.size=Vector2(150,34); category_label.text=category.to_upper(); category_label.add_theme_font_size_override("font_size",14); category_label.add_theme_color_override("font_color",Color("#8298a8")); row.add_child(category_label)
-		var installed:=Label.new(); installed.position=Vector2(168,8); installed.size=Vector2(410,34); installed.add_theme_font_size_override("font_size",15)
-		if core.slots.has(category): installed.text=String(core.component(String(core.slots[category])).get("name",core.slots[category])); installed.add_theme_color_override("font_color",Color("#eff5f8"))
+		var installed:=Label.new(); installed.position=Vector2(168,8); installed.size=Vector2(310,34); installed.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS; installed.add_theme_font_size_override("font_size",15)
+		if core.slots.has(category):
+			installed.text=String(core.component(String(core.slots[category])).get("name",core.slots[category])); installed.add_theme_color_override("font_color",Color("#eff5f8"))
+			var remove:=Button.new(); remove.position=Vector2(492,7); remove.size=Vector2(96,38); remove.text="RIMUOVI"; remove.tooltip_text="Rimuovi il componente e restituiscilo all'inventario"; remove.pressed.connect(remove_component.bind(category)); row.add_child(remove)
 		else: installed.text="— slot vuoto —"; installed.add_theme_color_override("font_color",Color("#5f7281"))
 		row.add_child(installed)
 	feedback_label.text=message if not message.is_empty() else "Seleziona un componente dall'inventario. Le installazioni incompatibili vengono bloccate."
