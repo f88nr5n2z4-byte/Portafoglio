@@ -1,6 +1,7 @@
 extends Node3D
 
 # Modular articulated visual rig. The gameplay CharacterBody3D remains independent.
+static var tapered_mesh_cache:Dictionary={}
 var body_color := Color("#c52d4a")
 var accent_color := Color("#222b36")
 var skin_color := Color("#d9a27e")
@@ -78,7 +79,7 @@ func _build_actor() -> void:
 	# pelvis / torso hierarchy
 	var pelvis:=Node3D.new(); pelvis.name="PelvisJoint"; pelvis.position=Vector3(0,0.84,0); rig_root.add_child(pelvis)
 	torso_joint=Node3D.new(); torso_joint.name="TorsoJoint"; torso_joint.position=Vector3(0,0.34,0); pelvis.add_child(torso_joint)
-	_add_capsule(torso_joint,"Torso",Vector3(0,0.18,0),0.29,0.70,body_color,Vector3(0,0,0),Vector3(1.0,1.0,0.82))
+	_add_tapered_mesh(torso_joint,"Torso",Vector3(0,0.18,0),0.30,0.235,0.70,body_color,Vector3.ZERO,Vector3(1.0,1.0,0.84))
 	_add_box(torso_joint,"JacketPanel",Vector3(0,0.19,-0.255),Vector3(0.48,0.46,0.055),accent_color)
 	_add_box(torso_joint,"JacketSideLeft",Vector3(-0.245,0.16,-0.18),Vector3(0.075,0.48,0.13),body_color.darkened(0.12))
 	_add_box(torso_joint,"JacketSideRight",Vector3(0.245,0.16,-0.18),Vector3(0.075,0.48,0.13),body_color.darkened(0.12))
@@ -131,15 +132,15 @@ func _make_limb_joint(parent:Node3D,n:String,pos:Vector3)->Node3D:
 	var joint:=Node3D.new(); joint.name=n; joint.position=pos; parent.add_child(joint); return joint
 
 func _build_arm(joint:Node3D,side:float)->void:
-	_add_capsule(joint,"UpperArm",Vector3(0,-0.24,0),0.085,0.47,body_color,Vector3.ZERO,Vector3.ONE)
+	_add_tapered_mesh(joint,"UpperArm",Vector3(0,-0.24,0),0.092,0.078,0.47,body_color,Vector3.ZERO,Vector3.ONE)
 	var elbow:=Node3D.new(); elbow.name="Elbow"; elbow.position=Vector3(0,-0.46,0); joint.add_child(elbow)
-	_add_capsule(elbow,"Forearm",Vector3(0,-0.19,0),0.075,0.37,accent_color,Vector3.ZERO,Vector3.ONE)
+	_add_tapered_mesh(elbow,"Forearm",Vector3(0,-0.19,0),0.078,0.062,0.37,accent_color,Vector3.ZERO,Vector3.ONE)
 	_add_sphere(elbow,"Hand",Vector3(0,-0.41,-0.01),Vector3(0.09,0.10,0.085),skin_color)
 
 func _build_leg(joint:Node3D,side:float)->void:
-	_add_capsule(joint,"Thigh",Vector3(0,-0.26,0),0.11,0.50,accent_color,Vector3.ZERO,Vector3.ONE)
+	_add_tapered_mesh(joint,"Thigh",Vector3(0,-0.26,0),0.122,0.10,0.50,accent_color,Vector3.ZERO,Vector3(1.0,1.0,0.90))
 	var knee:=Node3D.new(); knee.name="Knee"; knee.position=Vector3(0,-0.49,0); joint.add_child(knee)
-	_add_capsule(knee,"Shin",Vector3(0,-0.20,0),0.095,0.40,accent_color.darkened(0.08),Vector3.ZERO,Vector3.ONE)
+	_add_tapered_mesh(knee,"Shin",Vector3(0,-0.20,0),0.10,0.078,0.40,accent_color.darkened(0.08),Vector3.ZERO,Vector3(1.0,1.0,0.92))
 	_add_box(knee,"Shoe",Vector3(0,-0.43,-0.08),Vector3(0.22,0.13,0.38),Color("#0d1319"))
 
 func _build_style_accessories()->void:
@@ -177,6 +178,29 @@ func _add_box(parent:Node3D,n:String,p:Vector3,s:Vector3,c:Color)->MeshInstance3
 func _add_capsule(parent:Node3D,n:String,p:Vector3,r:float,h:float,c:Color,rot:Vector3,scale_value:Vector3)->MeshInstance3D:
 	var node:=MeshInstance3D.new(); node.name=n; node.position=p; node.rotation_degrees=rot; node.scale=scale_value
 	var mesh:=CapsuleMesh.new(); mesh.radius=r; mesh.height=maxf(h,r*2.05); mesh.radial_segments=16; mesh.rings=6; node.mesh=mesh; node.material_override=_mat(c,0.52,0.04); parent.add_child(node); return node
+
+func _add_tapered_mesh(parent:Node3D,n:String,p:Vector3,top_radius:float,bottom_radius:float,height:float,c:Color,rot:Vector3,scale_value:Vector3)->MeshInstance3D:
+	var node:=MeshInstance3D.new(); node.name=n; node.position=p; node.rotation_degrees=rot; node.scale=scale_value
+	var key:="%.3f_%.3f_%.3f"%[top_radius,bottom_radius,height]
+	var mesh:ArrayMesh
+	if tapered_mesh_cache.has(key): mesh=tapered_mesh_cache[key] as ArrayMesh
+	else:
+		var st:=SurfaceTool.new(); st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		var segments:=10
+		var half_height:=height*0.5
+		for i in range(segments):
+			var angle_a:=TAU*float(i)/float(segments)
+			var angle_b:=TAU*float(i+1)/float(segments)
+			var bottom_a:=Vector3(cos(angle_a)*bottom_radius,-half_height,sin(angle_a)*bottom_radius)
+			var bottom_b:=Vector3(cos(angle_b)*bottom_radius,-half_height,sin(angle_b)*bottom_radius)
+			var top_a:=Vector3(cos(angle_a)*top_radius,half_height,sin(angle_a)*top_radius)
+			var top_b:=Vector3(cos(angle_b)*top_radius,half_height,sin(angle_b)*top_radius)
+			for vertex:Vector3 in [bottom_a,top_a,top_b,bottom_a,top_b,bottom_b]: st.add_vertex(vertex)
+			for vertex:Vector3 in [Vector3(0,half_height,0),top_b,top_a]: st.add_vertex(vertex)
+			for vertex:Vector3 in [Vector3(0,-half_height,0),bottom_a,bottom_b]: st.add_vertex(vertex)
+		st.generate_normals()
+		mesh=st.commit(); tapered_mesh_cache[key]=mesh
+	node.mesh=mesh; node.material_override=_mat(c,0.46,0.05); parent.add_child(node); return node
 
 func _add_cylinder(parent:Node3D,n:String,p:Vector3,r:float,h:float,c:Color,rot:Vector3=Vector3.ZERO)->MeshInstance3D:
 	var node:=MeshInstance3D.new(); node.name=n; node.position=p; node.rotation_degrees=rot; var mesh:=CylinderMesh.new(); mesh.top_radius=r; mesh.bottom_radius=r; mesh.height=h; mesh.radial_segments=18; node.mesh=mesh; node.material_override=_mat(c,0.50,0.05); parent.add_child(node); return node

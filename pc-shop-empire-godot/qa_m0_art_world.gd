@@ -50,6 +50,10 @@ func _run()->void:
 	check(technician!=null and technician.get_node_or_null("VisualRig")!=null,"technician uses articulated visual rig")
 	check(_find_named(technician,"EyeWhite")!=null and _find_named(technician,"JacketCollar")!=null,"technician has a readable face and layered outfit")
 	check(_find_named(technician,"ToolPouch")!=null and _find_named(technician,"WristTerminal")!=null,"technician uniform includes profession-specific equipment")
+	var final_torso:=_find_named(technician,"Torso") as MeshInstance3D
+	var final_arm:=_find_named(technician,"UpperArm") as MeshInstance3D
+	check(final_torso!=null and final_torso.mesh is ArrayMesh,"technician torso uses a custom tapered character mesh")
+	check(final_arm!=null and final_arm.mesh is ArrayMesh,"character limbs no longer use prototype capsule primitives")
 	var first_customer_visual:Node=world.customer.get_node_or_null("CustomerVisual")
 	check(first_customer_visual!=null and String(first_customer_visual.get("style_id"))=="casual","first customer has a distinct casual identity")
 	game._handle_interaction("store_pc")
