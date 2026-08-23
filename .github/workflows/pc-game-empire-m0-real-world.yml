@@ -81,9 +81,15 @@ jobs:
       - name: Package and relaunch extracted EXE
         shell: powershell
         run: |
-          Compress-Archive -Path "build\PC-GAME-EMPIRE-M0.exe" -DestinationPath "build\PC_GAME_EMPIRE_M0_REAL_WORLD_WINDOWS.zip" -CompressionLevel Optimal -Force
+          $zip="build\PC_GAME_EMPIRE_M0_REAL_WORLD_WINDOWS.zip"
+          $packed=$false
+          for ($attempt=1; $attempt -le 8 -and !$packed; $attempt++) {
+            try { Compress-Archive -Path "build\PC-GAME-EMPIRE-M0.exe" -DestinationPath $zip -CompressionLevel Optimal -Force -ErrorAction Stop; $packed=$true }
+            catch { Write-Host "Packaging retry $attempt/8: $($_.Exception.Message)"; Start-Sleep -Milliseconds 750 }
+          }
+          if (!$packed -or !(Test-Path $zip)) { throw "M0 ZIP creation failed after retries" }
           Remove-Item -Recurse -Force "verify_m0" -ErrorAction SilentlyContinue
-          Expand-Archive "build\PC_GAME_EMPIRE_M0_REAL_WORLD_WINDOWS.zip" "verify_m0" -Force
+          Expand-Archive $zip "verify_m0" -Force
           $p=Start-Process -FilePath "$PWD\verify_m0\PC-GAME-EMPIRE-M0.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","180" -Wait -PassThru
           if ($p.ExitCode -ne 0) { throw "Extracted EXE launch failed" }
       - name: Upload Windows slice

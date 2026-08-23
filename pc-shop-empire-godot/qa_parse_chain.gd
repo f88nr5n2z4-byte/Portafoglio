@@ -45,6 +45,7 @@ func _init() -> void:
 		"res://qa_m1_assembly_core.gd",
 		"res://qa_m1_workbench_integration.gd",
 		"res://qa_m1_workbench_visual.gd",
+		"res://qa_m1_requested_visual_gate.gd",
 		"res://qa_game.gd"
 	]
 	var failed := false
