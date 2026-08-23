@@ -33,6 +33,10 @@ func _run()->void:
 	check(_find_named(world,"DisplayIsland_accessories")!=null,"dedicated peripheral product island is instantiated")
 	check(_find_named(world,"ShopLightBar")==null,"obsolete floating shop light bars are removed")
 	check(_find_named(world,"LabTaskLight")==null and _find_named(world,"TaskLightHousing")!=null,"laboratory task light is mounted in a real housing")
+	check(_find_named(world,"MotherboardDetailed")!=null,"laboratory workbench has a recognisable detailed motherboard")
+	check(_find_named(world,"PSUDetailed")!=null and _find_named(world,"CPUCoolerDetailed")!=null,"laboratory exposes identifiable PSU and CPU cooler props")
+	check(_find_named(world,"RepairCart_Final")!=null and _find_named(world,"LabStool_Final")!=null,"used laboratory layout includes repair cart and technician stool")
+	check(_find_named(world,"PartsCaddy")!=null,"workbench includes organised small-parts storage")
 	check(_find_named(world,"KeyBatch_0") is MultiMeshInstance3D,"repeated keyboard keys use real MultiMesh batching")
 	var lab_label:=_find_named(world,"Label_LABORATORIO") as Label3D
 	check(lab_label!=null and absf(lab_label.rotation_degrees.y)<1.0,"environment signage faces the camera without mirrored text")

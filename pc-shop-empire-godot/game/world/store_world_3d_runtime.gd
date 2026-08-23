@@ -111,6 +111,8 @@ func _build_final_lab_pass() -> void:
 	var open_pc:Node3D=LabAssets.build_open_pc(); open_pc.position=Vector3(11.85,1.78,-3.78); open_pc.rotation_degrees.y=8; lab_art_root.add_child(open_pc)
 	var diag:Node3D=LabAssets.build_diagnostics_station(); diag.position=Vector3(15.8,0.02,1.50); lab_art_root.add_child(diag); _mark_occludable(diag,0.95,0.85)
 	var storage:Node3D=LabAssets.build_storage_shelf(); storage.position=Vector3(10.55,0.02,3.95); storage.rotation_degrees.y=180; lab_art_root.add_child(storage); _mark_occludable(storage,1.15,1.35)
+	var repair_cart:Node3D=LabAssets.build_repair_cart(); repair_cart.position=Vector3(15.35,0.02,-4.72); repair_cart.rotation_degrees.y=-8; lab_art_root.add_child(repair_cart); _mark_occludable(repair_cart,0.78,0.8)
+	var stool:Node3D=LabAssets.build_lab_stool(Color("#38bfe8")); stool.position=Vector3(10.55,0.02,-3.05); lab_art_root.add_child(stool)
 	for index in range(3):
 		var accent:=Color("#e93a5d") if index%2==0 else Color("#38bfe8")
 		var cabinet:Node3D=LabAssets.build_lab_cabinet(accent); cabinet.position=Vector3(17.08,0.02,-0.25+index*1.75); cabinet.rotation_degrees.y=-90; lab_art_root.add_child(cabinet); _mark_occludable(cabinet,0.72,0.9)
@@ -124,6 +126,7 @@ func _build_final_lab_pass() -> void:
 	_add_light(Vector3(10.8,2.1,2.8),Color("#55c8f0"),0.85,3.8)
 	_add_light(Vector3(16.6,2.0,2.3),Color("#f04466"),0.75,3.6)
 	_add_label("LABORATORIO",Vector3(13.5,2.58,-6.58),Vector3.ZERO,30,Color("#f1f5f8"))
+	_add_label("ASSEMBLY  •  REPAIR  •  DIAGNOSTICS",Vector3(13.5,2.30,-6.57),Vector3.ZERO,17,Color("#7edcf4"))
 	_register_animation_nodes(lab_art_root)
 
 func _build_interaction_polish() -> void:

@@ -36,6 +36,11 @@ static func build_workbench()->Node3D:
 		box(root,"PartsTray",Vector3(-1.15+i*0.55,1.32,0.44),Vector3(0.46,0.09,0.34),mat(Color("#444f5a"),0.46,0.34))
 	for i in range(3):
 		build_screwdriver(root,Vector3(-2.05+i*0.18,1.43,-0.38),Color("#ec365b") if i%2==0 else Color("#36bee7"))
+	# A recognisable in-progress build makes this read as a working PC laboratory.
+	build_motherboard(root,Vector3(0.34,1.33,-0.08),0.92)
+	build_psu(root,Vector3(1.78,1.43,0.18),0.82)
+	build_cpu_cooler(root,Vector3(1.42,1.39,-0.34),Color("#38c4eb"),0.78)
+	build_parts_caddy(root,Vector3(-1.52,1.37,0.40))
 	return root
 
 static func build_tool_wall()->Node3D:
@@ -75,6 +80,47 @@ static func build_cable_roll(parent:Node3D,pos:Vector3,accent:Color)->Node3D:
 	var root:=Node3D.new(); root.name="CableRoll"; root.position=pos; parent.add_child(root)
 	cyl(root,"Outer",Vector3.ZERO,0.18,0.07,mat(Color("#171e26"),0.44,0.16),Vector3(90,0,0))
 	cyl(root,"Core",Vector3(0,0,0.04),0.085,0.075,mat(accent,0.40,0.05,accent,0.28),Vector3(90,0,0))
+	return root
+
+static func build_motherboard(parent:Node3D,pos:Vector3,scale_value:float=1.0)->Node3D:
+	var root:=Node3D.new(); root.name="MotherboardDetailed"; root.position=pos; root.scale=Vector3.ONE*scale_value; parent.add_child(root)
+	var pcb:=mat(Color("#193a32"),0.42,0.18)
+	var dark:=mat(Color("#121a21"),0.34,0.44)
+	var metal:=mat(Color("#8c99a3"),0.20,0.76)
+	box(root,"PCB",Vector3.ZERO,Vector3(1.18,0.055,0.92),pcb)
+	box(root,"CPUSocket",Vector3(-0.18,0.065,-0.10),Vector3(0.31,0.07,0.31),metal)
+	for i in range(4): box(root,"DIMMSlot",Vector3(0.30+i*0.11,0.066,-0.10),Vector3(0.055,0.075,0.58),dark)
+	for i in range(3): box(root,"PCIESlot",Vector3(-0.10,0.066,0.23+i*0.12),Vector3(0.72,0.07,0.055),dark)
+	box(root,"VRMHeatsink",Vector3(-0.34,0.09,-0.36),Vector3(0.36,0.12,0.14),mat(Color("#57646e"),0.24,0.72))
+	for i in range(6): cyl(root,"Capacitor",Vector3(-0.48+i*0.13,0.10,0.40),0.035,0.12,metal)
+	box(root,"DebugLED",Vector3(0.48,0.095,-0.37),Vector3(0.07,0.025,0.05),mat(Color("#111820"),0.2,0.1,Color("#54e8a9"),1.5))
+	return root
+
+static func build_psu(parent:Node3D,pos:Vector3,scale_value:float=1.0)->Node3D:
+	var root:=Node3D.new(); root.name="PSUDetailed"; root.position=pos; root.scale=Vector3.ONE*scale_value; parent.add_child(root)
+	var body:=mat(Color("#202a33"),0.30,0.62)
+	box(root,"PSUBody",Vector3.ZERO,Vector3(0.66,0.46,0.62),body)
+	cyl(root,"PSUGrille",Vector3(0,0.245,0),0.23,0.025,mat(Color("#0d141a"),0.34,0.60))
+	for i in range(4): box(root,"ModularPort",Vector3(-0.20+i*0.13,0.02,0.321),Vector3(0.085,0.10,0.018),mat(Color("#080d12"),0.50,0.10))
+	ShopAssets.label3d(root,"850W",Vector3(0,-0.12,0.333),Vector3.ZERO,19,Color("#e9f1f5"),0.0022)
+	return root
+
+static func build_cpu_cooler(parent:Node3D,pos:Vector3,accent:Color,scale_value:float=1.0)->Node3D:
+	var root:=Node3D.new(); root.name="CPUCoolerDetailed"; root.position=pos; root.scale=Vector3.ONE*scale_value; parent.add_child(root)
+	var metal:=mat(Color("#6f7c86"),0.22,0.78)
+	for i in range(7): box(root,"Fin",Vector3(0,0.06+i*0.045,0),Vector3(0.48,0.025,0.36),metal)
+	cyl(root,"CoolerFan",Vector3(0,0.23,0.205),0.19,0.04,mat(Color("#101820"),0.30,0.34,accent,0.55),Vector3(90,0,0))
+	cyl(root,"HeatPipeA",Vector3(-0.13,0.02,0),0.018,0.44,mat(Color("#bd8b50"),0.18,0.86),Vector3(0,0,90))
+	cyl(root,"HeatPipeB",Vector3(0.13,0.02,0),0.018,0.44,mat(Color("#bd8b50"),0.18,0.86),Vector3(0,0,90))
+	return root
+
+static func build_parts_caddy(parent:Node3D,pos:Vector3)->Node3D:
+	var root:=Node3D.new(); root.name="PartsCaddy"; root.position=pos; parent.add_child(root)
+	box(root,"CaddyBase",Vector3.ZERO,Vector3(0.84,0.10,0.46),mat(Color("#303c47"),0.44,0.34))
+	for i in range(3):
+		var accent:=Color("#ef3d62") if i==0 else (Color("#39c5eb") if i==1 else Color("#a96aef"))
+		box(root,"PartsBin",Vector3(-0.27+i*0.27,0.13,0),Vector3(0.23,0.22,0.39),mat(accent.darkened(0.42),0.52,0.04))
+		cyl(root,"LooseFastener",Vector3(-0.31+i*0.27,0.27,0.02),0.025,0.10,mat(Color("#aab4bc"),0.18,0.80))
 	return root
 
 static func build_component_tray()->Node3D:
@@ -139,4 +185,35 @@ static func build_storage_shelf()->Node3D:
 			for col in range(3):
 				var accent:=Color("#e43a5c") if (col+int(y*10))%2==0 else Color("#35bce5")
 				ShopAssets.build_product_box(root,Vector3(-0.70+col*0.70,y+0.24,0),Vector3(0.48,0.38,0.50),accent,col%3)
+	return root
+
+static func build_repair_cart()->Node3D:
+	var root:=Node3D.new(); root.name="RepairCart_Final"
+	var frame:=mat(Color("#52606b"),0.26,0.72)
+	var tray:=mat(Color("#27333e"),0.38,0.46)
+	for y in [0.32,0.86,1.40]:
+		box(root,"CartShelf",Vector3(0,y,0),Vector3(1.70,0.10,0.92),tray)
+		box(root,"ShelfLip",Vector3(0,y+0.10,0.45),Vector3(1.70,0.16,0.055),frame)
+	for x in [-0.76,0.76]:
+		for z in [-0.37,0.37]:
+			box(root,"CartPost",Vector3(x,0.86,z),Vector3(0.07,1.12,0.07),frame)
+			cyl(root,"Caster",Vector3(x,0.10,z),0.10,0.07,mat(Color("#10161c"),0.62,0.08),Vector3(0,0,90))
+	build_psu(root,Vector3(-0.43,1.71,0),0.65)
+	build_cpu_cooler(root,Vector3(0.38,1.55,0),Color("#ed3d61"),0.66)
+	for i in range(3):
+		var accent:=Color("#3bc4e9") if i%2==0 else Color("#ec3d60")
+		box(root,"ServiceBin",Vector3(-0.48+i*0.48,1.06,0),Vector3(0.38,0.27,0.64),mat(accent.darkened(0.46),0.52,0.05))
+	ShopAssets.label3d(root,"REPAIR",Vector3(0,0.64,0.493),Vector3.ZERO,24,Color("#f1f6f8"),0.0030)
+	return root
+
+static func build_lab_stool(accent:Color)->Node3D:
+	var root:=Node3D.new(); root.name="LabStool_Final"
+	var metal:=mat(Color("#687580"),0.22,0.76)
+	cyl(root,"Seat",Vector3(0,0.70,0),0.38,0.12,mat(Color("#1c252e"),0.62,0.04))
+	cyl(root,"SeatAccent",Vector3(0,0.77,0),0.30,0.025,mat(Color("#111820"),0.22,0.10,accent,0.65))
+	cyl(root,"Stem",Vector3(0,0.38,0),0.055,0.55,metal)
+	for i in range(5):
+		var angle:=deg_to_rad(float(i)*72.0)
+		var leg:=box(root,"StoolLeg",Vector3(cos(angle)*0.20,0.13,sin(angle)*0.20),Vector3(0.46,0.055,0.07),metal)
+		leg.rotation_degrees.y=-float(i)*72.0
 	return root
