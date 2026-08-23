@@ -16,6 +16,8 @@ var right_arm_joint:Node3D
 var left_leg_joint:Node3D
 var right_leg_joint:Node3D
 var carry_prop:Node3D
+var last_parent_rotation:=0.0
+var turn_amount:=0.0
 
 func configure(body:Color,accent:Color,skin:Color,style:String="technician") -> void:
 	body_color=body; accent_color=accent; skin_color=skin; style_id=style
@@ -37,6 +39,11 @@ func _process(delta:float) -> void:
 	var parent_body:=get_parent()
 	var speed:=0.0
 	if parent_body is CharacterBody3D: speed=Vector2(parent_body.velocity.x,parent_body.velocity.z).length()
+	if parent_body is Node3D:
+		var current_rotation:float=(parent_body as Node3D).rotation.y
+		var angular_delta:float=angle_difference(last_parent_rotation,current_rotation)
+		turn_amount=lerpf(turn_amount,clampf(angular_delta*8.0,-1.0,1.0),minf(1.0,delta*11.0))
+		last_parent_rotation=current_rotation
 	var walking:=speed>0.15
 	var cadence:=8.8 if walking else 2.1
 	var swing:=sin(phase*cadence)*(0.54 if walking else 0.035)
@@ -51,13 +58,19 @@ func _process(delta:float) -> void:
 	elif action_name=="carry":
 		left_arm_joint.rotation.x=-0.88; right_arm_joint.rotation.x=-0.88
 		left_arm_joint.rotation.z=-0.22; right_arm_joint.rotation.z=0.22
+	elif action_name=="computer":
+		left_arm_joint.rotation=Vector3(-0.78,0,-0.10); right_arm_joint.rotation=Vector3(-0.84,0,0.10)
+	elif action_name=="workbench":
+		left_arm_joint.rotation=Vector3(-1.02,0,-0.17); right_arm_joint.rotation=Vector3(-0.92,0,0.12)
 	else:
 		left_arm_joint.rotation=Vector3(swing,0,0.04)
 		right_arm_joint.rotation=Vector3(-swing,0,-0.04)
 	left_leg_joint.rotation.x=-swing*0.72
 	right_leg_joint.rotation.x=swing*0.72
-	if torso_joint!=null: torso_joint.rotation.z=sin(phase*cadence)*0.018 if walking else sin(phase*1.7)*0.008
-	if head_joint!=null: head_joint.rotation.y=sin(phase*1.35)*0.035 if not walking else 0.0
+	if torso_joint!=null:
+		torso_joint.rotation.z=(sin(phase*cadence)*0.018 if walking else sin(phase*1.7)*0.008)+turn_amount*0.075
+		torso_joint.rotation.x=-0.10 if action_name in ["computer","workbench"] else 0.0
+	if head_joint!=null: head_joint.rotation.y=(sin(phase*1.35)*0.035 if not walking else 0.0)-turn_amount*0.10
 	position.y=sin(phase*cadence)*0.018 if walking else sin(phase*1.8)*0.009
 
 func _build_actor() -> void:
@@ -67,6 +80,11 @@ func _build_actor() -> void:
 	torso_joint=Node3D.new(); torso_joint.name="TorsoJoint"; torso_joint.position=Vector3(0,0.34,0); pelvis.add_child(torso_joint)
 	_add_capsule(torso_joint,"Torso",Vector3(0,0.18,0),0.29,0.70,body_color,Vector3(0,0,0),Vector3(1.0,1.0,0.82))
 	_add_box(torso_joint,"JacketPanel",Vector3(0,0.19,-0.255),Vector3(0.48,0.46,0.055),accent_color)
+	_add_box(torso_joint,"JacketSideLeft",Vector3(-0.245,0.16,-0.18),Vector3(0.075,0.48,0.13),body_color.darkened(0.12))
+	_add_box(torso_joint,"JacketSideRight",Vector3(0.245,0.16,-0.18),Vector3(0.075,0.48,0.13),body_color.darkened(0.12))
+	_add_box(torso_joint,"JacketZipper",Vector3(0,0.18,-0.289),Vector3(0.025,0.44,0.014),Color("#b9c4cb"))
+	var collar_left:=_add_box(torso_joint,"JacketCollar",Vector3(-0.09,0.43,-0.294),Vector3(0.16,0.14,0.028),body_color.lightened(0.08)); collar_left.rotation_degrees.z=-24
+	var collar_right:=_add_box(torso_joint,"JacketCollar",Vector3(0.09,0.43,-0.294),Vector3(0.16,0.14,0.028),body_color.lightened(0.08)); collar_right.rotation_degrees.z=24
 	_add_box(torso_joint,"Waist",Vector3(0,-0.18,0),Vector3(0.44,0.18,0.28),accent_color)
 	# neck/head
 	head_joint=Node3D.new(); head_joint.name="HeadJoint"; head_joint.position=Vector3(0,0.74,0); torso_joint.add_child(head_joint)
@@ -89,7 +107,10 @@ func _build_actor() -> void:
 func _build_face(parent:Node3D)->void:
 	var eye_mat:=_mat(Color("#15191f"),0.55,0.0)
 	for x in [-0.085,0.085]:
-		var eye:=_add_sphere(parent,"Eye",Vector3(x,0.25,-0.225),Vector3(0.032,0.026,0.018),Color("#121820")); eye.material_override=eye_mat
+		_add_sphere(parent,"EyeWhite",Vector3(x,0.25,-0.230),Vector3(0.052,0.039,0.020),Color("#eef4f6"))
+		var eye:=_add_sphere(parent,"Eye",Vector3(x,0.25,-0.249),Vector3(0.024,0.027,0.012),Color("#121820")); eye.material_override=eye_mat
+		var brow:=_add_box(parent,"Eyebrow",Vector3(x,0.315,-0.247),Vector3(0.075,0.017,0.012),Color("#29231f")); brow.rotation_degrees.z=-6 if x<0 else 6
+	for x in [-0.255,0.255]: _add_sphere(parent,"Ear",Vector3(x,0.22,0),Vector3(0.045,0.072,0.036),skin_color.darkened(0.03))
 	_add_box(parent,"Nose",Vector3(0,0.18,-0.247),Vector3(0.035,0.065,0.025),skin_color.darkened(0.08))
 	_add_box(parent,"Mouth",Vector3(0,0.10,-0.252),Vector3(0.085,0.018,0.014),Color("#7d4d48"))
 
@@ -102,6 +123,9 @@ func _build_hair(parent:Node3D)->void:
 	elif style_id=="female_casual":
 		_add_capsule(parent,"HairLeft",Vector3(-0.21,0.20,0.02),0.075,0.48,hair_color,Vector3(0,0,8),Vector3.ONE)
 		_add_capsule(parent,"HairRight",Vector3(0.21,0.20,0.02),0.075,0.48,hair_color,Vector3(0,0,-8),Vector3.ONE)
+		_add_capsule(parent,"HairBack",Vector3(0,0.14,0.14),0.15,0.56,hair_color,Vector3.ZERO,Vector3(1.0,1.0,0.70))
+	elif style_id=="casual":
+		_add_capsule(parent,"CasualFringe",Vector3(-0.08,0.43,-0.11),0.065,0.28,hair_color,Vector3(18,0,-24),Vector3.ONE)
 
 func _make_limb_joint(parent:Node3D,n:String,pos:Vector3)->Node3D:
 	var joint:=Node3D.new(); joint.name=n; joint.position=pos; parent.add_child(joint); return joint
@@ -122,15 +146,24 @@ func _build_style_accessories()->void:
 	if style_id=="technician":
 		_add_box(torso_joint,"EmpireBadge",Vector3(0.17,0.26,-0.292),Vector3(0.17,0.075,0.018),Color("#f23a59"))
 		_add_box(torso_joint,"UtilityBelt",Vector3(0,-0.15,-0.18),Vector3(0.50,0.09,0.06),Color("#11171e"))
+		_add_box(torso_joint,"ToolPouch",Vector3(-0.25,-0.16,-0.16),Vector3(0.16,0.20,0.11),Color("#1b252e"))
+		_add_box(torso_joint,"WristTerminal",Vector3(0.39,-0.13,-0.02),Vector3(0.09,0.13,0.12),Color("#36c2e8"))
 	elif style_id=="gamer":
 		_add_box(torso_joint,"HoodiePocket",Vector3(0,0.0,-0.29),Vector3(0.32,0.13,0.035),accent_color.lightened(0.08))
-		var band:=_add_capsule(head_joint,"HeadsetBand",Vector3(0,0.33,0.0),0.025,0.52,Color("#111820"),Vector3(0,0,90),Vector3.ONE)
+		_add_capsule(head_joint,"HeadsetBand",Vector3(0,0.33,0.0),0.025,0.52,Color("#111820"),Vector3(0,0,90),Vector3.ONE)
 		for x in [-0.255,0.255]: _add_cylinder(head_joint,"HeadsetCup",Vector3(x,0.23,0),0.075,0.06,Color("#202a34"),Vector3(0,0,90))
+		for x in [-0.07,0.07]: _add_cylinder(torso_joint,"HoodString",Vector3(x,0.31,-0.305),0.012,0.28,Color("#e6edf1"))
 	elif style_id=="professional":
 		_add_box(torso_joint,"ShirtFront",Vector3(0,0.20,-0.288),Vector3(0.30,0.42,0.035),Color("#d9e0e5"))
 		_add_box(torso_joint,"Tie",Vector3(0,0.22,-0.312),Vector3(0.055,0.34,0.020),Color("#7d273c"))
+		var lapel_left:=_add_box(torso_joint,"Lapel",Vector3(-0.12,0.31,-0.315),Vector3(0.16,0.30,0.022),body_color.lightened(0.10)); lapel_left.rotation_degrees.z=-18
+		var lapel_right:=_add_box(torso_joint,"Lapel",Vector3(0.12,0.31,-0.315),Vector3(0.16,0.30,0.022),body_color.lightened(0.10)); lapel_right.rotation_degrees.z=18
 	elif style_id=="female_casual":
 		_add_box(torso_joint,"TopAccent",Vector3(0,0.24,-0.286),Vector3(0.34,0.30,0.035),accent_color.lightened(0.14))
+		for x in [-0.257,0.257]: _add_sphere(head_joint,"Earring",Vector3(x,0.15,-0.03),Vector3(0.026,0.040,0.024),Color("#e6b85c"))
+	elif style_id=="casual":
+		_add_box(torso_joint,"CasualOvershirt",Vector3(0,0.17,-0.290),Vector3(0.36,0.38,0.035),body_color.lightened(0.10))
+		_add_box(torso_joint,"CasualPocket",Vector3(-0.12,0.22,-0.316),Vector3(0.12,0.10,0.018),accent_color.lightened(0.14))
 
 func _build_carry_prop()->void:
 	carry_prop=Node3D.new(); carry_prop.name="CarryPCProp"; carry_prop.position=Vector3(0,0.88,-0.52); carry_prop.visible=false; rig_root.add_child(carry_prop)

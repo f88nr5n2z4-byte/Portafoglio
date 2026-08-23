@@ -55,7 +55,7 @@ func _spawn_player() -> void:
 func _spawn_customer() -> void:
 	customer = CustomerScript.new(); customer.name = "FirstCustomer"; customer.position = Vector3(0,0.02,6.8)
 	var collision := CollisionShape3D.new(); var capsule := CapsuleShape3D.new(); capsule.radius=0.32; capsule.height=1.8; collision.shape=capsule; collision.position.y=0.9; customer.add_child(collision)
-	var visual=ActorVisual.new(); visual.name="CustomerVisual"; visual.configure(Color("#277da8"),Color("#2c3440"),Color("#c78f6c")); customer.add_child(visual)
+	var visual=ActorVisual.new(); visual.name="CustomerVisual"; visual.configure(Color("#277da8"),Color("#2c3440"),Color("#c78f6c"),"casual"); customer.add_child(visual)
 	add_child(customer)
 	customer.set_route([Vector3(0,0.02,4.7),Vector3(-1.2,0.02,2.2),Vector3(0,0.02,-0.25)])
 

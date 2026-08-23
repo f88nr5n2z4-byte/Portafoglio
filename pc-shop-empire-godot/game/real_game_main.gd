@@ -99,10 +99,17 @@ func _build_hud() -> void:
 	var close:=Label.new(); close.position=Vector2(48,655); close.text="ESC  •  TORNA AL NEGOZIO"; close.add_theme_font_size_override("font_size",15); close.add_theme_color_override("font_color",Color("#e83a5b")); mode_panel.add_child(close)
 
 func _handle_interaction(id: String) -> void:
+	var technician_visual:Node=world.player.get_node_or_null("TechnicianVisual") if world!=null and world.player!=null else null
 	match id:
-		"store_pc": _open_mode("SHOP HARDWARE", "Terminale fisico del negozio collegato al catalogo hardware.\n\nMilestone 0 verifica il mondo reale e l'interazione. Catalogo, prezzi, compatibilità e inventario completi vengono reintegrati nella relativa milestone del nuovo mondo.")
-		"workbench": _open_mode("BANCO ASSEMBLAGGIO", "Banco fisico del laboratorio collegato al modulo Assembly.\n\nLa logica drag & drop e compatibilità valida della vecchia build verrà reintegrata qui dopo la chiusura di Milestone 0.")
-		"diagnostics": _open_mode("DIAGNOSTICA", "Postazione diagnostica fisicamente presente nel laboratorio.\n\nIl sistema completo di riparazioni e benchmark appartiene alla Milestone B.")
+		"store_pc":
+			if technician_visual!=null: technician_visual.play_action("computer",1.4)
+			_open_mode("SHOP HARDWARE", "Terminale fisico del negozio collegato al catalogo hardware.\n\nMilestone 0 verifica il mondo reale e l'interazione. Catalogo, prezzi, compatibilità e inventario completi vengono reintegrati nella relativa milestone del nuovo mondo.")
+		"workbench":
+			if technician_visual!=null: technician_visual.play_action("workbench",1.4)
+			_open_mode("BANCO ASSEMBLAGGIO", "Banco fisico del laboratorio collegato al modulo Assembly.\n\nLa logica drag & drop e compatibilità valida della vecchia build verrà reintegrata qui dopo la chiusura di Milestone 0.")
+		"diagnostics":
+			if technician_visual!=null: technician_visual.play_action("computer",1.4)
+			_open_mode("DIAGNOSTICA", "Postazione diagnostica fisicamente presente nel laboratorio.\n\nIl sistema completo di riparazioni e benchmark appartiene alla Milestone B.")
 		"counter":
 			_open_mode("PRIMO CLIENTE", "Il cliente è entrato realmente nel negozio, ha percorso la scena e ora attende al bancone.\n\nQuesto punto diventerà il primo dialogo tutorial della carriera.")
 			var customer_visual:Node = null
