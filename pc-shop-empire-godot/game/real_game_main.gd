@@ -5,6 +5,7 @@ const CustomerFactory = preload("res://game/world/customer_factory_3d.gd")
 const CustomerScript = preload("res://game/world/customer_3d.gd")
 const ActorVisual = preload("res://game/world/stylized_actor_visual.gd")
 const AmbientProp = preload("res://game/art/ambient_animation_prop.gd")
+const AssemblyWorkbenchUI = preload("res://game/ui/assembly_workbench_ui.gd")
 
 var world: Node3D
 var ambient_customers:Array[CharacterBody3D] = []
@@ -14,6 +15,7 @@ var prompt_label: Label
 var mode_panel: Panel
 var mode_title: Label
 var mode_body: Label
+var assembly_ui:Control
 var seen_interaction := ""
 
 func _ready() -> void:
@@ -97,6 +99,7 @@ func _build_hud() -> void:
 	var divider:=ColorRect.new(); divider.position=Vector2(48,88); divider.size=Vector2(1044,2); divider.color=Color("#b92443"); mode_panel.add_child(divider)
 	mode_body=Label.new(); mode_body.position=Vector2(48,118); mode_body.size=Vector2(1044,500); mode_body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART; mode_body.add_theme_font_size_override("font_size",19); mode_body.add_theme_color_override("font_color",Color("#c7d4dd")); mode_panel.add_child(mode_body)
 	var close:=Label.new(); close.position=Vector2(48,655); close.text="ESC  •  TORNA AL NEGOZIO"; close.add_theme_font_size_override("font_size",15); close.add_theme_color_override("font_color",Color("#e83a5b")); mode_panel.add_child(close)
+	assembly_ui=AssemblyWorkbenchUI.new(); assembly_ui.name="AssemblyWorkbenchUI"; hud.add_child(assembly_ui); assembly_ui.initialize(); assembly_ui.closed.connect(_close_assembly)
 
 func _handle_interaction(id: String) -> void:
 	var technician_visual:Node=world.player.get_node_or_null("TechnicianVisual") if world!=null and world.player!=null else null
@@ -106,7 +109,7 @@ func _handle_interaction(id: String) -> void:
 			_open_mode("SHOP HARDWARE", "Terminale fisico del negozio collegato al catalogo hardware.\n\nMilestone 0 verifica il mondo reale e l'interazione. Catalogo, prezzi, compatibilità e inventario completi vengono reintegrati nella relativa milestone del nuovo mondo.")
 		"workbench":
 			if technician_visual!=null: technician_visual.play_action("workbench",1.4)
-			_open_mode("BANCO ASSEMBLAGGIO", "Banco fisico del laboratorio collegato al modulo Assembly.\n\nLa logica drag & drop e compatibilità valida della vecchia build verrà reintegrata qui dopo la chiusura di Milestone 0.")
+			_open_assembly()
 		"diagnostics":
 			if technician_visual!=null: technician_visual.play_action("computer",1.4)
 			_open_mode("DIAGNOSTICA", "Postazione diagnostica fisicamente presente nel laboratorio.\n\nIl sistema completo di riparazioni e benchmark appartiene alla Milestone B.")
@@ -124,7 +127,16 @@ func _open_mode(title: String, body: String) -> void:
 
 func _close_mode() -> void:
 	mode_panel.visible=false
+	if assembly_ui!=null: assembly_ui.visible=false
 	if world.player != null: world.player.set_physics_process(true)
+	seen_interaction=""; world.last_interaction=""
+
+func _open_assembly()->void:
+	mode_panel.visible=false; assembly_ui.open_workbench()
+	if world.player!=null: world.player.set_physics_process(false)
+
+func _close_assembly()->void:
+	if world.player!=null: world.player.set_physics_process(true)
 	seen_interaction=""; world.last_interaction=""
 
 func technical_status() -> Dictionary:
@@ -137,4 +149,6 @@ func technical_status() -> Dictionary:
 	status["modular_lab_art"] = world.lab_art_root!=null if world!=null else false
 	status["surface_finish"] = world.surface_root!=null if world!=null else false
 	status["occlusion_registered"] = world.occlusion_nodes.size()>0 if world!=null else false
+	status["assembly_core_connected"] = assembly_ui!=null and assembly_ui.core!=null
+	status["assembly_workbench_real_ui"] = assembly_ui!=null
 	return status

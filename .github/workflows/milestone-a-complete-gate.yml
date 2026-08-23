@@ -74,6 +74,15 @@ jobs:
           $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
           if ($p.ExitCode -ne 0 -or $text -notmatch "PC GAME EMPIRE M1 ASSEMBLY CORE QA: ALL TESTS PASSED") { throw "New-world assembly core QA failed" }
 
+      - name: Real-world workbench integration QA
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\qa_m1_workbench_out.log"; $err = "$PWD\build\qa_m1_workbench_err.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_m1_workbench_integration.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -match "SCRIPT ERROR|Parse Error" -or $text -notmatch "PC GAME EMPIRE M1 WORKBENCH INTEGRATION QA: ALL TESTS PASSED") { throw "Real-world workbench integration QA failed" }
+
       - name: Capture 8 real Milestone A screenshots
         shell: powershell
         run: |
@@ -90,6 +99,18 @@ jobs:
             if ($size -lt 50000) { throw "Screenshot blank/small: $target $size" }
             Write-Host "MILESTONE A SCREENSHOT PASS: $target $size bytes"
           }
+
+      - name: Capture real-world workbench screenshot
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out="$PWD\build\cap_real_workbench_out.log"; $err="$PWD\build\cap_real_workbench_err.log"
+          $args="--audio-driver Dummy --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_m1_workbench_visual.gd"
+          $p=Start-Process -FilePath $godot -ArgumentList $args -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          $png="build\screenshots\real_workbench_ui.png"
+          if ($p.ExitCode -ne 0 -or $text -match "SCRIPT ERROR|Parse Error" -or !(Test-Path $png)) { throw "Real workbench capture failed" }
+          if ((Get-Item $png).Length -lt 50000) { throw "Real workbench screenshot blank/small" }
 
       - name: Export clean Windows build
         shell: powershell
