@@ -151,8 +151,18 @@ jobs:
         shell: powershell
         run: |
           $zip="$PWD\build\PC_GAME_EMPIRE_MILESTONE_A_COMPLETE_WINDOWS.zip"
-          Compress-Archive -Path "$PWD\build\PC-GAME-EMPIRE.exe" -DestinationPath $zip -CompressionLevel Optimal -Force
-          if (!(Test-Path $zip)) { throw "ZIP missing" }
+          $packed=$false
+          for ($attempt=1; $attempt -le 8 -and !$packed; $attempt++) {
+            try {
+              Compress-Archive -Path "$PWD\build\PC-GAME-EMPIRE.exe" -DestinationPath $zip -CompressionLevel Optimal -Force -ErrorAction Stop
+              $packed=$true
+            }
+            catch {
+              Write-Host "Packaging retry $attempt/8: $($_.Exception.Message)"
+              Start-Sleep -Milliseconds 750
+            }
+          }
+          if (!$packed -or !(Test-Path $zip)) { throw "ZIP creation failed after retries" }
           Remove-Item -Recurse -Force "$PWD\verify_a" -ErrorAction SilentlyContinue
           Expand-Archive -Path $zip -DestinationPath "$PWD\verify_a" -Force
           if (!(Test-Path "$PWD\verify_a\PC-GAME-EMPIRE.exe")) { throw "Extracted EXE missing" }
