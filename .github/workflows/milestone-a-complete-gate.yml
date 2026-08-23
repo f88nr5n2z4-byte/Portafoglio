@@ -65,6 +65,15 @@ jobs:
           $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
           if ($p.ExitCode -ne 0 -or $text -notmatch "PC GAME EMPIRE MILESTONE A FINAL QA: ALL TESTS PASSED") { throw "Milestone A final QA failed" }
 
+      - name: New real-world assembly core QA
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\qa_m1_core_out.log"; $err = "$PWD\build\qa_m1_core_err.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_m1_assembly_core.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -notmatch "PC GAME EMPIRE M1 ASSEMBLY CORE QA: ALL TESTS PASSED") { throw "New-world assembly core QA failed" }
+
       - name: Capture 8 real Milestone A screenshots
         shell: powershell
         run: |
