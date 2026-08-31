@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-31T12:19:29.909Z",
+  "updatedAt": "2026-08-31T13:19:37.391Z",
   "source": "BPM Power automatic checker",
   "trustedRetailers": [
     "BPM Power"
@@ -16,7 +16,7 @@
       "ref": 220,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "cpu9700",
@@ -28,8 +28,8 @@
       "tdp": 65,
       "ref": 330,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "cpu9800",
@@ -42,7 +42,7 @@
       "ref": 450,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "mbb850g",
@@ -56,7 +56,7 @@
       "ref": 210,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "mbb850a",
@@ -70,7 +70,7 @@
       "ref": 260,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "mbb850s",
@@ -84,7 +84,7 @@
       "ref": 220,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "ramPatriot",
@@ -96,8 +96,8 @@
       "gb": 32,
       "ref": 180,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "ramCrucial",
@@ -109,8 +109,8 @@
       "gb": 32,
       "ref": 190,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "gpuPalitOC",
@@ -123,7 +123,7 @@
       "ref": 650,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "gpuAsus",
@@ -136,7 +136,7 @@
       "ref": 680,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "gpuMsi",
@@ -149,7 +149,7 @@
       "ref": 690,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "gpuPny",
@@ -161,8 +161,8 @@
       "length": 300,
       "ref": 700,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "ssdP310",
@@ -173,8 +173,8 @@
       "gb": 2000,
       "ref": 250,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "ssdE100",
@@ -185,8 +185,8 @@
       "gb": 2000,
       "ref": 250,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "ssdT705",
@@ -197,8 +197,8 @@
       "gb": 2000,
       "ref": 340,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "psu850",
@@ -211,7 +211,7 @@
       "ref": 150,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "psu1000",
@@ -223,8 +223,8 @@
       "atx31": true,
       "ref": 200,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "caseH7W",
@@ -241,7 +241,7 @@
       "ref": 140,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "caseH7B",
@@ -257,8 +257,8 @@
       "gpuMax": 410,
       "ref": 140,
       "price": 0,
-      "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "status": "unknown",
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "coolNHD15",
@@ -274,7 +274,7 @@
       "ref": 130,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     },
     {
       "id": "coolLian",
@@ -290,7 +290,7 @@
       "ref": 190,
       "price": 0,
       "status": "expired",
-      "verifiedAt": "2026-08-31T12:19:29.909Z"
+      "verifiedAt": "2026-08-31T13:19:37.391Z"
     }
   ]
 }
