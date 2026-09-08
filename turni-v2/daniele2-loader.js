@@ -10,7 +10,7 @@ function patch(src){
     .replace("S.user=d.user;await hydrate();render();return","S.user=d.user;localStorage.setItem('tm2_user',JSON.stringify(S.user));await hydrate();render();return");
 }
 async function load(name){
-  const r=await fetch(`./${name}?v=reference-ui-20260908-2000`,{cache:'no-store'});
+  const r=await fetch(`./${name}?v=reference-ui-20260908-2015`,{cache:'no-store'});
   if(!r.ok)throw new Error(`Impossibile caricare ${name}`);
   let src=await r.text();
   if(PATCHED.has(name))src=patch(src);
@@ -19,6 +19,7 @@ async function load(name){
 (async()=>{
   try{
     for(const f of FILES)await load(f);
+    if(window.RefUI)window.RefUI.esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     window.RefUI?.queue?.();
   }catch(e){
     console.error('Daniele2 loader',e);
