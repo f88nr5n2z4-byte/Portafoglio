@@ -1,7 +1,0 @@
-.ref-logo-img{display:block;width:84px;height:auto;object-fit:contain}.ref-logo-img-sm{width:57px;height:54px;object-fit:contain;border-radius:10px}
-html[data-ref-ui="login"] .ref-login-hero{height:min(49dvh,430px)!important;min-height:390px!important;background:#174e84 url('./assets/ref-login-hero.webp?v=20260908-2010') center top/100% auto no-repeat!important;padding:0!important}
-html[data-ref-ui="login"] .ref-login-hero:before,html[data-ref-ui="login"] .ref-login-hero:after{display:none!important}
-html[data-ref-ui="login"] .ref-login-logo,html[data-ref-ui="login"] .ref-login-welcome{display:none!important}
-html[data-ref-ui="login"] .ref-login-card{margin-top:-1px!important;background:linear-gradient(180deg,#0d3f72,#092f5a)!important;margin-left:0!important;margin-right:0!important;padding-left:26px!important;padding-right:26px!important}
-@media(max-width:390px){html[data-ref-ui="login"] .ref-login-hero{min-height:365px!important}html[data-ref-ui="login"] .ref-login-card{padding-left:20px!important;padding-right:20px!important}}
-@media(min-width:441px){html[data-ref-ui="login"] .ref-login-hero{background-size:440px auto!important}}
