@@ -17,9 +17,10 @@ const OFF=new Set(['RIPOSO','FERIE','PERMESSO','MALATTIA','MATERNITÀ','—','']
 const SHIFTS=['06:30-13:30','06:30-14:00','06:30-14:30','07:00-12:00','07:00-13:00','07:00-14:00','07:00-14:30','07:00-15:00','08:00-13:00','09:00-14:00','09:00-15:00','09:00-16:00','09:00-17:00','10:00-15:00','10:00-17:00','10:00-18:00','11:00-16:00','11:00-17:00','11:00-19:00','11:00-20:00','11:30-20:30','12:00-17:00','12:00-20:30','12:30-20:30','13:00-20:30','13:30-20:00','13:30-20:30','14:00-20:30','14:30-19:30','14:30-20:30','15:00-20:00','15:30-20:30','16:00-20:00','16:30-20:30','07:00-13:00 / 17:00-20:00','07:00-13:00 / 17:00-20:30','RIPOSO','FERIE','PERMESSO','MALATTIA'];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const date=s=>new Date(`${s}T12:00:00`);
+const isMonday=s=>/^\d{4}-\d{2}-\d{2}$/.test(String(s||''))&&date(s).getDay()===1;
 const add=(s,n)=>{const d=date(s);d.setDate(d.getDate()+n);return ymd(d)};
 const fmt=(s,opt={weekday:'short',day:'numeric',month:'short'})=>new Intl.DateTimeFormat('it-IT',opt).format(date(s));
 const hm=t=>{const [h,m]=String(t).split(':').map(Number);return h*60+m};
@@ -30,6 +31,7 @@ const isAdmin=()=>S.user?.role==='admin';
 const token=()=>S.token||localStorage.getItem('tm2_token')||'';
 
 const S={token:localStorage.getItem('tm2_token')||'',user:null,route:(location.hash||'#home').slice(1),schedule:null,requests:[],absences:[],announcements:[],draft:null,week:0,day:0,createStep:'choice',busy:false};
+let modalSeq=0;
 
 async function call(url,{method='GET',body}={}){
   const r=await fetch(url,{method,cache:'no-store',headers:{'Content-Type':'application/json',...(token()?{Authorization:`Bearer ${token()}`}:{})},body:body?JSON.stringify(body):undefined});
@@ -44,7 +46,7 @@ function saveAuth(d){S.token=d.token;S.user=d.user;localStorage.setItem('tm2_tok
 function clearAuth(){S.token='';S.user=null;localStorage.removeItem('tm2_token');localStorage.removeItem('tm2_user')}
 function go(r){S.route=r;location.hash=r;render()}
 function toast(msg,type='ok'){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e)}e.className=`toast ${type}`;e.textContent=msg;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2200)}
-function modal(html){$('#modalBack')?.remove();const b=document.createElement('div');b.id='modalBack';b.className='modalback';b.innerHTML=`<div class="modal">${html}</div>`;document.body.appendChild(b);b.addEventListener('click',e=>{if(e.target===b)b.remove()});return b}
+function modal(html){const b=document.createElement('div');b.className='modalback';b.dataset.modal=String(++modalSeq);b.style.zIndex=String(200+modalSeq);b.innerHTML=`<div class="modal">${html}</div>`;document.body.appendChild(b);b.addEventListener('click',e=>{if(e.target===b)b.remove()});return b}
 function confirmBox(title,text,yes='Conferma'){return new Promise(resolve=>{const b=modal(`<div class="modal-head"><h3>${esc(title)}</h3><button data-close>×</button></div><p class="modal-text">${esc(text)}</p><div class="modal-actions"><button class="btn secondary" data-close>Annulla</button><button class="btn danger" id="modalYes">${esc(yes)}</button></div>`);b.querySelectorAll('[data-close]').forEach(x=>x.onclick=()=>{b.remove();resolve(false)});b.querySelector('#modalYes').onclick=()=>{b.remove();resolve(true)}})}
 
 async function hydrate(){
@@ -121,7 +123,11 @@ function draftEditor(){const d=S.draft;S.week=Math.max(0,Math.min(S.week,d.weeks
 function editDraftShift(name){const w=S.draft.weeks[S.week],cur=w.schedule[name][S.day];const b=modal(`<div class="modal-head"><h3>${esc(name)}</h3><button data-close>×</button></div><p class="modal-text">${esc(fmt(w.dates[S.day],{weekday:'long',day:'numeric',month:'long'}))}</p><label class="modal-field"><span>Turno</span><select id="draftShift">${[...new Set([cur,...SHIFTS])].map(s=>`<option ${s===cur?'selected':''}>${esc(s)}</option>`).join('')}</select></label><div class="modal-actions"><button class="btn secondary" data-close>Annulla</button><button class="btn primary" id="saveDraftShift">Salva</button></div>`);b.querySelectorAll('[data-close]').forEach(x=>x.onclick=()=>b.remove());b.querySelector('#saveDraftShift').onclick=()=>{w.schedule[name][S.day]=b.querySelector('#draftShift').value;b.remove();render()}}
 
 async function generateAutomatic(){
-  if(S.busy)return;const start=$('#genStart').value;if(!/^\d{4}-\d{2}-\d{2}$/.test(start))return toast('Data non valida','error');S.busy=true;render();
+  if(S.busy)return;
+  const start=$('#genStart').value;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(start))return toast('Data non valida','error');
+  if(!isMonday(start))return toast('La data iniziale deve essere un lunedì','error');
+  S.busy=true;render();
   try{
     await Promise.all([loadAbsences(),loadRequests()]);const end=add(start,20),abs=S.absences.filter(a=>a.date_from<=end&&a.date_to>=start),accepted=S.requests.filter(r=>r.status==='ACCETTATA'&&['RIPOSO','TURNO'].includes(String(r.kind).toUpperCase())&&r.request_date>=start&&r.request_date<=end);const ferie=abs.filter(a=>String(a.absence_type).toUpperCase()==='FERIE');
     const byWeek=[0,1,2].map(i=>{const a=add(start,i*7),z=add(a,6);return[...new Set(ferie.filter(x=>x.date_from<=z&&x.date_to>=a).map(x=>x.employee_name))]});
@@ -130,8 +136,8 @@ async function generateAutomatic(){
     else if(byWeek.some(x=>x.length===2)){const firstTwo=byWeek.findIndex(x=>x.length===2);if(firstTwo!==0||byWeek.slice(1).some(x=>x.length>1))throw new Error('Con 2 persone in FERIE è disponibile la generazione alternativa della singola settimana. Riduci il periodo o crea manualmente.');d=await call(ALT,{method:'POST',body:{startDate:start}})}
     else if(ferie.length&&byWeek.every(x=>x.length<=1)){d=await call(ONE_FERIE,{method:'POST',body:{startDate:start}})}
     else{d=await api('generate',{method:'POST',body:{startDate:start}})}
-    S.draft=d.schedule;S.week=0;S.day=0;S.createStep='editor';render();
-  }catch(e){S.createStep='generate';render();setTimeout(()=>{const m=$('#genMessage');if(m)m.innerHTML=`<div class="inline-error">${esc(e.message)}</div>`},0)}finally{S.busy=false}
+    S.busy=false;S.draft=d.schedule;S.week=0;S.day=0;S.createStep='editor';render();
+  }catch(e){S.busy=false;S.createStep='generate';render();setTimeout(()=>{const m=$('#genMessage');if(m)m.innerHTML=`<div class="inline-error">${esc(e.message)}</div>`},0)}
 }
 async function publishDraft(){if(!S.draft)return;const ok=await confirmBox('Pubblicare turnazione?','I dipendenti vedranno subito i nuovi turni nell’app.','Pubblica');if(!ok)return;try{await api('publish',{method:'POST',body:{schedule:S.draft}});S.draft=null;S.schedule=null;S.createStep='choice';await loadSchedule();toast('Turni pubblicati');go('schedule')}catch(e){toast(e.message,'error')}}
 
@@ -147,7 +153,7 @@ function requestsView(){return isAdmin()?requestsAdmin():requestsEmployee()}
 
 function absencesView(){return shell(`<section class="form-card"><h3>Aggiungi assenza</h3><div class="form-grid"><label><span>Dipendente</span><select id="absPerson">${PEOPLE.map(n=>`<option>${esc(n)}</option>`).join('')}</select></label><label><span>Tipo</span><select id="absType"><option>FERIE</option><option>PERMESSO</option><option>MALATTIA</option></select></label><label><span>Dal</span><input id="absFrom" type="date"></label><label><span>Al</span><input id="absTo" type="date"></label></div><button class="btn primary" id="addAbs">Aggiungi</button></section><section class="list-card"><h3>Assenze inserite</h3>${S.absences.length?`<div class="absence-list">${S.absences.map(a=>`<div><span class="absence-icon">☂</span><div><b>${esc(a.employee_name)}</b><small>${esc(a.absence_type)} · ${esc(a.date_from)} → ${esc(a.date_to)}</small></div><button data-delabs="${a.id}">×</button></div>`).join('')}</div>`:'<div class="empty-mini">Nessuna assenza inserita.</div>'}</section>`)}
 
-function hoursView(){const d=S.schedule?.data;if(!d?.weeks?.length)return shell('<div class="empty-state"><span>◷</span><h2>Nessun turno pubblicato</h2></div>');return shell(`${weekPicker(d)}<section class="hours-list">${PEOPLE.map(n=>{const h=weekHours(d.weeks[S.week],n),t=TARGET[n]||40,delta=h-t;return `<div><div><b>${esc(n)}</b><small>${esc(ROLE[n])}</small></div><div class="hour-meter"><span style="width:${Math.min(100,h/t*100)}%"></span></div><strong class="${delta>0?'over':delta<0?'under':''}">${h}h <small>/ ${t}h</small></strong></div>`}).join('')}</section>`)}
+function hoursView(){const d=S.schedule?.data;if(!d?.weeks?.length)return shell('<div class="empty-state"><span>◷</span><h2>Nessun turno pubblicato</h2></div>');S.week=Math.max(0,Math.min(S.week,d.weeks.length-1));return shell(`${weekPicker(d)}<section class="hours-list">${PEOPLE.map(n=>{const h=weekHours(d.weeks[S.week],n),t=TARGET[n]||40,delta=h-t;return `<div><div><b>${esc(n)}</b><small>${esc(ROLE[n])}</small></div><div class="hour-meter"><span style="width:${Math.min(100,h/t*100)}%"></span></div><strong class="${delta>0?'over':delta<0?'under':''}">${h}h <small>/ ${t}h</small></strong></div>`}).join('')}</section>`)}
 
 function announcementsView(){return shell(`${isAdmin()?`<section class="form-card"><h3>Nuovo avviso</h3><label><span>Messaggio</span><textarea id="annMsg" placeholder="Scrivi una comunicazione…"></textarea></label><div class="button-row"><button class="btn primary" id="sendAnn">Pubblica e notifica</button><button class="btn secondary" id="turnsNotice">Avvisa: nuovi turni</button></div></section>`:`<section class="notice-enable"><div><b>Notifiche push</b><small>Ricevi aggiornamenti quando vengono pubblicati o modificati i turni.</small></div><button class="btn secondary small" id="enablePush">${'Notification'in window&&Notification.permission==='granted'?'Attive':'Attiva'}</button></section>`}<section class="announcement-list">${S.announcements.length?S.announcements.map(a=>`<article><span>♢</span><div><small>${new Intl.DateTimeFormat('it-IT',{dateStyle:'medium',timeStyle:'short'}).format(new Date(a.created_at))}</small><p>${esc(a.message)}</p></div>${isAdmin()?`<button data-archive="${a.id}">×</button>`:''}</article>`).join(''):'<div class="empty-state small"><span>♢</span><h3>Nessun avviso</h3></div>'}</section>`)}
 
@@ -167,7 +173,7 @@ function bindView(){bindShell();
   if(S.route==='schedule'&&!isAdmin()){const d=S.schedule?.data,w=d?.weeks?.[S.week],n=S.user.employeeName;$$('[data-detail]').forEach(x=>x.onclick=()=>shiftDetail(w,+x.dataset.detail,n))}
   if(S.route==='schedule'&&isAdmin()){$('#manageWeeks')?.addEventListener('click',manageWeeks);$('#editPublished')?.addEventListener('click',editPublished)}
   if(S.route==='create'){
-    $('#chooseGenerate')?.addEventListener('click',()=>{S.createStep='generate';render()});$('#chooseManual')?.addEventListener('click',()=>{S.createStep='manualSetup';render()});$('#backCreate')?.addEventListener('click',()=>{S.createStep='choice';render()});$('#runGenerate')?.addEventListener('click',generateAutomatic);$('#startManual')?.addEventListener('click',()=>{const st=$('#manualStart').value,c=+$('#manualWeeks').value;if(!st)return;S.draft=makeBlank(st,c);S.week=0;S.day=0;S.createStep='editor';render()});$('#discardDraft')?.addEventListener('click',async()=>{if(await confirmBox('Annullare la bozza?','Le modifiche non pubblicate andranno perse.','Annulla bozza')){S.draft=null;S.createStep='choice';render()}});$$('[data-edit-person]').forEach(x=>x.onclick=()=>editDraftShift(x.dataset.editPerson));$('#publishDraft')?.addEventListener('click',publishDraft)
+    $('#chooseGenerate')?.addEventListener('click',()=>{S.createStep='generate';render()});$('#chooseManual')?.addEventListener('click',()=>{S.createStep='manualSetup';render()});$('#backCreate')?.addEventListener('click',()=>{S.createStep='choice';render()});$('#runGenerate')?.addEventListener('click',generateAutomatic);$('#startManual')?.addEventListener('click',()=>{const st=$('#manualStart').value,c=+$('#manualWeeks').value;if(!st)return;if(!isMonday(st))return toast('La data iniziale deve essere un lunedì','error');S.draft=makeBlank(st,c);S.week=0;S.day=0;S.createStep='editor';render()});$('#discardDraft')?.addEventListener('click',async()=>{if(await confirmBox('Annullare la bozza?','Le modifiche non pubblicate andranno perse.','Annulla bozza')){S.draft=null;S.createStep='choice';render()}});$$('[data-edit-person]').forEach(x=>x.onclick=()=>editDraftShift(x.dataset.editPerson));$('#publishDraft')?.addEventListener('click',publishDraft)
   }
   if(S.route==='requests'&&!isAdmin()){$$('[data-rtab]').forEach(x=>x.onclick=()=>{const mine=x.dataset.rtab==='mine';$$('[data-rtab]').forEach(z=>z.classList.toggle('active',z===x));$('#reqNew').hidden=mine;$('#reqMine').hidden=!mine});$$('[data-kind]').forEach(x=>x.onclick=()=>requestForm(x.dataset.kind));const pk=sessionStorage.getItem('tm_req_kind');if(pk){sessionStorage.removeItem('tm_req_kind');setTimeout(()=>requestForm(pk),0)}}
   if(S.route==='requests'&&isAdmin()){$$('[data-resolve]').forEach(x=>x.onclick=async()=>{const id=+x.dataset.resolve,status=x.dataset.status,ok=await confirmBox('Aggiornare richiesta?',status==='ACCETTATA'?'Accettare questa richiesta?':status==='RIFIUTATA'?'Rifiutare questa richiesta?':'Rimettere la richiesta in valutazione?','Conferma');if(!ok)return;try{await api('resolve_request',{method:'POST',body:{id,status,reply:status==='ACCETTATA'?'Richiesta accettata da Eurospin.':status==='RIFIUTATA'?'Richiesta rifiutata da Eurospin.':'Richiesta rimessa in valutazione.'}});await Promise.all([loadRequests(),loadAbsences().catch(()=>{})]);toast('Richiesta aggiornata');render()}catch(e){toast(e.message,'error')}})}
