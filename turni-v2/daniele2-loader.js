@@ -6,10 +6,11 @@ function patch(src){
   return src
     .replace(/Marco/g,'Daniele2')
     .replace(/Daniele2:16/g,'Daniele2:30')
-    .replace(/Daniele2:'Sala \/ Jolly'/g,"Daniele2:'Sala'");
+    .replace(/Daniele2:'Sala \/ Jolly'/g,"Daniele2:'Sala'")
+    .replace("S.user=d.user;await hydrate();render();return","S.user=d.user;localStorage.setItem('tm2_user',JSON.stringify(S.user));await hydrate();render();return");
 }
 async function load(name){
-  const r=await fetch(`./${name}?v=reference-ui-20260908-1930`,{cache:'no-store'});
+  const r=await fetch(`./${name}?v=reference-ui-20260908-2000`,{cache:'no-store'});
   if(!r.ok)throw new Error(`Impossibile caricare ${name}`);
   let src=await r.text();
   if(PATCHED.has(name))src=patch(src);
