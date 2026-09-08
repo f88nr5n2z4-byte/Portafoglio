@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const PATCHED=new Set(['api-router.js','app.js','alt-generator.js','one-ferie-generator.js','quick-requests.js','ferie-button.js','admin-tools.js']);
-const FILES=['api-router.js','network-fallback.js','app.js','alt-generator.js','one-ferie-generator.js','request-management.js','quick-requests.js','ferie-button.js','admin-tools.js','delete-weeks.js','notifications.js','next-start.js'];
+const FILES=['api-router.js','network-fallback.js','app.js','alt-generator.js','one-ferie-generator.js','request-management.js','quick-requests.js','ferie-button.js','admin-tools.js','delete-weeks.js','notifications.js','next-start.js','ref-ui-core.js','ref-ui-schedule.js','ref-ui-requests.js'];
 function patch(src){
   return src
     .replace(/Marco/g,'Daniele2')
@@ -9,7 +9,7 @@ function patch(src){
     .replace(/Daniele2:'Sala \/ Jolly'/g,"Daniele2:'Sala'");
 }
 async function load(name){
-  const r=await fetch(`./${name}?v=daniele2-src-20260904`,{cache:'no-store'});
+  const r=await fetch(`./${name}?v=reference-ui-20260908-1930`,{cache:'no-store'});
   if(!r.ok)throw new Error(`Impossibile caricare ${name}`);
   let src=await r.text();
   if(PATCHED.has(name))src=patch(src);
@@ -18,6 +18,7 @@ async function load(name){
 (async()=>{
   try{
     for(const f of FILES)await load(f);
+    window.RefUI?.queue?.();
   }catch(e){
     console.error('Daniele2 loader',e);
     const app=document.getElementById('app');
