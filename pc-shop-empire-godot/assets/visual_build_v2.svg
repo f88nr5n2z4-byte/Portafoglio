@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+ <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#181b21"/><stop offset="1" stop-color="#07090d"/></linearGradient>
+ <linearGradient id="bench" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b4730"/><stop offset=".25" stop-color="#3f2b20"/><stop offset=".8" stop-color="#1a120e"/><stop offset="1" stop-color="#4a3022"/></linearGradient>
+ <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#697582"/><stop offset=".2" stop-color="#252c34"/><stop offset=".8" stop-color="#080b10"/><stop offset="1" stop-color="#3c4652"/></linearGradient>
+ <linearGradient id="pcb" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22313b"/><stop offset="1" stop-color="#0d151b"/></linearGradient>
+ <radialGradient id="rgb"><stop stop-color="#d736ff" stop-opacity=".65"/><stop offset=".55" stop-color="#532083" stop-opacity=".25"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="8" result="a"/><feMerge><feMergeNode in="a"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <pattern id="peg" width="28" height="28" patternUnits="userSpaceOnUse"><rect width="28" height="28" fill="#141920"/><circle cx="14" cy="14" r="2.5" fill="#505965"/></pattern>
+</defs>
+<rect width="1920" height="1080" fill="url(#wall)"/>
+<!-- workshop wall -->
+<rect x="70" y="35" width="1780" height="270" fill="url(#peg)" stroke="#404a57" stroke-width="5"/>
+<path d="M110 295L1810 295" stroke="#ff264d" stroke-width="7" opacity=".7" filter="url(#glow)"/>
+<!-- tools -->
+<g stroke-linecap="round" stroke-width="10"><path d="M190 85V230" stroke="#d7dde4"/><path d="M255 90V235" stroke="#ff294f"/><path d="M320 85V220" stroke="#cfd6de"/><path d="M385 110V230" stroke="#2bbaff"/><path d="M450 95V225" stroke="#d7dde4"/><path d="M1450 90V225" stroke="#d7dde4"/><path d="M1515 95V235" stroke="#ff294f"/><path d="M1580 85V220" stroke="#d7dde4"/><path d="M1645 100V230" stroke="#2bbaff"/></g>
+<g fill="#1f2731" stroke="#596575" stroke-width="3"><rect x="525" y="75" width="190" height="125" rx="8"/><rect x="760" y="75" width="190" height="125" rx="8"/><rect x="995" y="75" width="190" height="125" rx="8"/></g>
+<g fill="#161e2c"><rect x="550" y="98" width="140" height="77"/><rect x="785" y="98" width="140" height="77"/><rect x="1020" y="98" width="140" height="77"/></g>
+<path d="M570 155H670" stroke="#d934ff" stroke-width="6"/><path d="M805 155H905" stroke="#2ab9ff" stroke-width="6"/><path d="M1040 155H1140" stroke="#ff294f" stroke-width="6"/>
+<!-- bench -->
+<polygon points="0,780 1920,780 1920,1080 0,1080" fill="url(#bench)"/><path d="M0 800H1920" stroke="#82533a" stroke-width="7"/>
+<!-- open case -->
+<rect x="390" y="300" width="1050" height="570" rx="18" fill="url(#steel)" stroke="#778390" stroke-width="8"/>
+<rect x="435" y="342" width="950" height="480" rx="10" fill="#070a0f" stroke="#323a44" stroke-width="5"/>
+<!-- motherboard -->
+<rect x="550" y="390" width="560" height="365" rx="6" fill="url(#pcb)" stroke="#516171" stroke-width="5"/>
+<g fill="#344554"><rect x="595" y="438" width="150" height="120" rx="5"/><rect x="785" y="430" width="245" height="42" rx="4"/><rect x="790" y="495" width="42" height="185"/><rect x="855" y="495" width="42" height="185"/><rect x="920" y="495" width="42" height="185"/></g>
+<!-- CPU -->
+<rect x="625" y="466" width="96" height="68" fill="#11161d" stroke="#b8c1ca" stroke-width="4"/><rect x="645" y="483" width="56" height="34" fill="#c4c9ce"/><path d="M650 489H695M650 499H695M650 509H695" stroke="#7a8087" stroke-width="2"/>
+<!-- RAM -->
+<g fill="#202733" stroke="#bc3cff" stroke-width="4"><rect x="795" y="500" width="24" height="160"/><rect x="860" y="500" width="24" height="160"/></g><path d="M799 515V645M864 515V645" stroke="#d73cff" stroke-width="7" filter="url(#glow)"/>
+<!-- GPU -->
+<rect x="585" y="650" width="445" height="78" rx="7" fill="#111820" stroke="#576678" stroke-width="5"/><circle cx="720" cy="688" r="29" fill="#080b10" stroke="#2bbaff" stroke-width="6"/><circle cx="860" cy="688" r="29" fill="#080b10" stroke="#d637ff" stroke-width="6"/><text x="925" y="697" fill="#dbe2e8" font-family="Arial" font-size="19" font-weight="700">GPU</text>
+<!-- M.2 + traces -->
+<rect x="970" y="520" width="95" height="24" fill="#171c25" stroke="#4c5969" stroke-width="2"/><g stroke="#2a6170" stroke-width="2" opacity=".7"><path d="M585 590H1040"/><path d="M585 610H1040"/><path d="M760 405V740"/><path d="M1040 405V740"/></g>
+<!-- PSU shroud -->
+<rect x="470" y="742" width="560" height="60" fill="#10151c" stroke="#3b4552" stroke-width="4"/><text x="495" y="779" fill="#96a3b0" font-family="Arial" font-size="20">850W PSU • MODULAR</text>
+<!-- radiator / fans -->
+<g fill="#0d131a" stroke="#596777" stroke-width="5"><circle cx="1250" cy="430" r="83"/><circle cx="1250" cy="605" r="83"/></g><g fill="none" stroke-width="10"><circle cx="1250" cy="430" r="61" stroke="#d834ff" filter="url(#glow)"/><circle cx="1250" cy="605" r="61" stroke="#29b9ff" filter="url(#glow)"/></g><g fill="#1a2029"><circle cx="1250" cy="430" r="17"/><circle cx="1250" cy="605" r="17"/></g>
+<!-- cable runs -->
+<g fill="none" stroke-linecap="round"><path d="M1090 420C1180 360 1330 355 1360 430" stroke="#1e232b" stroke-width="24"/><path d="M1100 728C1220 760 1310 760 1365 700" stroke="#151a20" stroke-width="18"/><path d="M1030 680C1120 680 1160 705 1215 730" stroke="#ff294f" stroke-width="5" opacity=".8"/></g>
+<!-- component tray -->
+<rect x="1490" y="455" width="340" height="295" rx="12" fill="#0d1219" stroke="#4d5867" stroke-width="4"/><text x="1520" y="500" fill="#e9eef2" font-family="Arial" font-size="21">COMPONENT TRAY</text>
+<g fill="#232b35" stroke="#4a5665" stroke-width="2"><rect x="1520" y="530" width="120" height="75" rx="5"/><rect x="1660" y="530" width="140" height="75" rx="5"/><rect x="1520" y="625" width="120" height="75" rx="5"/><rect x="1660" y="625" width="140" height="75" rx="5"/></g>
+<g fill="#9099a3"><circle cx="1550" cy="565" r="7"/><circle cx="1575" cy="565" r="7"/><circle cx="1600" cy="565" r="7"/><rect x="1680" y="554" width="95" height="20" rx="3"/></g>
+<!-- foreground hands -->
+<path d="M120 1080L155 922L355 820L455 865L382 1080Z" fill="#11151c"/><path d="M1800 1080L1765 922L1565 820L1465 865L1538 1080Z" fill="#11151c"/><ellipse cx="420" cy="860" rx="72" ry="47" fill="#c98f70" stroke="#5e4035" stroke-width="4"/><ellipse cx="1500" cy="860" rx="72" ry="47" fill="#c98f70" stroke="#5e4035" stroke-width="4"/><path d="M350 920L410 880" stroke="#ff294f" stroke-width="8"/><path d="M1570 920L1510 880" stroke="#ff294f" stroke-width="8"/>
+<!-- work light -->
+<ellipse cx="960" cy="420" rx="780" ry="520" fill="url(#rgb)" opacity=".13"/>
+</svg>
