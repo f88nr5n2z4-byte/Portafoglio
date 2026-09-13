@@ -3,6 +3,8 @@
 
 const API='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-clean-api';
 const SAFE='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-safe-generate-v1';
+const WEEK_GENERATOR='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-diversify-generate-v1';
+const TWO_FERIE_LITE='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-two-ferie-stateless-v1';
 const ONE_FERIE='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-one-ferie-manual-v1';
 const ALT='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-alt-generate-guard-v1';
 const DELETE='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-delete-weeks-v1';
@@ -145,8 +147,28 @@ async function generateAutomatic(){
     const end=add(start,20),ferie=S.absences.filter(a=>String(a.absence_type).toUpperCase()==='FERIE'&&a.date_from<=end&&a.date_to>=start);
     const byWeek=[0,1,2].map(i=>{const a=add(start,i*7),z=add(a,6);return[...new Set(ferie.filter(x=>x.date_from<=z&&x.date_to>=a).map(x=>x.employee_name))]});
     if(byWeek.some(x=>x.length>2))throw new Error('Sono consentite al massimo 2 persone in FERIE nella stessa settimana.');
-    const d=await call(SAFE,{method:'POST',body:{startDate:start}});
-    S.busy=false;S.draft=d.schedule;S.week=0;S.day=0;S.createStep='editor';render();
+    let schedule;
+    if(byWeek.some(x=>x.length===2)){
+      const weeks=[];
+      for(let i=0;i<3;i++){
+        const ws=add(start,i*7),we=add(ws,6),names=byWeek[i];
+        let d;
+        if(names.length===2){
+          const abs=S.absences.filter(x=>x.date_from<=we&&x.date_to>=ws);
+          const req=S.requests.filter(x=>x.status==='ACCETTATA'&&['RIPOSO','TURNO'].includes(String(x.kind).toUpperCase())&&x.request_date>=ws&&x.request_date<=we);
+          d=await call(TWO_FERIE_LITE,{method:'POST',body:{startDate:ws,absences:abs,requests:req}});
+        }else{
+          d=await call(WEEK_GENERATOR,{method:'POST',body:{startDate:ws,maxFeriePerWeek:2}});
+        }
+        if(!d?.week)throw new Error(`Generazione settimana ${i+1} non valida`);
+        weeks.push(d.week);
+      }
+      schedule={version:'workforce-20260913-v5-two-ferie-lite',engine:'per-week-two-ferie-lite',startDate:weeks[0].dates[0],endDate:weeks[2].dates[6],weeks,generatedAt:new Date().toISOString()};
+    }else{
+      const d=await call(SAFE,{method:'POST',body:{startDate:start}});
+      schedule=d.schedule;
+    }
+    S.busy=false;S.draft=schedule;S.week=0;S.day=0;S.createStep='editor';render();
   }catch(e){S.busy=false;S.createStep='generate';render();setTimeout(()=>{const m=$('#genMessage');if(m)m.innerHTML=`<div class="inline-error">${esc(e.message)}</div>`},0)}
 }
 async function publishDraft(){if(!S.draft)return;const ok=await confirmBox('Pubblicare turnazione?','I dipendenti vedranno subito i nuovi turni nell’app.','Pubblica');if(!ok)return;try{await api('publish',{method:'POST',body:{schedule:S.draft}});S.draft=null;S.schedule=null;S.createStep='choice';await loadSchedule();toast('Turni pubblicati');go('schedule')}catch(e){toast(e.message,'error')}}
