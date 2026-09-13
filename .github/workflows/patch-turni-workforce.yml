@@ -1,0 +1,56 @@
+name: Patch Turni workforce
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-turni-workforce.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch current unified Turni frontend
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('turni-v2/app-current.js')
+          s = p.read_text()
+          replacements = {
+            "const PEOPLE=['Umberto','Fabio','Emanuele','Stefania B','Stefania F','Romina','Giada','Giuliano','Manuel','Daniele','Paolo','Daniele2'];": "const PEOPLE=['Umberto','Fabio','Emanuele','Stefania B','Stefania F','Romina','Giada','Prova','Giuliano','Manuel','Daniele','Paolo','Daniele2'];",
+            "const ROLE={Umberto:'Responsabile',Fabio:'Responsabile',Emanuele:'Responsabile','Stefania B':'Cassa','Stefania F':'Cassa',Romina:'Cassa',Giada:'Cassa',Giuliano:'Sala',Manuel:'Sala',Daniele:'Sala',Paolo:'Sala',Daniele2:'Sala'};": "const ROLE={Umberto:'Responsabile',Fabio:'Responsabile',Emanuele:'Responsabile','Stefania B':'Cassa','Stefania F':'Cassa',Romina:'Cassa',Giada:'Cassa',Prova:'Cassa',Giuliano:'Sala',Manuel:'Sala',Daniele:'Sala',Paolo:'Sala',Daniele2:'Sala'};",
+            "const TARGET={Giada:30,Daniele2:30};": "const TARGET={Giada:30,Prova:20,Daniele2:20};",
+            "const CASH_ENABLED=new Set(['Stefania B','Stefania F','Romina','Giada','Giuliano','Manuel','Daniele']);": "const CASH_ENABLED=new Set(['Stefania B','Stefania F','Romina','Giada','Prova','Giuliano','Manuel','Daniele']);",
+            "navigator.serviceWorker.register('./sw.js?v=current-20260908'": "navigator.serviceWorker.register('./sw.js?v=current-20260913-1'",
+          }
+          for old, new in replacements.items():
+            if old not in s:
+              raise SystemExit(f'Expected text not found: {old[:80]}')
+            s = s.replace(old, new, 1)
+          p.write_text(s)
+
+          p = Path('turni-v2/index.html')
+          s = p.read_text()
+          if 'current-20260908-3' not in s:
+            raise SystemExit('Expected index cache version not found')
+          p.write_text(s.replace('current-20260908-3', 'current-20260913-1'))
+
+          p = Path('turni-v2/sw.js')
+          s = p.read_text()
+          if "turni-current-20260908-v3" not in s:
+            raise SystemExit('Expected service worker cache version not found')
+          p.write_text(s.replace('turni-current-20260908-v3', 'turni-current-20260913-v1', 1))
+      - name: Commit patch
+        run: |
+          git config user.name "turni-app-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add turni-v2/app-current.js turni-v2/index.html turni-v2/sw.js
+          git diff --cached --check
+          git commit -m "Update Turni workforce for Prova and Daniele2 20h"
+          git push origin HEAD:main
