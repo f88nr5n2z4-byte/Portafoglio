@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
 
+# v2 fairness rerun
 jobs:
   selftest:
     runs-on: ubuntu-latest
