@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-# v2 fairness rerun
+# v3 beam diversity rerun
 jobs:
   selftest:
     runs-on: ubuntu-latest
