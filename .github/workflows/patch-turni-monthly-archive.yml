@@ -1,0 +1,35 @@
+name: Patch Turni monthly archive
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-turni-monthly-archive.yml'
+      - '.github/scripts/patch_turni_monthly_archive.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply Turni archive patch
+        run: python .github/scripts/patch_turni_monthly_archive.py
+      - name: Validate JavaScript
+        run: node --check turni-v2/app-current.js
+      - name: Verify requested features
+        run: |
+          grep -q "month-archive" turni-v2/app-current.js
+          grep -q "request-month" turni-v2/app-current.js
+          grep -q "richiesta accettata" turni-v2/app-current.js
+          grep -q "stato definitivo" turni-v2/app-current.js
+          grep -q "current-20260913-6" turni-v2/index.html
+          grep -q "turni-current-20260913-v6" turni-v2/sw.js
+      - name: Commit app update
+        run: |
+          git config user.name 'turni-fix-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add turni-v2/app-current.js turni-v2/app-current.css turni-v2/index.html turni-v2/sw.js
+          git commit -m 'Organize Turni and requests by month' || exit 0
+          git push
