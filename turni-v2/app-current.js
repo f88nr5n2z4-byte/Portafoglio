@@ -9,10 +9,10 @@ const DELETE='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-delete
 const TOOLS='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-admin-tools-api';
 const LOGO='https://upload.wikimedia.org/wikipedia/commons/5/57/Eurospin_New_Logo.svg';
 
-const PEOPLE=['Umberto','Fabio','Emanuele','Stefania B','Stefania F','Romina','Giada','Giuliano','Manuel','Daniele','Paolo','Daniele2'];
-const ROLE={Umberto:'Responsabile',Fabio:'Responsabile',Emanuele:'Responsabile','Stefania B':'Cassa','Stefania F':'Cassa',Romina:'Cassa',Giada:'Cassa',Giuliano:'Sala',Manuel:'Sala',Daniele:'Sala',Paolo:'Sala',Daniele2:'Sala'};
-const TARGET={Giada:30,Daniele2:30};
-const CASH_ENABLED=new Set(['Stefania B','Stefania F','Romina','Giada','Giuliano','Manuel','Daniele']);
+const PEOPLE=['Umberto','Fabio','Emanuele','Stefania B','Stefania F','Romina','Giada','Prova','Giuliano','Manuel','Daniele','Paolo','Daniele2'];
+const ROLE={Umberto:'Responsabile',Fabio:'Responsabile',Emanuele:'Responsabile','Stefania B':'Cassa','Stefania F':'Cassa',Romina:'Cassa',Giada:'Cassa',Prova:'Cassa',Giuliano:'Sala',Manuel:'Sala',Daniele:'Sala',Paolo:'Sala',Daniele2:'Sala'};
+const TARGET={Giada:30,Prova:20,Daniele2:20};
+const CASH_ENABLED=new Set(['Stefania B','Stefania F','Romina','Giada','Prova','Giuliano','Manuel','Daniele']);
 const OFF=new Set(['RIPOSO','FERIE','PERMESSO','MALATTIA','MATERNITÀ','—','']);
 const SHIFTS=['06:30-13:30','06:30-14:00','06:30-14:30','07:00-12:00','07:00-13:00','07:00-14:00','07:00-14:30','07:00-15:00','08:00-13:00','09:00-14:00','09:00-15:00','09:00-16:00','09:00-17:00','10:00-15:00','10:00-17:00','10:00-18:00','11:00-16:00','11:00-17:00','11:00-19:00','11:00-20:00','11:30-20:30','12:00-17:00','12:00-20:30','12:30-20:30','13:00-20:30','13:30-20:00','13:30-20:30','14:00-20:30','14:30-19:30','14:30-20:30','15:00-20:00','15:30-20:30','16:00-20:00','16:30-20:30','07:00-13:00 / 17:00-20:00','07:00-13:00 / 17:00-20:30','RIPOSO','FERIE','PERMESSO','MALATTIA'];
 
@@ -185,7 +185,7 @@ function bindView(){bindShell();
 function render(){const app=$('#app');if(!S.user){app.innerHTML=loginView();bindLogin();return}if(!isAdmin()&&!['home','schedule','requests','announcements','more'].includes(S.route))S.route='home';if(isAdmin()&&!['home','schedule','create','requests','announcements','absences','hours','more'].includes(S.route))S.route='home';let out='';if(S.route==='home')out=homeView();else if(S.route==='schedule')out=scheduleView();else if(S.route==='create')out=createView();else if(S.route==='requests')out=requestsView();else if(S.route==='announcements')out=announcementsView();else if(S.route==='absences')out=absencesView();else if(S.route==='hours')out=hoursView();else out=moreView();app.innerHTML=out;bindView()}
 
 async function boot(){
-  if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=current-20260908',{scope:'./'}).catch(()=>{})}
+  if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=current-20260913-1',{scope:'./'}).catch(()=>{})}
   if(S.token){try{const d=await api('me');S.user=d.user;localStorage.setItem('tm2_user',JSON.stringify(S.user));await hydrate()}catch{clearAuth()}}
   render();
 }
