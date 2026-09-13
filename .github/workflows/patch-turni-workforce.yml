@@ -15,42 +15,58 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Patch current unified Turni frontend
+      - name: Patch unified Turni generator frontend
         shell: python
         run: |
           from pathlib import Path
+          import re
 
           p = Path('turni-v2/app-current.js')
           s = p.read_text()
-          replacements = {
-            "const PEOPLE=['Umberto','Fabio','Emanuele','Stefania B','Stefania F','Romina','Giada','Giuliano','Manuel','Daniele','Paolo','Daniele2'];": "const PEOPLE=['Umberto','Fabio','Emanuele','Stefania B','Stefania F','Romina','Giada','Prova','Giuliano','Manuel','Daniele','Paolo','Daniele2'];",
-            "const ROLE={Umberto:'Responsabile',Fabio:'Responsabile',Emanuele:'Responsabile','Stefania B':'Cassa','Stefania F':'Cassa',Romina:'Cassa',Giada:'Cassa',Giuliano:'Sala',Manuel:'Sala',Daniele:'Sala',Paolo:'Sala',Daniele2:'Sala'};": "const ROLE={Umberto:'Responsabile',Fabio:'Responsabile',Emanuele:'Responsabile','Stefania B':'Cassa','Stefania F':'Cassa',Romina:'Cassa',Giada:'Cassa',Prova:'Cassa',Giuliano:'Sala',Manuel:'Sala',Daniele:'Sala',Paolo:'Sala',Daniele2:'Sala'};",
-            "const TARGET={Giada:30,Daniele2:30};": "const TARGET={Giada:30,Prova:20,Daniele2:20};",
-            "const CASH_ENABLED=new Set(['Stefania B','Stefania F','Romina','Giada','Giuliano','Manuel','Daniele']);": "const CASH_ENABLED=new Set(['Stefania B','Stefania F','Romina','Giada','Prova','Giuliano','Manuel','Daniele']);",
-            "navigator.serviceWorker.register('./sw.js?v=current-20260908'": "navigator.serviceWorker.register('./sw.js?v=current-20260913-1'",
+          new_generate = r'''async function generateAutomatic(){
+            if(S.busy)return;
+            const start=$('#genStart').value;
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(start))return toast('Data non valida','error');
+            if(!isMonday(start))return toast('La data iniziale deve essere un lunedì','error');
+            S.busy=true;render();
+            try{
+              await Promise.all([loadAbsences(),loadRequests()]);
+              const end=add(start,20),ferie=S.absences.filter(a=>String(a.absence_type).toUpperCase()==='FERIE'&&a.date_from<=end&&a.date_to>=start);
+              const byWeek=[0,1,2].map(i=>{const a=add(start,i*7),z=add(a,6);return[...new Set(ferie.filter(x=>x.date_from<=z&&x.date_to>=a).map(x=>x.employee_name))]});
+              if(byWeek.some(x=>x.length>2))throw new Error('Sono consentite al massimo 2 persone in FERIE nella stessa settimana.');
+              const d=await call(SAFE,{method:'POST',body:{startDate:start}});
+              S.busy=false;S.draft=d.schedule;S.week=0;S.day=0;S.createStep='editor';render();
+            }catch(e){S.busy=false;S.createStep='generate';render();setTimeout(()=>{const m=$('#genMessage');if(m)m.innerHTML=`<div class="inline-error">${esc(e.message)}</div>`},0)}
           }
-          for old, new in replacements.items():
-            if old not in s:
-              raise SystemExit(f'Expected text not found: {old[:80]}')
-            s = s.replace(old, new, 1)
-          p.write_text(s)
+'''
+          pattern = r"async function generateAutomatic\(\)\{.*?\n\}\nasync function publishDraft"
+          s2, count = re.subn(pattern, new_generate + 'async function publishDraft', s, count=1, flags=re.S)
+          if count != 1:
+            raise SystemExit(f'generateAutomatic patch count={count}')
+          if "navigator.serviceWorker.register('./sw.js?v=current-20260913-1'" not in s2:
+            raise SystemExit('Expected service worker registration version not found')
+          s2 = s2.replace("navigator.serviceWorker.register('./sw.js?v=current-20260913-1'", "navigator.serviceWorker.register('./sw.js?v=current-20260913-2'", 1)
+          p.write_text(s2)
 
           p = Path('turni-v2/index.html')
           s = p.read_text()
-          if 'current-20260908-3' not in s:
+          if 'current-20260913-1' not in s:
             raise SystemExit('Expected index cache version not found')
-          p.write_text(s.replace('current-20260908-3', 'current-20260913-1'))
+          p.write_text(s.replace('current-20260913-1', 'current-20260913-2'))
 
           p = Path('turni-v2/sw.js')
           s = p.read_text()
-          if "turni-current-20260908-v3" not in s:
+          if "turni-current-20260913-v1" not in s:
             raise SystemExit('Expected service worker cache version not found')
-          p.write_text(s.replace('turni-current-20260908-v3', 'turni-current-20260913-v1', 1))
+          p.write_text(s.replace('turni-current-20260913-v1', 'turni-current-20260913-v2', 1))
+      - name: Validate frontend syntax
+        run: |
+          node --check turni-v2/app-current.js
       - name: Commit patch
         run: |
           git config user.name "turni-app-bot"
           git config user.email "actions@users.noreply.github.com"
           git add turni-v2/app-current.js turni-v2/index.html turni-v2/sw.js
           git diff --cached --check
-          git commit -m "Update Turni workforce for Prova and Daniele2 20h"
+          git commit -m "Unify Turni generation for zero one or two ferie"
           git push origin HEAD:main
