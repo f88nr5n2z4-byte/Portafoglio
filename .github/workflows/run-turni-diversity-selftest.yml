@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-# v4 cross-day diversity rerun
+# detailed group inspection rerun
 jobs:
   selftest:
     runs-on: ubuntu-latest
