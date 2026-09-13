@@ -1,4 +1,4 @@
-const CACHE='turni-current-20260913-v9';
+const CACHE='turni-current-20260913-v10';
 const ASSETS=['./','./index.html','./app-current.css','./real-photo.css','./draft-graph.css','./change-requests-ui.js','./app-current.js','./personnel-alias.js','./personnel-admin.js','./manifest.webmanifest'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}))});
 self.addEventListener('activate',e=>{e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('turni-')&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()]))});
