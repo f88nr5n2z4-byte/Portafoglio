@@ -38,7 +38,7 @@ jobs:
               S.busy=false;S.draft=d.schedule;S.week=0;S.day=0;S.createStep='editor';render();
             }catch(e){S.busy=false;S.createStep='generate';render();setTimeout(()=>{const m=$('#genMessage');if(m)m.innerHTML=`<div class="inline-error">${esc(e.message)}</div>`},0)}
           }
-'''
+          '''
           pattern = r"async function generateAutomatic\(\)\{.*?\n\}\nasync function publishDraft"
           s2, count = re.subn(pattern, new_generate + 'async function publishDraft', s, count=1, flags=re.S)
           if count != 1:
