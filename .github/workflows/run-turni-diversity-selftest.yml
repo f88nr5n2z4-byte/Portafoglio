@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-# v3 beam diversity rerun
+# v4 cross-day diversity rerun
 jobs:
   selftest:
     runs-on: ubuntu-latest
