@@ -1,0 +1,35 @@
+name: Build Turni two-ferie patch
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-turni-two-ferie-patch.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch app locally
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('turni-v2/app-current.js')
+          s=p.read_text()
+          old="const SAFE='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-safe-generate-v1';"
+          new="const SAFE='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-safe-generate-v1';\nconst WEEK_GENERATOR='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-diversify-generate-v1';\nconst TWO_FERIE_LITE='https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-two-ferie-stateless-v1';"
+          assert old in s
+          s=s.replace(old,new,1)
+          old2="""    const d=await call(SAFE,{method:'POST',body:{startDate:start}});\n    S.busy=false;S.draft=d.schedule;S.week=0;S.day=0;S.createStep='editor';render();"""
+          new2="""    let schedule;\n    if(byWeek.some(x=>x.length===2)){\n      const weeks=[];\n      for(let i=0;i<3;i++){\n        const ws=add(start,i*7),we=add(ws,6),names=byWeek[i];\n        let d;\n        if(names.length===2){\n          const abs=S.absences.filter(x=>x.date_from<=we&&x.date_to>=ws);\n          const req=S.requests.filter(x=>x.status==='ACCETTATA'&&['RIPOSO','TURNO'].includes(String(x.kind).toUpperCase())&&x.request_date>=ws&&x.request_date<=we);\n          d=await call(TWO_FERIE_LITE,{method:'POST',body:{startDate:ws,absences:abs,requests:req}});\n        }else{\n          d=await call(WEEK_GENERATOR,{method:'POST',body:{startDate:ws,maxFeriePerWeek:2}});\n        }\n        if(!d?.week)throw new Error(`Generazione settimana ${i+1} non valida`);\n        weeks.push(d.week);\n      }\n      schedule={version:'workforce-20260913-v5-two-ferie-lite',engine:'per-week-two-ferie-lite',startDate:weeks[0].dates[0],endDate:weeks[2].dates[6],weeks,generatedAt:new Date().toISOString()};\n    }else{\n      const d=await call(SAFE,{method:'POST',body:{startDate:start}});\n      schedule=d.schedule;\n    }\n    S.busy=false;S.draft=schedule;S.week=0;S.day=0;S.createStep='editor';render();"""
+          assert old2 in s
+          s=s.replace(old2,new2,1)
+          p.write_text(s)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: turni-two-ferie-patched
+          path: turni-v2/app-current.js
