@@ -1,0 +1,20 @@
+name: Run Turni diversity self-test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/run-turni-diversity-selftest.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run diversity self-test
+        run: |
+          set -o pipefail
+          curl --fail-with-body -sS --max-time 120 'https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-diversity-selftest-20260913' | tee /tmp/result.json
+          echo
+          python -m json.tool /tmp/result.json
