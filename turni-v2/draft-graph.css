@@ -1,0 +1,29 @@
+/* Grafico presenze della bozza — integrato nel frontend corrente */
+.draft-graph{margin:10px 0;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.draft-graph>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;cursor:pointer;user-select:none}
+.draft-graph>summary::-webkit-details-marker{display:none}
+.draft-graph>summary>div{display:flex;align-items:center;gap:9px;min-width:0}
+.draft-graph>summary b,.draft-graph>summary small{display:block}
+.draft-graph>summary b{font-size:13px;color:var(--text)}
+.draft-graph>summary small{font-size:9px;color:var(--muted);margin-top:2px;text-transform:capitalize;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dg-icon{width:32px;height:32px;border-radius:8px;background:#e8f3fc;color:var(--blue);display:grid;place-items:center;font-size:18px;flex:0 0 32px}
+.dg-action{display:flex;align-items:center;gap:6px;color:var(--blue);font-size:10px;font-weight:800;flex:0 0 auto}
+.dg-action i{font-style:normal}.dg-action b{font-size:16px!important;transition:.18s}
+.draft-graph[open] .dg-action b{transform:rotate(180deg)}
+.draft-graph:not([open]) .dg-open{display:none}.draft-graph[open] .dg-closed{display:none}
+.dg-body{border-top:1px solid var(--line);padding:10px}
+.dg-title{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:0 1px 8px}
+.dg-title span{font-size:12px;font-weight:800;color:var(--deep)}
+.dg-title small{font-size:9px;color:var(--muted);text-transform:capitalize;text-align:right}
+.dg-scroll{overflow-x:auto;border:1px solid #e0e8ee;border-radius:10px;-webkit-overflow-scrolling:touch}
+.dg-chart{min-width:900px}.dg-axis,.dg-row{display:grid;grid-template-columns:115px 1fr;min-width:900px}
+.dg-name{padding:7px 8px;background:#fff;border-right:1px solid #e0e8ee;border-bottom:1px solid #edf1f4;position:sticky;left:0;z-index:2}
+.dg-name b,.dg-name small{display:block}.dg-name b{font-size:10px;color:var(--deep)}.dg-name small{font-size:8px;color:var(--muted);margin-top:2px}
+.dg-axis .dg-name{background:#eef5fa;font-size:9px;font-weight:900;color:var(--deep)}
+.dg-track{height:34px;position:relative;border-bottom:1px solid #edf1f4;background-image:linear-gradient(to right,rgba(0,75,145,.08) 1px,transparent 1px);background-size:14.2857% 100%}
+.dg-axis .dg-track{height:31px;background:#eef5fa}
+.dg-axis .dg-track span{position:absolute;top:8px;font-size:8px;color:#60778b;transform:translateX(-50%)}
+.dg-bar{position:absolute;top:7px;height:20px;border-radius:6px;background:linear-gradient(180deg,#0a76d2,#005bab);color:#fff;min-width:3px;overflow:hidden}
+.dg-bar span{display:block;padding:3px 5px;font-size:8px;font-weight:800;white-space:nowrap}
+.dg-track.off{display:flex;align-items:center;padding-left:8px;color:#87939b;font-size:9px;background:#fafbfc}
+@media(max-width:700px){.dg-scroll{max-width:calc(100vw - 44px)}.dg-chart,.dg-axis,.dg-row{min-width:840px}.dg-axis,.dg-row{grid-template-columns:102px 1fr}}
