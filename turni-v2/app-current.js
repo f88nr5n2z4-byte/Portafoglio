@@ -129,13 +129,11 @@ async function generateAutomatic(){
   if(!isMonday(start))return toast('La data iniziale deve essere un lunedì','error');
   S.busy=true;render();
   try{
-    await Promise.all([loadAbsences(),loadRequests()]);const end=add(start,20),abs=S.absences.filter(a=>a.date_from<=end&&a.date_to>=start),accepted=S.requests.filter(r=>r.status==='ACCETTATA'&&['RIPOSO','TURNO'].includes(String(r.kind).toUpperCase())&&r.request_date>=start&&r.request_date<=end);const ferie=abs.filter(a=>String(a.absence_type).toUpperCase()==='FERIE');
+    await Promise.all([loadAbsences(),loadRequests()]);
+    const end=add(start,20),ferie=S.absences.filter(a=>String(a.absence_type).toUpperCase()==='FERIE'&&a.date_from<=end&&a.date_to>=start);
     const byWeek=[0,1,2].map(i=>{const a=add(start,i*7),z=add(a,6);return[...new Set(ferie.filter(x=>x.date_from<=z&&x.date_to>=a).map(x=>x.employee_name))]});
-    let d;
-    if(!abs.length&&!accepted.length){d=await call(SAFE,{method:'POST',body:{startDate:start}})}
-    else if(byWeek.some(x=>x.length===2)){const firstTwo=byWeek.findIndex(x=>x.length===2);if(firstTwo!==0||byWeek.slice(1).some(x=>x.length>1))throw new Error('Con 2 persone in FERIE è disponibile la generazione alternativa della singola settimana. Riduci il periodo o crea manualmente.');d=await call(ALT,{method:'POST',body:{startDate:start}})}
-    else if(ferie.length&&byWeek.every(x=>x.length<=1)){d=await call(ONE_FERIE,{method:'POST',body:{startDate:start}})}
-    else{d=await api('generate',{method:'POST',body:{startDate:start}})}
+    if(byWeek.some(x=>x.length>2))throw new Error('Sono consentite al massimo 2 persone in FERIE nella stessa settimana.');
+    const d=await call(SAFE,{method:'POST',body:{startDate:start}});
     S.busy=false;S.draft=d.schedule;S.week=0;S.day=0;S.createStep='editor';render();
   }catch(e){S.busy=false;S.createStep='generate';render();setTimeout(()=>{const m=$('#genMessage');if(m)m.innerHTML=`<div class="inline-error">${esc(e.message)}</div>`},0)}
 }
@@ -185,7 +183,7 @@ function bindView(){bindShell();
 function render(){const app=$('#app');if(!S.user){app.innerHTML=loginView();bindLogin();return}if(!isAdmin()&&!['home','schedule','requests','announcements','more'].includes(S.route))S.route='home';if(isAdmin()&&!['home','schedule','create','requests','announcements','absences','hours','more'].includes(S.route))S.route='home';let out='';if(S.route==='home')out=homeView();else if(S.route==='schedule')out=scheduleView();else if(S.route==='create')out=createView();else if(S.route==='requests')out=requestsView();else if(S.route==='announcements')out=announcementsView();else if(S.route==='absences')out=absencesView();else if(S.route==='hours')out=hoursView();else out=moreView();app.innerHTML=out;bindView()}
 
 async function boot(){
-  if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=current-20260913-1',{scope:'./'}).catch(()=>{})}
+  if('serviceWorker'in navigator){navigator.serviceWorker.register('./sw.js?v=current-20260913-2',{scope:'./'}).catch(()=>{})}
   if(S.token){try{const d=await api('me');S.user=d.user;localStorage.setItem('tm2_user',JSON.stringify(S.user));await hydrate()}catch{clearAuth()}}
   render();
 }
