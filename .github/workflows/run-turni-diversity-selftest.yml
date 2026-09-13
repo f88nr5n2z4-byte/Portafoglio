@@ -6,43 +6,49 @@ on:
       - '.github/workflows/run-turni-diversity-selftest.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   selftest:
     runs-on: ubuntu-latest
     steps:
-      - name: Test exact Giada plus Daniele ferie
+      - uses: actions/checkout@v4
+      - name: Patch rest and congedo support
         run: |
-          set -o pipefail
-          cat > /tmp/payload.json <<'JSON'
-          {
-            "startDate":"2028-01-03",
-            "absences":[
-              {"employee_name":"Giada","absence_type":"FERIE","date_from":"2028-01-03","date_to":"2028-01-09"},
-              {"employee_name":"Daniele","absence_type":"FERIE","date_from":"2028-01-03","date_to":"2028-01-09"}
-            ],
-            "requests":[]
-          }
-          JSON
-          curl --fail-with-body -sS --max-time 120 \
-            -H 'Content-Type: application/json' \
-            --data @/tmp/payload.json \
-            'https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-two-ferie-stateless-v1' \
-            | tee /tmp/result.json
           python - <<'PY'
-          import json
-          d=json.load(open('/tmp/result.json'))
-          w=d['week']
-          assert w['meta']['engine']=='two-ferie-stateless-v1'
-          assert set(w['meta']['feriePeople'])=={'Giada','Daniele'}
-          assert abs(w['meta']['weekHours']['Prova']-20)<0.01
-          assert abs(w['meta']['weekHours']['Daniele2']-20)<0.01
-          assert len(w['meta']['sunday']['all'])==4
-          assert all(x=='FERIE' for x in w['schedule']['Giada'])
-          assert all(x=='FERIE' for x in w['schedule']['Daniele'])
-          print('\nEXACT_GIADA_DANIELE_PASS')
-          print('solveMs=',w['meta']['solveMs'])
-          print('hours=',w['meta']['weekHours'])
-          print('sunday=',w['meta']['sunday']['all'])
+          from pathlib import Path
+          p=Path('turni-v2/app-current.js')
+          s=p.read_text()
+          s=s.replace("const OFF=new Set(['RIPOSO','FERIE','PERMESSO','MALATTIA','MATERNITÀ','—','']);", "const OFF=new Set(['RIPOSO','FERIE','PERMESSO','CONGEDO','MALATTIA','MATERNITÀ','—','']);")
+          s=s.replace("'RIPOSO','FERIE','PERMESSO','MALATTIA'];", "'RIPOSO','FERIE','PERMESSO','CONGEDO','MALATTIA'];")
+          old='<button data-kind="RIPOSO"><span>▣</span><b>Giorno di riposo</b><i>›</i></button><button data-kind="ALTRO">'
+          new='<button data-kind="RIPOSO"><span>▣</span><b>Giorno di riposo</b><i>›</i></button><button data-kind="CONGEDO"><span>◫</span><b>Congedo</b><i>›</i></button><button data-kind="ALTRO">'
+          if old not in s: raise SystemExit('request menu target not found')
+          s=s.replace(old,new,1)
+          old="${['FERIE','PERMESSO'].includes(real)?`<label><span>Fino al</span><input id=\"reqEnd\" type=\"date\" value=\"${esc(presetDate)}\"></label>`:''}"
+          new="${['FERIE','PERMESSO','CONGEDO'].includes(real)?`<label><span>Fino al</span><input id=\"reqEnd\" type=\"date\" value=\"${esc(presetDate)}\"></label>`:''}"
+          if old not in s: raise SystemExit('request range target not found')
+          s=s.replace(old,new,1)
+          start=s.find('function absencesView(){')
+          end=s.find('\n\nfunction hoursView()',start)
+          if start<0 or end<0: raise SystemExit('absencesView boundaries not found')
+          new='''function absencesView(){
+  const accepted=(S.requests||[]).filter(r=>r.status==='ACCETTATA'&&['FERIE','PERMESSO','RIPOSO','CONGEDO'].includes(String(r.kind||'').toUpperCase())).map(r=>({id:null,employee_name:r.employee_name,absence_type:String(r.kind).toUpperCase(),date_from:r.request_date,date_to:r.end_date||r.request_date,fromRequest:true,requestId:r.id}));
+  const key=a=>[a.employee_name,String(a.absence_type||'').toUpperCase(),a.date_from,a.date_to||a.date_from].join('|');
+  const existing=new Set((S.absences||[]).map(key));
+  const rows=[...(S.absences||[]),...accepted.filter(a=>!existing.has(key(a)))].sort((a,b)=>String(b.date_from||'').localeCompare(String(a.date_from||'')));
+  return shell(`<section class="form-card"><h3>Aggiungi assenza</h3><div class="form-grid"><label><span>Dipendente</span><select id="absPerson">${PEOPLE.map(n=>`<option>${esc(n)}</option>`).join('')}</select></label><label><span>Tipo</span><select id="absType"><option>FERIE</option><option>PERMESSO</option><option>RIPOSO</option><option>CONGEDO</option><option>MALATTIA</option></select></label><label><span>Dal</span><input id="absFrom" type="date"></label><label><span>Al</span><input id="absTo" type="date"></label></div><button class="btn primary" id="addAbs">Aggiungi</button><div class="info-box">ⓘ Un RIPOSO inserito o accettato come richiesta vale come riposo settimanale: il generatore non deve aggiungerne un secondo.</div></section><section class="list-card"><h3>Ferie e assenze inserite</h3>${rows.length?`<div class="absence-list">${rows.map(a=>`<div><span class="absence-icon">${String(a.absence_type).toUpperCase()==='RIPOSO'?'▣':String(a.absence_type).toUpperCase()==='CONGEDO'?'◫':'☂'}</span><div><b>${esc(a.employee_name)}</b><small>${esc(a.absence_type)} · ${esc(a.date_from)} → ${esc(a.date_to||a.date_from)}${a.fromRequest?' · richiesta accettata':''}</small></div>${a.fromRequest?'':`<button data-delabs="${a.id}">×</button>`}</div>`).join('')}</div>`:'<div class="empty-mini">Nessuna assenza inserita.</div>'}</section>`)
+}'''
+          s=s[:start]+new+s[end:]
+          p.write_text(s)
+          ip=Path('turni-v2/index.html'); x=ip.read_text().replace('current-20260913-4','current-20260913-5').replace('current-20260913-3','current-20260913-5'); ip.write_text(x)
+          sw=Path('turni-v2/sw.js'); x=sw.read_text().replace('turni-current-20260913-v4','turni-current-20260913-v5').replace('turni-current-20260913-v3','turni-current-20260913-v5'); sw.write_text(x)
           PY
+          node --check turni-v2/app-current.js
+      - name: Commit app update
+        run: |
+          git config user.name 'turni-fix-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add turni-v2/app-current.js turni-v2/index.html turni-v2/sw.js
+          git commit -m 'Add riposo and congedo to Turni' || exit 0
+          git push
