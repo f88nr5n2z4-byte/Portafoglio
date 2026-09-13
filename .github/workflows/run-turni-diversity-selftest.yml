@@ -8,14 +8,41 @@ on:
 permissions:
   contents: read
 
-# detailed group inspection rerun
 jobs:
   selftest:
     runs-on: ubuntu-latest
     steps:
-      - name: Run diversity self-test
+      - name: Test exact Giada plus Daniele ferie
         run: |
           set -o pipefail
-          curl --fail-with-body -sS --max-time 120 'https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-diversity-selftest-20260913' | tee /tmp/result.json
-          echo
-          python -m json.tool /tmp/result.json
+          cat > /tmp/payload.json <<'JSON'
+          {
+            "startDate":"2028-01-03",
+            "absences":[
+              {"employee_name":"Giada","absence_type":"FERIE","date_from":"2028-01-03","date_to":"2028-01-09"},
+              {"employee_name":"Daniele","absence_type":"FERIE","date_from":"2028-01-03","date_to":"2028-01-09"}
+            ],
+            "requests":[]
+          }
+          JSON
+          curl --fail-with-body -sS --max-time 120 \
+            -H 'Content-Type: application/json' \
+            --data @/tmp/payload.json \
+            'https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-two-ferie-stateless-v1' \
+            | tee /tmp/result.json
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/result.json'))
+          w=d['week']
+          assert w['meta']['engine']=='two-ferie-stateless-v1'
+          assert set(w['meta']['feriePeople'])=={'Giada','Daniele'}
+          assert abs(w['meta']['weekHours']['Prova']-20)<0.01
+          assert abs(w['meta']['weekHours']['Daniele2']-20)<0.01
+          assert len(w['meta']['sunday']['all'])==4
+          assert all(x=='FERIE' for x in w['schedule']['Giada'])
+          assert all(x=='FERIE' for x in w['schedule']['Daniele'])
+          print('\nEXACT_GIADA_DANIELE_PASS')
+          print('solveMs=',w['meta']['solveMs'])
+          print('hours=',w['meta']['weekHours'])
+          print('sunday=',w['meta']['sunday']['all'])
+          PY
