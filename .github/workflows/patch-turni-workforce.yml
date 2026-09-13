@@ -41,7 +41,7 @@ jobs:
           }
           '''
           pattern = r"async function generateAutomatic\(\)\{.*?\n\}\nasync function publishDraft"
-          s2, count = re.subn(pattern, new_generate + 'async function publishDraft', s, count=1, flags=re.S)
+          s2, count = re.subn(pattern, lambda _m: new_generate + 'async function publishDraft', s, count=1, flags=re.S)
           if count != 1:
             raise SystemExit(f'generateAutomatic patch count={count}')
           if "navigator.serviceWorker.register('./sw.js?v=current-20260913-1'" not in s2:
