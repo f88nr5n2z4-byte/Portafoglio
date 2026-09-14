@@ -1,0 +1,1 @@
+(()=>{function f(){const e=document.querySelector('#loginPass');if(e)e.setAttribute('inputmode','text')}f();new MutationObserver(f).observe(document.documentElement,{childList:true,subtree:true})})();
