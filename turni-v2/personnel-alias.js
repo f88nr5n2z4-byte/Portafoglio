@@ -15,9 +15,10 @@ function replaceVisible(root=document.body){
     n.nodeValue=n.nodeValue.replace(/\bProva\b/g,DISPLAY);
   }
 }
+function fixLoginInput(){const e=document.querySelector('#loginPass');if(e)e.setAttribute('inputmode','text')}
 let timer=0;
-const obs=new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(()=>replaceVisible(),20)});
+const obs=new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(()=>{replaceVisible();fixLoginInput()},20)});
 obs.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
-document.addEventListener('DOMContentLoaded',()=>replaceVisible());
-setTimeout(()=>replaceVisible(),100);
+document.addEventListener('DOMContentLoaded',()=>{replaceVisible();fixLoginInput()});
+setTimeout(()=>{replaceVisible();fixLoginInput()},100);
 })();
