@@ -14,13 +14,27 @@ window.fetch=async(...args)=>{
   }catch{}
   return res;
 };
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function acceptedChanges(){return requests.filter(r=>r.status==='ACCETTATA'&&String(r.kind||'').toUpperCase()==='TURNO')}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))}
+function ymd(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function currentMonday(){const d=new Date(),day=d.getDay()||7;d.setHours(12,0,0,0);d.setDate(d.getDate()-day+1);return ymd(d)}
+function acceptedChanges(){const min=currentMonday();return requests.filter(r=>r.status==='ACCETTATA'&&String(r.kind||'').toUpperCase()==='TURNO'&&String(r.request_date||'')>=min)}
+function hidePastRows(card){
+  const min=currentMonday(),list=card?.querySelector('.absence-list');
+  if(!list)return;
+  [...list.children].forEach(row=>{
+    const dates=String(row.textContent||'').match(/\b\d{4}-\d{2}-\d{2}\b/g)||[];
+    if(dates.length&&dates.sort().at(-1)<min)row.remove();
+  });
+  if(!list.children.length&&!card.querySelector('.empty-mini')){
+    const e=document.createElement('div');e.className='empty-mini';e.textContent='Nessuna ferie, assenza o richiesta per la settimana corrente e le successive.';card.appendChild(e);
+  }
+}
 function refreshAbsences(){
   const title=[...document.querySelectorAll('.list-card h3')].find(x=>x.textContent.trim()==='Ferie e assenze inserite');
   if(!title)return;
   const card=title.closest('.list-card');
   if(!card)return;
+  hidePastRows(card);
   let list=card.querySelector('.absence-list');
   const rows=acceptedChanges();
   if(!rows.length)return;
@@ -33,6 +47,7 @@ function refreshAbsences(){
     row.innerHTML=`<span class="absence-icon">⇄</span><div><b>${esc(r.employee_name)}</b><small>CAMBIO TURNO · ${esc(d)} → ${esc(d)}${r.wanted_shift?` · turno richiesto: ${esc(r.wanted_shift)}`:''} · richiesta accettata</small></div><span></span>`;
     list.appendChild(row);
   });
+  hidePastRows(card);
 }
 function refreshRequests(){
   document.querySelectorAll('.request-card-top small').forEach(el=>{
