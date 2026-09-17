@@ -1,0 +1,13 @@
+name: Turni v18 sequence test
+on:
+  push:
+    paths:
+      - 'turni-v2/V18-SEQUENCE-TEST.txt'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke sequence selftest
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error 'https://dlqrhteqodkdkvmrwktu.supabase.co/functions/v1/turni-mixed-absence-selftest-20260914'
