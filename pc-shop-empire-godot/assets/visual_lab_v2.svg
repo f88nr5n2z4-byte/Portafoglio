@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+<linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1b1f27"/><stop offset="1" stop-color="#080b10"/></linearGradient>
+<linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#596574"/><stop offset=".3" stop-color="#212832"/><stop offset=".8" stop-color="#0a0e14"/><stop offset="1" stop-color="#3d4652"/></linearGradient>
+<pattern id="peg" width="30" height="30" patternUnits="userSpaceOnUse"><rect width="30" height="30" fill="#141920"/><circle cx="15" cy="15" r="2.5" fill="#4b5663"/></pattern>
+<radialGradient id="blue"><stop stop-color="#2ebaff" stop-opacity=".4"/><stop offset="1" stop-color="#2ebaff" stop-opacity="0"/></radialGradient>
+<radialGradient id="red"><stop stop-color="#ff294e" stop-opacity=".35"/><stop offset="1" stop-color="#ff294e" stop-opacity="0"/></radialGradient>
+<filter id="g"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1920" height="1080" fill="url(#w)"/>
+<ellipse cx="820" cy="530" rx="700" ry="440" fill="url(#blue)"/><ellipse cx="1480" cy="700" rx="560" ry="360" fill="url(#red)"/>
+<rect x="70" y="70" width="1780" height="340" fill="url(#peg)" stroke="#3d4856" stroke-width="5"/>
+<path d="M100 395H1820" stroke="#2ab9ff" stroke-width="7" filter="url(#g)"/>
+<g stroke-linecap="round" stroke-width="10"><path d="M180 120V320" stroke="#d7dde4"/><path d="M245 120V320" stroke="#ff294e"/><path d="M310 120V320" stroke="#d7dde4"/><path d="M375 150V320" stroke="#2ab9ff"/><path d="M1420 120V320" stroke="#d7dde4"/><path d="M1485 120V320" stroke="#ff294e"/><path d="M1550 120V320" stroke="#d7dde4"/><path d="M1615 150V320" stroke="#2ab9ff"/></g>
+<g fill="#151c25" stroke="#566274" stroke-width="4"><rect x="500" y="105" width="250" height="170" rx="8"/><rect x="800" y="105" width="250" height="170" rx="8"/><rect x="1100" y="105" width="250" height="170" rx="8"/></g>
+<g fill="#17324e"><rect x="525" y="130" width="200" height="118"/><rect x="825" y="130" width="200" height="118" fill="#301a4b"/><rect x="1125" y="130" width="200" height="118" fill="#18283e"/></g>
+<!-- benches -->
+<polygon points="90,505 865,505 915,555 55,555" fill="#4d535c" stroke="#77818d" stroke-width="4"/><polygon points="55,555 915,555 890,825 80,825" fill="url(#m)" stroke="#414b58" stroke-width="5"/>
+<polygon points="1035,505 1810,505 1850,555 995,555" fill="#4d535c" stroke="#77818d" stroke-width="4"/><polygon points="995,555 1850,555 1820,825 1025,825" fill="url(#m)" stroke="#414b58" stroke-width="5"/>
+<!-- left diagnostic station -->
+<rect x="145" y="420" width="250" height="160" rx="7" fill="#080c12" stroke="#606d7e" stroke-width="4"/><rect x="170" y="445" width="200" height="110" fill="#112a46"/><path d="M185 525L225 495L270 515L320 470L350 490" stroke="#5cf28b" stroke-width="4" fill="none"/><rect x="420" y="445" width="245" height="120" rx="8" fill="#0d131a" stroke="#4f5c6d" stroke-width="4"/><text x="445" y="480" fill="#dbe2e8" font-family="Arial" font-size="19">CPU  74°C</text><text x="445" y="515" fill="#ffb14a" font-family="Arial" font-size="19">GPU  81°C</text><text x="445" y="550" fill="#5cf28b" font-family="Arial" font-size="19">SSD  OK</text>
+<!-- right repair PC -->
+<rect x="1140" y="405" width="430" height="340" rx="10" fill="#080b10" stroke="#5d6b7d" stroke-width="6"/><rect x="1175" y="440" width="360" height="270" fill="#101923" stroke="#3b4654" stroke-width="3"/><g fill="#0b1118" stroke="#536173" stroke-width="4"><circle cx="1450" cy="500" r="62"/><circle cx="1450" cy="630" r="62"/></g><g fill="none" stroke-width="9"><circle cx="1450" cy="500" r="44" stroke="#d734ff"/><circle cx="1450" cy="630" r="44" stroke="#2ab9ff"/></g><rect x="1215" y="495" width="170" height="155" fill="#1a2730" stroke="#566576" stroke-width="3"/><rect x="1245" y="530" width="100" height="65" fill="#303d49"/>
+<!-- component bins -->
+<g fill="#1d2530" stroke="#4e5b6b" stroke-width="3"><rect x="110" y="870" width="180" height="120"/><rect x="315" y="870" width="180" height="120"/><rect x="520" y="870" width="180" height="120"/><rect x="725" y="870" width="180" height="120"/><rect x="1015" y="870" width="180" height="120"/><rect x="1220" y="870" width="180" height="120"/><rect x="1425" y="870" width="180" height="120"/><rect x="1630" y="870" width="180" height="120"/></g>
+<g fill="#ff294e"><rect x="130" y="890" width="140" height="12"/><rect x="335" y="890" width="140" height="12"/><rect x="540" y="890" width="140" height="12"/><rect x="745" y="890" width="140" height="12"/></g><g fill="#2ab9ff"><rect x="1035" y="890" width="140" height="12"/><rect x="1240" y="890" width="140" height="12"/><rect x="1445" y="890" width="140" height="12"/><rect x="1650" y="890" width="140" height="12"/></g>
+<!-- overhead lights -->
+<path d="M470 45H800" stroke="#fff" stroke-width="8" opacity=".7"/><path d="M1120 45H1450" stroke="#fff" stroke-width="8" opacity=".7"/><path d="M490 55H780" stroke="#d832ff" stroke-width="3" filter="url(#g)"/><path d="M1140 55H1430" stroke="#2ab9ff" stroke-width="3" filter="url(#g)"/>
+</svg>

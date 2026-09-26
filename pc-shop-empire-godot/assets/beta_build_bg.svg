@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+<defs>
+ <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#171b23"/><stop offset="1" stop-color="#090c12"/></linearGradient>
+ <linearGradient id="bench" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3a261e"/><stop offset="1" stop-color="#17100d"/></linearGradient>
+ <linearGradient id="case" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#252b34"/><stop offset="1" stop-color="#070a0f"/></linearGradient>
+</defs>
+<rect width="1400" height="900" fill="url(#wall)"/>
+<!-- pegboard/tools -->
+<rect x="80" y="65" width="1240" height="215" fill="#151a21" stroke="#3d4654" stroke-width="4"/>
+<g fill="#343c48" opacity=".85">
+ <circle cx="115" cy="95" r="3"/><circle cx="145" cy="95" r="3"/><circle cx="175" cy="95" r="3"/><circle cx="205" cy="95" r="3"/><circle cx="235" cy="95" r="3"/><circle cx="265" cy="95" r="3"/>
+</g>
+<g stroke-linecap="round" stroke-width="9"><path d="M170 115L170 225" stroke="#d4d8de"/><path d="M230 115L230 225" stroke="#ef2343"/><path d="M290 115L290 225" stroke="#d4d8de"/><path d="M350 120L350 220" stroke="#2eb8ff"/><path d="M410 120L410 220" stroke="#d4d8de"/><path d="M1050 120L1050 220" stroke="#d4d8de"/><path d="M1110 120L1110 220" stroke="#ef2343"/><path d="M1170 120L1170 220" stroke="#d4d8de"/></g>
+<rect x="515" y="105" width="360" height="92" rx="8" fill="#080b10" stroke="#522134" stroke-width="3"/>
+<path d="M545 172L845 172" stroke="#ef2343" stroke-width="7"/>
+<!-- bench -->
+<polygon points="40,690 1360,690 1400,900 0,900" fill="url(#bench)" stroke="#54372c" stroke-width="5"/>
+<path d="M40 710L1360 710" stroke="#7b4632" stroke-width="5"/>
+<!-- case frame -->
+<rect x="275" y="285" width="850" height="455" rx="10" fill="url(#case)" stroke="#5a6572" stroke-width="7"/>
+<rect x="315" y="325" width="770" height="360" fill="#090d13" stroke="#2c3440" stroke-width="4"/>
+<!-- motherboard -->
+<rect x="425" y="365" width="430" height="270" fill="#17202a" stroke="#445264" stroke-width="4"/>
+<g fill="#263244"><rect x="455" y="395" width="125" height="92"/><rect x="615" y="395" width="185" height="35"/><rect x="615" y="450" width="35" height="135"/><rect x="670" y="450" width="35" height="135"/><rect x="725" y="450" width="35" height="135"/></g>
+<!-- CPU socket -->
+<rect x="475" y="415" width="82" height="58" fill="#11161d" stroke="#738096" stroke-width="3"/>
+<rect x="493" y="430" width="46" height="30" fill="#a5aeb9"/>
+<!-- slots -->
+<path d="M465 605L805 605" stroke="#8c38d9" stroke-width="8"/><path d="M465 625L770 625" stroke="#2aaee6" stroke-width="5"/>
+<!-- PSU shroud -->
+<rect x="325" y="620" width="300" height="65" fill="#121820" stroke="#353f4d" stroke-width="3"/>
+<!-- fans -->
+<g fill="#101722" stroke="#414d5d" stroke-width="5"><circle cx="1000" cy="390" r="62"/><circle cx="1000" cy="530" r="62"/><circle cx="1000" cy="650" r="50"/></g>
+<g fill="none" stroke-width="8"><circle cx="1000" cy="390" r="45" stroke="#a934ff"/><circle cx="1000" cy="530" r="45" stroke="#25b9ff"/><circle cx="1000" cy="650" r="34" stroke="#ef2343"/></g>
+<!-- tool tray -->
+<rect x="1145" y="525" width="175" height="120" fill="#10151d" stroke="#404b5c" stroke-width="3"/>
+<g stroke="#d3d7dd" stroke-width="5"><path d="M1170 555L1285 610"/><path d="M1190 620L1275 550"/><path d="M1220 545L1220 625"/></g>
+<!-- gloves/hands foreground -->
+<path d="M0 900L0 790L180 720L285 760L230 900Z" fill="#10141b"/><path d="M1400 900L1400 790L1220 720L1115 760L1170 900Z" fill="#10141b"/>
+<ellipse cx="252" cy="755" rx="55" ry="38" fill="#171d26" stroke="#ef2343" stroke-width="4"/><ellipse cx="1148" cy="755" rx="55" ry="38" fill="#171d26" stroke="#ef2343" stroke-width="4"/>
+</svg>
