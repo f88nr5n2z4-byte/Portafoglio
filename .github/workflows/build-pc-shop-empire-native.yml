@@ -1,8 +1,9 @@
-name: Build PC SHOP EMPIRE Native
+name: Build PC GAME EMPIRE Native
 
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - "pc-shop-empire-godot/**"
       - ".github/workflows/build-pc-shop-empire-native.yml"
@@ -14,9 +15,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: pc-game-empire-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  windows-export:
-    runs-on: ubuntu-latest
+  final-windows-gate:
+    runs-on: windows-latest
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
 
@@ -27,22 +33,146 @@ jobs:
           use-dotnet: false
           include-templates: true
 
+      - name: Clean import cache and old builds
+        shell: powershell
+        run: |
+          Remove-Item -Recurse -Force "pc-shop-empire-godot\.godot" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "build" -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path "build" | Out-Null
+
       - name: Import project
-        run: godot --headless --path pc-shop-empire-godot --editor --quit
-
-      - name: Export Windows build
+        shell: powershell
         run: |
-          mkdir -p build
-          godot --headless --path pc-shop-empire-godot --export-release "Windows Desktop" "$GITHUB_WORKSPACE/build/PC-SHOP-EMPIRE.exe"
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          if (!(Test-Path $godot)) { throw "Godot executable not found: $godot" }
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--editor","--quit" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Godot import failed: $($p.ExitCode)" }
 
-      - name: Package
+      - name: Validate GDScript inheritance chain
+        shell: powershell
         run: |
-          cd build
-          zip -9 PC-SHOP-EMPIRE-WINDOWS.zip PC-SHOP-EMPIRE.exe
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\parse_stdout.log"
+          $err = "$PWD\build\parse_stderr.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_parse_chain.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
+          if ($p.ExitCode -ne 0) { throw "Inheritance-chain parse validation failed: $($p.ExitCode)" }
+          if (($stdout + "`n" + $stderr) -notmatch "PARSE CHAIN: ALL SCRIPTS INSTANTIABLE") { throw "Parse validation ended without explicit PASS marker" }
 
-      - name: Upload playable Windows artifact
+      - name: Run native beta QA
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\qa_stdout.log"
+          $err = "$PWD\build\qa_stderr.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_beta.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
+          if ($p.ExitCode -ne 0) { throw "Native beta QA failed: $($p.ExitCode)" }
+          if (($stdout + "`n" + $stderr) -notmatch "PC GAME EMPIRE BETA QA: ALL TESTS PASSED") { throw "QA process ended without explicit PASS marker" }
+
+      - name: Capture real Godot premium gameplay screenshots
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          New-Item -ItemType Directory -Force -Path "build\screenshots" | Out-Null
+          $targets = @("menu","shop_floor","shop_walk","lab_floor","lab_walk","diagnostics","build","online_shop")
+          foreach ($target in $targets) {
+            $out = "$PWD\build\capture_${target}_stdout.log"
+            $err = "$PWD\build\capture_${target}_stderr.log"
+            $argLine = "--audio-driver Dummy --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_visual_capture.gd -- capture=$target"
+            $p = Start-Process -FilePath $godot -ArgumentList $argLine -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+            $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+            $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+            Write-Host $stdout
+            Write-Host $stderr
+            if ($p.ExitCode -ne 0) { throw "Visual capture failed for $target with code $($p.ExitCode)" }
+            $png = "build\screenshots\$target.png"
+            if (!(Test-Path $png)) { throw "Visual capture did not create $png" }
+            $pngSize = (Get-Item $png).Length
+            if ($pngSize -lt 20000) { throw "Visual capture unexpectedly small/blank for $target : $pngSize bytes" }
+            Write-Host "Screenshot $target validated: $pngSize bytes"
+          }
+
+      - name: Export clean Windows build
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $outPath = "$env:GITHUB_WORKSPACE\build\PC-GAME-EMPIRE.exe"
+          $out = "$PWD\build\export_stdout.log"
+          $err = "$PWD\build\export_stderr.log"
+          $argLine = "--headless --path pc-shop-empire-godot --export-release `"Windows Desktop`" `"$outPath`""
+          $p = Start-Process -FilePath $godot -ArgumentList $argLine -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
+          if ($p.ExitCode -ne 0) { throw "Windows export failed: $($p.ExitCode)" }
+
+      - name: Verify exported executable
+        shell: powershell
+        run: |
+          $exe = "build\PC-GAME-EMPIRE.exe"
+          if (!(Test-Path $exe)) { throw "EXE missing after export" }
+          $size = (Get-Item $exe).Length
+          if ($size -lt 10000000) { throw "EXE unexpectedly small: $size bytes" }
+          Write-Host "Exported EXE size: $size bytes"
+
+      - name: Launch exported EXE on Windows
+        shell: powershell
+        run: |
+          $out = "$PWD\build\exe_stdout.log"
+          $err = "$PWD\build\exe_stderr.log"
+          $p = Start-Process -FilePath "$PWD\build\PC-GAME-EMPIRE.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
+          if ($p.ExitCode -ne 0) { throw "Exported EXE exited with code $($p.ExitCode)" }
+          if (($stdout + "`n" + $stderr) -match "SCRIPT ERROR|Parse Error") { throw "Runtime script/parse error detected in exported EXE" }
+          Write-Host "PC-GAME-EMPIRE.exe launch smoke test PASSED"
+
+      - name: Package final ZIP
+        shell: powershell
+        run: |
+          $zip = "build\PC_GAME_EMPIRE_PREMIUM_VISUAL_v0.3.0_WINDOWS.zip"
+          Compress-Archive -Path "build\PC-GAME-EMPIRE.exe" -DestinationPath $zip -CompressionLevel Optimal -Force
+          if (!(Test-Path $zip)) { throw "ZIP missing" }
+          if ((Get-Item $zip).Length -lt 1000000) { throw "ZIP unexpectedly small" }
+          Write-Host "ZIP size: $((Get-Item $zip).Length) bytes"
+
+      - name: Verify ZIP by extracting and relaunching EXE
+        shell: powershell
+        run: |
+          Remove-Item -Recurse -Force "verify_extract" -ErrorAction SilentlyContinue
+          Expand-Archive -Path "build\PC_GAME_EMPIRE_PREMIUM_VISUAL_v0.3.0_WINDOWS.zip" -DestinationPath "verify_extract" -Force
+          if (!(Test-Path "verify_extract\PC-GAME-EMPIRE.exe")) { throw "EXE missing from extracted ZIP" }
+          $out = "$PWD\verify_extract\zip_exe_stdout.log"
+          $err = "$PWD\verify_extract\zip_exe_stderr.log"
+          $p = Start-Process -FilePath "$PWD\verify_extract\PC-GAME-EMPIRE.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $stdout = Get-Content $out -Raw -ErrorAction SilentlyContinue
+          $stderr = Get-Content $err -Raw -ErrorAction SilentlyContinue
+          Write-Host $stdout
+          Write-Host $stderr
+          if ($p.ExitCode -ne 0) { throw "EXE from extracted ZIP exited with code $($p.ExitCode)" }
+          if (($stdout + "`n" + $stderr) -match "SCRIPT ERROR|Parse Error") { throw "Runtime script/parse error detected in EXE extracted from ZIP" }
+          Write-Host "Extracted ZIP EXE smoke test PASSED"
+
+      - name: Upload premium visual Windows build
         uses: actions/upload-artifact@v4
         with:
-          name: PC-SHOP-EMPIRE-WINDOWS
-          path: build/PC-SHOP-EMPIRE-WINDOWS.zip
+          name: PC_GAME_EMPIRE_PREMIUM_VISUAL_v0.3.0_WINDOWS
+          path: build/PC_GAME_EMPIRE_PREMIUM_VISUAL_v0.3.0_WINDOWS.zip
+          if-no-files-found: error
+
+      - name: Upload real Godot screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_PREMIUM_VISUAL_SCREENSHOTS
+          path: build/screenshots/*.png
           if-no-files-found: error
