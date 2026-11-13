@@ -1,0 +1,154 @@
+extends SceneTree
+
+var failures := []
+
+func check(condition: bool, message: String) -> void:
+	if not condition:
+		failures.append(message)
+		printerr("QA FAIL: ", message)
+	else:
+		print("QA PASS: ", message)
+
+func _init() -> void:
+	var game_script := load("res://qa_game.gd")
+	check(game_script != null, "Milestone A runtime script loads")
+	if game_script == null:
+		quit(1)
+		return
+	var game = game_script.new()
+	game._load_data()
+	check(game.components.size() >= 30, "hardware catalog loaded")
+	check(game.jobs.size() >= 15, "customer/job catalog loaded")
+	check(game.resolutions.has("1280x720") and game.resolutions.has("1366x768") and game.resolutions.has("1920x1080") and game.resolutions.has("2560x1440"), "required resolutions available")
+
+	# Fresh game / first build end-to-end logic.
+	game._new_game()
+	check(game.money == 2000, "new game starts with 2000 euro")
+	check(game.current_job == 0 and game.job_state == "offered", "first customer job is offered")
+	game.job_state = "accepted"
+	check(game._job_validation_reason() != "", "early delivery is rejected")
+
+	# Milestone A assembly order: case -> platform -> hardware -> paste/cooling -> simplified cabling -> close case.
+	var build_ids := ["case_atx","mb_b850","cpu_9600x","ram_32","ssd_1tb","psu_750","gpu_5060"]
+	for id in build_ids:
+		game.inventory[id] = 1
+		var c: Dictionary = game._component(id)
+		check(not c.is_empty(), "component exists: " + id)
+		check(game._compatibility_reason(c) == "", "compatible component accepted: " + id)
+		game._install_component(c)
+	check(game.case_panel_open, "installing the case opens the work area")
+	game._apply_thermal_paste()
+	game.inventory["cooler_air"] = 1
+	game._install_component(game._component("cooler_air"))
+	game._connect_cables()
+	check(not game._build_ready(), "open side panel blocks final test")
+	game.case_panel_open = false
+	check(game._build_ready(), "complete simplified assembly is mechanically ready")
+	check(game._build_cost() <= int(game._job().budget), "build respects customer budget")
+	check(game._build_score() >= float(game._job().min_score), "build respects performance target")
+
+	# Milestone A compatibility matrix.
+	var wrong_socket: Dictionary = game._component("cpu_14600kf")
+	check(game._compatibility_reason(wrong_socket).contains("socket"), "CPU socket mismatch explains the reason")
+	var wrong_ram := {"id":"qa_ram_wrong","category":"RAM","name":"QA DDR4","ram":"DDR4","price":1}
+	check(game._compatibility_reason(wrong_ram).contains("RAM") or game._compatibility_reason(wrong_ram).contains("DDR"), "DDR generation mismatch is rejected")
+	var huge_gpu := {"id":"qa_gpu_huge","category":"GPU","name":"QA Oversize GPU","length":500,"power":200,"price":1}
+	check(game._compatibility_reason(huge_gpu).contains("GPU"), "GPU length versus case is enforced")
+	var eatx_mb := {"id":"qa_mb_eatx","category":"Motherboard","name":"QA EATX","socket":"AM5","ram":"DDR5","form":"EATX","price":1}
+	check(game._compatibility_reason(eatx_mb).contains("form factor"), "motherboard form factor versus case is enforced")
+	var weak_psu := {"id":"qa_psu_weak","category":"PSU","name":"QA 300W","watts":300,"price":1}
+	var weak_psu_reason:String = game._compatibility_reason(weak_psu)
+	check(weak_psu_reason.contains("insufficiente") or weak_psu_reason.contains("PSU") or weak_psu_reason.contains("Alimentatore"), "PSU wattage headroom is enforced")
+	var aio_420 := {"id":"qa_aio_420","category":"Cooling","name":"QA AIO 420","kind":"aio","radiator":420,"sockets":["AM5"],"price":1}
+	check(game._compatibility_reason(aio_420).contains("radiatore"), "radiator size versus case is enforced")
+
+	check(game._job_validation_reason().contains("sistema operativo"), "OS requirement blocks delivery")
+	game.os_installed = true
+	check(game._job_validation_reason() == "", "validated build becomes deliverable")
+	var before_money: int = int(game.money)
+	game._finish_job()
+	check(game.money > before_money, "completed build pays the player")
+	check(game.reputation > 0 and game.completed_jobs == 1, "completion grants reputation and progression")
+	var paid_money: int = int(game.money)
+	game._finish_job()
+	check(game.money == paid_money, "double delivery cannot duplicate payment")
+
+	# Save/load persistence, including the new simplified assembly state.
+	game.case_panel_open = true
+	game._save_game()
+	check(FileAccess.file_exists(game.SAVE_PATH), "save file created")
+	var saved_money: int = int(game.money)
+	game.money = 1
+	game.case_panel_open = false
+	game._load_game()
+	check(game.money == saved_money, "load restores player balance")
+	check(game.case_panel_open, "load restores assembly panel state")
+
+	# Repair regression: diagnosis alone must NEVER complete the repair.
+	game.current_job = 1 # repair_boot / PSU fault
+	game.job_state = "accepted"
+	game.diagnostics_done = ["Power","POST","PSU"]
+	check(game._diagnosis_revealed(), "repair fault is revealed after diagnostic tests")
+	check(not game._build_ready(), "diagnosis alone does not complete repair")
+	var repair_money_before: int = int(game.money)
+	game._finish_job()
+	check(game.money == repair_money_before and game.job_state != "none", "premature repair delivery is rejected")
+	game.job_state = "working"
+	game.inventory["psu_750"] = 1
+	game._install_component(game._component("psu_750"))
+	check(game._build_ready(), "correct replacement completes PSU repair")
+	check(game._job_validation_reason() == "", "completed repair passes delivery validation")
+	game._finish_job()
+	check(game.money > repair_money_before and game.job_state == "none", "correct repair pays once and closes job")
+	var after_repair_money: int = int(game.money)
+	game._finish_job()
+	check(game.money == after_repair_money, "closed repair cannot pay twice")
+
+	# Wrong repair / compatibility / damaged stock.
+	game.current_job = 4 # RAM repair
+	game.job_state = "working"
+	game.diagnostics_done = ["POST","Memory","Stress"]
+	game.build_slots.clear()
+	game.inventory["psu_750"] = 1
+	game._install_component(game._component("psu_750"))
+	check(not game._build_ready(), "wrong replacement does not complete RAM repair")
+	var incompatible_cpu: Dictionary = game._component("cpu_14600kf")
+	game.build_slots = {"Motherboard":"mb_b850"}
+	check(game._compatibility_reason(incompatible_cpu) != "", "CPU socket mismatch is rejected")
+	game.damaged_inventory["cpu_14600kf"] = 1
+	check(game._compatibility_reason(incompatible_cpu).contains("guasto"), "damaged used component is rejected")
+
+	# Economy and order-delivery edge cases.
+	game.money = 0
+	var zero_money: int = int(game.money)
+	check(zero_money < int(game._component("gpu_5060").price), "zero balance cannot afford purchase")
+	game.money = 5000
+	game.pending_orders.clear()
+	game.pending_orders.append({"id":"ssd_1tb","name":"Samsung 980 PRO NVMe 1TB","arrival_day":game.day,"arrival_hour":game.hour})
+	var inv_before: int = int(game.inventory.get("ssd_1tb",0))
+	game._check_deliveries()
+	check(int(game.inventory.get("ssd_1tb",0)) == inv_before + 1 and game.pending_orders.is_empty(), "arrived order transfers once into inventory")
+	game._check_deliveries()
+	check(int(game.inventory.get("ssd_1tb",0)) == inv_before + 1, "delivery cannot duplicate inventory")
+
+	# Settings persistence / modes exposed by release build.
+	game.settings.resolution = "1280x720"
+	game.settings.window_mode = "Windowed"
+	game.settings.language = "en"
+	game.language = "en"
+	game.settings.vsync = false
+	game.settings.fps = 120
+	game._save_settings()
+	check(FileAccess.file_exists(game.SETTINGS_PATH), "settings file created")
+	game.settings.resolution = "1920x1080"
+	game.language = "it"
+	game._load_settings()
+	check(String(game.settings.resolution) == "1280x720" and game.language == "en", "video/language settings persist")
+
+	if failures.is_empty():
+		print("PC GAME EMPIRE MILESTONE A QA: ALL TESTS PASSED")
+		print("PC GAME EMPIRE BETA QA: ALL TESTS PASSED")
+		quit(0)
+	else:
+		printerr("PC GAME EMPIRE MILESTONE A QA: ", failures.size(), " FAILURE(S)")
+		quit(1)
