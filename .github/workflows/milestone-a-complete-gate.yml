@@ -1,0 +1,189 @@
+name: PC GAME EMPIRE Milestone A Complete Gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "pc-shop-empire-godot/**"
+      - ".github/workflows/milestone-a-complete-gate.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcge-milestone-a-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  milestone-a-final:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Godot 4.7.2
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.2
+          use-dotnet: false
+          include-templates: true
+
+      - name: Clean and import
+        shell: powershell
+        run: |
+          Remove-Item -Recurse -Force "pc-shop-empire-godot\.godot" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "build" -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path "build\screenshots" | Out-Null
+          New-Item -ItemType Directory -Force -Path "build\requested_visuals" | Out-Null
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--path","pc-shop-empire-godot","--editor","--quit" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Godot import failed: $($p.ExitCode)" }
+
+      - name: Strict parser
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\parse_out.log"; $err = "$PWD\build\parse_err.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_parse_chain.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -notmatch "PARSE CHAIN: ALL SCRIPTS INSTANTIABLE") { throw "Strict parser failed" }
+
+      - name: Regression QA
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\qa_out.log"; $err = "$PWD\build\qa_err.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_beta.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -notmatch "PC GAME EMPIRE BETA QA: ALL TESTS PASSED") { throw "Regression QA failed" }
+
+      - name: Milestone A final QA
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\qa_a_out.log"; $err = "$PWD\build\qa_a_err.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_milestone_a_final.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -notmatch "PC GAME EMPIRE MILESTONE A FINAL QA: ALL TESTS PASSED") { throw "Milestone A final QA failed" }
+
+      - name: New real-world assembly core QA
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\qa_m1_core_out.log"; $err = "$PWD\build\qa_m1_core_err.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_m1_assembly_core.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -notmatch "PC GAME EMPIRE M1 ASSEMBLY CORE QA: ALL TESTS PASSED") { throw "New-world assembly core QA failed" }
+
+      - name: Real-world workbench integration QA
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out = "$PWD\build\qa_m1_workbench_out.log"; $err = "$PWD\build\qa_m1_workbench_err.log"
+          $p = Start-Process -FilePath $godot -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120","--path","pc-shop-empire-godot","--script","res://qa_m1_workbench_integration.gd" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -match "SCRIPT ERROR|Parse Error" -or $text -notmatch "PC GAME EMPIRE M1 WORKBENCH INTEGRATION QA: ALL TESTS PASSED") { throw "Real-world workbench integration QA failed" }
+
+      - name: Capture 8 real Milestone A screenshots
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $targets = @("build_empty","build_entry","build_mid","build_high","build_cpu_ram","build_gpu","build_cooling","build_complete")
+          foreach ($target in $targets) {
+            $out="$PWD\build\cap_${target}_out.log"; $err="$PWD\build\cap_${target}_err.log"
+            $args="--audio-driver Dummy --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_visual_capture.gd -- capture=$target"
+            $p=Start-Process -FilePath $godot -ArgumentList $args -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+            $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+            $png="build\screenshots\$target.png"
+            if ($p.ExitCode -ne 0 -or !(Test-Path $png)) { throw "Capture failed: $target" }
+            $size=(Get-Item $png).Length
+            if ($size -lt 50000) { throw "Screenshot blank/small: $target $size" }
+            Write-Host "MILESTONE A SCREENSHOT PASS: $target $size bytes"
+          }
+
+      - name: Capture real-world workbench screenshot
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out="$PWD\build\cap_real_workbench_out.log"; $err="$PWD\build\cap_real_workbench_err.log"
+          $args="--audio-driver Dummy --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_m1_workbench_visual.gd"
+          $p=Start-Process -FilePath $godot -ArgumentList $args -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          $png="build\screenshots\real_workbench_ui.png"
+          if ($p.ExitCode -ne 0 -or $text -match "SCRIPT ERROR|Parse Error" -or !(Test-Path $png)) { throw "Real workbench capture failed" }
+          if ((Get-Item $png).Length -lt 50000) { throw "Real workbench screenshot blank/small" }
+
+      - name: Capture 10 requested real-world views
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $out="$PWD\build\cap_requested_out.log"; $err="$PWD\build\cap_requested_err.log"
+          $args="--audio-driver Dummy --rendering-method gl_compatibility --path pc-shop-empire-godot --script res://qa_m1_requested_visual_gate.gd"
+          $p=Start-Process -FilePath $godot -ArgumentList $args -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          $files=Get-ChildItem "build\requested_visuals\*.png" -ErrorAction SilentlyContinue
+          if ($p.ExitCode -ne 0 -or $text -match "SCRIPT ERROR|Parse Error" -or $text -notmatch "PC GAME EMPIRE M1 REQUESTED VISUAL GATE: PASS" -or $files.Count -ne 10) { throw "Requested visual gate failed" }
+          foreach ($file in $files) { if ($file.Length -lt 50000) { throw "Requested screenshot blank/small: $($file.Name)" } }
+
+      - name: Export clean Windows build
+        shell: powershell
+        run: |
+          $godot = "$HOME\godot\Godot_v4.7.2-stable_win64.exe"
+          $outPath="$env:GITHUB_WORKSPACE\build\PC-GAME-EMPIRE.exe"
+          $out="$PWD\build\export_out.log"; $err="$PWD\build\export_err.log"
+          $args="--headless --path pc-shop-empire-godot --export-release `"Windows Desktop`" `"$outPath`""
+          $p=Start-Process -FilePath $godot -ArgumentList $args -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          Write-Host (Get-Content $out -Raw -ErrorAction SilentlyContinue); Write-Host (Get-Content $err -Raw -ErrorAction SilentlyContinue)
+          if ($p.ExitCode -ne 0) { throw "Windows export failed" }
+          if (!(Test-Path $outPath)) { throw "EXE missing" }
+          if ((Get-Item $outPath).Length -lt 10000000) { throw "EXE unexpectedly small" }
+
+      - name: Launch exported EXE
+        shell: powershell
+        run: |
+          $out="$PWD\build\exe_out.log"; $err="$PWD\build\exe_err.log"
+          $p=Start-Process -FilePath "$PWD\build\PC-GAME-EMPIRE.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -match "SCRIPT ERROR|Parse Error") { throw "EXE smoke failed" }
+          Write-Host "MILESTONE A EXE VALIDATION PASS"
+
+      - name: Package and validate ZIP
+        shell: powershell
+        run: |
+          $zip="$PWD\build\PC_GAME_EMPIRE_MILESTONE_A_COMPLETE_WINDOWS.zip"
+          $packed=$false
+          for ($attempt=1; $attempt -le 8 -and !$packed; $attempt++) {
+            try {
+              Compress-Archive -Path "$PWD\build\PC-GAME-EMPIRE.exe" -DestinationPath $zip -CompressionLevel Optimal -Force -ErrorAction Stop
+              $packed=$true
+            }
+            catch {
+              Write-Host "Packaging retry $attempt/8: $($_.Exception.Message)"
+              Start-Sleep -Milliseconds 750
+            }
+          }
+          if (!$packed -or !(Test-Path $zip)) { throw "ZIP creation failed after retries" }
+          Remove-Item -Recurse -Force "$PWD\verify_a" -ErrorAction SilentlyContinue
+          Expand-Archive -Path $zip -DestinationPath "$PWD\verify_a" -Force
+          if (!(Test-Path "$PWD\verify_a\PC-GAME-EMPIRE.exe")) { throw "Extracted EXE missing" }
+          $out="$PWD\verify_a\exe_out.log"; $err="$PWD\verify_a\exe_err.log"
+          $p=Start-Process -FilePath "$PWD\verify_a\PC-GAME-EMPIRE.exe" -ArgumentList "--headless","--audio-driver","Dummy","--quit-after","120" -RedirectStandardOutput $out -RedirectStandardError $err -Wait -PassThru
+          $text=(Get-Content $out -Raw -ErrorAction SilentlyContinue)+"`n"+(Get-Content $err -Raw -ErrorAction SilentlyContinue); Write-Host $text
+          if ($p.ExitCode -ne 0 -or $text -match "SCRIPT ERROR|Parse Error") { throw "Extracted ZIP EXE failed" }
+          Write-Host "MILESTONE A ZIP VALIDATION PASS"
+
+      - name: Upload Milestone A Windows build
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_MILESTONE_A_COMPLETE_WINDOWS
+          path: build/PC_GAME_EMPIRE_MILESTONE_A_COMPLETE_WINDOWS.zip
+          if-no-files-found: error
+
+      - name: Upload Milestone A screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: PC_GAME_EMPIRE_MILESTONE_A_COMPLETE_SCREENSHOTS
+          path: |
+            build/screenshots/*.png
+            build/requested_visuals/*.png
+          if-no-files-found: error

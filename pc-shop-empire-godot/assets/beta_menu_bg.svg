@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#070910"/><stop offset="0.55" stop-color="#10131d"/><stop offset="1" stop-color="#05060a"/></linearGradient>
+ <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#20242d"/><stop offset="1" stop-color="#0b0d12"/></linearGradient>
+ <linearGradient id="red" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#4a0712"/><stop offset="0.5" stop-color="#f21d3f"/><stop offset="1" stop-color="#490611"/></linearGradient>
+ <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#13203a"/><stop offset="1" stop-color="#26134a"/></linearGradient>
+</defs>
+<rect width="1920" height="1080" fill="url(#bg)"/>
+<polygon points="760,180 1890,230 1770,1020 680,1020" fill="url(#floor)" stroke="#303746" stroke-width="4"/>
+<g opacity=".35" stroke="#3b4350" stroke-width="2">
+ <path d="M760 300L1870 340M745 440L1850 455M730 590L1830 580M710 750L1805 710M690 910L1785 840"/>
+ <path d="M880 190L820 1015M1040 195L980 1015M1200 200L1140 1015M1360 205L1300 1015M1520 215L1460 1015M1680 220L1620 1015"/>
+</g>
+<!-- back wall -->
+<polygon points="790,160 1880,205 1870,360 775,330" fill="#111722" stroke="#2d3542" stroke-width="4"/>
+<rect x="1080" y="195" width="490" height="90" rx="8" fill="#080b11" stroke="#5b1524" stroke-width="3"/>
+<rect x="1105" y="218" width="440" height="8" fill="url(#red)"/>
+<rect x="1105" y="258" width="440" height="6" fill="#6322a0"/>
+<!-- left display wall -->
+<polygon points="790,340 990,345 950,875 750,900" fill="#0d121b" stroke="#303947" stroke-width="4"/>
+<g fill="#151d29" stroke="#49576a" stroke-width="3">
+ <rect x="805" y="385" width="130" height="120"/><rect x="790" y="535" width="130" height="120"/><rect x="775" y="685" width="130" height="120"/>
+</g>
+<g fill="#1d3658" stroke="#6c37b8" stroke-width="4"><rect x="825" y="405" width="90" height="55"/><rect x="810" y="555" width="90" height="55"/><rect x="795" y="705" width="90" height="55"/></g>
+<!-- right display -->
+<polygon points="1630,350 1850,360 1790,900 1585,870" fill="#0d121b" stroke="#303947" stroke-width="4"/>
+<g fill="#101722" stroke="#3b4655" stroke-width="3"><rect x="1650" y="405" width="145" height="135"/><rect x="1630" y="570" width="145" height="135"/><rect x="1610" y="735" width="145" height="100"/></g>
+<g><circle cx="1720" cy="455" r="36" fill="#522178"/><circle cx="1720" cy="455" r="22" fill="#bf36e8"/><circle cx="1700" cy="620" r="36" fill="#123e5a"/><circle cx="1700" cy="620" r="22" fill="#26aee8"/></g>
+<!-- central premium desk -->
+<polygon points="1110,560 1510,565 1570,650 1040,650" fill="#171c25" stroke="#4a5668" stroke-width="4"/>
+<polygon points="1040,650 1570,650 1545,790 1065,790" fill="#0a0e14" stroke="#353f4f" stroke-width="4"/>
+<rect x="1080" y="760" width="430" height="8" fill="url(#red)"/>
+<g fill="#111722" stroke="#445064" stroke-width="3"><rect x="1130" y="505" width="130" height="85"/><rect x="1340" y="505" width="130" height="85"/></g>
+<g fill="url(#blue)"><rect x="1145" y="520" width="100" height="55"/><rect x="1355" y="520" width="100" height="55"/></g>
+<!-- gaming towers -->
+<g stroke="#515d6d" stroke-width="4">
+ <rect x="930" y="700" width="92" height="190" rx="6" fill="#0a0d13"/><rect x="1485" y="715" width="92" height="190" rx="6" fill="#0a0d13"/>
+</g>
+<g fill="none" stroke-width="8"><circle cx="976" cy="750" r="28" stroke="#d830ff"/><circle cx="976" cy="820" r="28" stroke="#29b7ff"/><circle cx="1531" cy="765" r="28" stroke="#ef2343"/><circle cx="1531" cy="835" r="28" stroke="#9a31ff"/></g>
+<!-- neon rails -->
+<path d="M800 335L1860 365" stroke="#ef2343" stroke-width="7" opacity=".8"/><path d="M755 905L1785 905" stroke="#7a22c4" stroke-width="5" opacity=".6"/>
+</svg>
